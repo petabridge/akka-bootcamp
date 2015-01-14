@@ -31,7 +31,7 @@ Once you've made your edits, press `F5` to compile and run the sample in Visual 
 
 You should see something like this:
 
-![Petabridge Akka Bootcamp Lesson 1.0 Correct Output](/Images/correct-console-output.png)
+![Petabridge Akka Bootcamp Lesson 1.0 Correct Output](~/Images/correct-console-output.png)
 
 ### Once You're Finished 
 
