@@ -6,7 +6,7 @@ We're just getting our feet into the water, exploring actors and actor systems.
 In this sample we're not going to worry too much about all of the Akka.NET-specific plumbing. Instead, we're going to start getting ourselves acquainted with the `Actor.Tell` method and explore how [Akka.NET actors](http://akkadotnet.github.io/wiki/Actors "What are actors? - Akka.NET Documentation") pass messages to each other.
 
 ### Step 1 - Launching the Fill-in-the-Blank Sample
-Go to the [/DoThis/](/DoThis/) folder and open `ActorsSendingMessages.sln` in Visual Studio. The solution consists of a simple console application and only one Visual Studio project file.
+Go to the [/DoThis/](DoThis/) folder and open `ActorsSendingMessages.sln` in Visual Studio. The solution consists of a simple console application and only one Visual Studio project file.
 
 ### Step 2 - Install the Latest Akka.NET NuGet Package
 In the Package Manager Console, type the following command:
@@ -31,8 +31,8 @@ Once you've made your edits, press `F5` to compile and run the sample in Visual 
 
 You should see something like this:
 
-![Petabridge Akka Bootcamp Lesson 1.0 Correct Output](/Images/correct-console-output.png)
+![Petabridge Akka Bootcamp Lesson 1.0 Correct Output](Images/correct-console-output.png)
 
 ### Once You're Finished 
 
-You can compare your code to what's inside the [/Completed/](/Completed/) folder to see what the instructors included in their samples.
+You can compare your code to what's inside the [/Completed/](Completed/) folder to see what the instructors included in their samples.
