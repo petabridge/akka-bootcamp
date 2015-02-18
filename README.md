@@ -1,4 +1,14 @@
-# akka-bootcamp
+# Akka.NET Bootcamp
+
+## NOTE: The Bootcamp is being reworked and launches on February 21. Check back here then. In the meantime, peruse the below to get a head start on the concepts. 
+
+Here are some good blog posts to get a head start on the material:
+- [What is an actor?](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)
+- [What makes actor systems reliable?](http://petabridge.com/blog/how-actors-recover-from-failure-hierarchy-and-supervision/)
+- [How to do asynchronous work with actors](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/)
+
+*****
+
 ## Akka.NET from Soup to Nuts code samples and tutorials
 
 This bootcamp will teach you all the basics of Akka.NET and actor systems. You will get a blend of conceptual and practical guidance throughout, and be coding at each step along the way. 
