@@ -1,64 +1,144 @@
 # Akka.NET Bootcamp
 
+![Akka.NET logo](images/akka_net_logo.png)
+
+Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in C# and F#") Bootcamp! This is a free, self-directed learning course brought to you by the folks at [Petabridge](http://petabridge.com/ "Petabridge - Akka.NET Training, Consulting, and Support").
+
 [![Join the chat at https://gitter.im/petabridge/akka-bootcamp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## NOTE: The Bootcamp is being reworked and launches on February 21. Check back here then. In the meantime, peruse the below to get a head start on the concepts. 
+Over the three units of this bootcamp you will learn how to create fully-functional, real-world programs using Akka.NET actors and lots of other parts of the core Akka.NET framework!
 
-Here are some good blog posts to get a head start on the material:
-- [What is an actor?](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)
-- [What makes actor systems reliable?](http://petabridge.com/blog/how-actors-recover-from-failure-hierarchy-and-supervision/)
-- [How to do asynchronous work with actors](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/)
+We will start with some basic actors and have you incrementally work your way up to larger, more sophisticated examples.
 
-*****
+The course is self-directed learning - you can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself.
 
-## Akka.NET from Soup to Nuts code samples and tutorials
+> NOTE: Currently this bootcamp only supports C# - we intend to add F# in the future. 
+> 
+> (We will also accept F# pull requests.)
 
-This bootcamp will teach you all the basics of Akka.NET and actor systems. You will get a blend of conceptual and practical guidance throughout, and be coding at each step along the way. 
+## What will you learn?
+In Akka.NET Bootcamp you will learn how to use Akka.NET actors to build reactive, concurrent applications.
 
-### Fundamental concept: what is an actor?
-What is an actor? The full docs are [here](https://akkadotnet.github.io/wiki/Actors), but for now, just think of an actor as an object that does whatever you tell it to. Every actor is made of these parts:
+You will learn how to build types of applications that may have seemed impossible or really, really hard prior to learning Akka.NET - and you will walk away from this bootcamp with the confidence to handle bigger and harder problems than before.
 
-- some internal state
-- a mailbox
-- a supervisor, and
-- optionally, child actor(s)
+### Unit 1
+In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
 
-All such actors live within an encapsulating actor system. 
+*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
 
-***What are the most important things to know about my actors?***
+In Unit 1 you will learn:
 
-1. **You never talk to an actor directly.**
+1. How to create your own `ActorSystem` and actors;
+2. How to send messages actors and how to handle different types of messages;
+3. How to use `Props` and `ActorRef`s to build loosely coupled systems.
+4. How to use actor paths, addresses, and `ActorSelection` to send messages to actors.
+5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
+6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
-	When you make an actor in the system, you don't get to talk directly to that actor. 
+**[Begin Unit 1](src/Unit-1)**.
 
-	You talk to the actor via the actor system, which manages the communication between your program and the actor. What you actually get back when you make an actor is a reference to, or proxy for that actor. 
+### Unit 2 (TBA)
+In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
 
-	This proxy you do get to talk to is called an `ActorRef`. It's a channel to talk to the actual actor via the surrounding actor system.
+In Unit 2 you will learn:
 
-1. **Actors are very private. (At least, they should be.)**
+1. How to use `ReceiveActor` to handle more complex message matches;
+2. How (and why) to change your actors' behaviors at run-time;
+3. How to use `Stash` with your actors to defer processing of messages until they're ready;
+3. How to handle system failures gracefully;
+4. How to configure and use logging inside your actors; and
+5. How to use HOCON configuration inside your `ActorSystem`.
 
-	The rest of the system can't see into an actor and know its internal state.
-	
-	If you need to know what the state of an actor is, you need to ask that actor. That is, unless the actor wears its heart on its sleeve and the outside world can see everything going on inside (not recommended, for reasons we'll go over later).
+> NOTE: Unit 2 is not yet available.
 
-1. **Actors are nomads.**
+### Unit 3 (TBA)
+In Unit 3, we will learn to make our system more scalable and resilient.
 
-	You can pass an `ActorRef` object around freely without restriction in your program. You don't actually know or care where the actor lives in the system, just that the actor exists. This is helpful because fill in here.
+In Unit 3 you will learn:
 
-1. **Actors are chatty, but they only talk by sending messages. (Kind of like email.)**
+1. How to perform work asynchronously inside your actors using `PipeTo`;
+2. How to use `Ask` to wait inline for actors to respond to your messages;
+2. How to use `ReceiveTimeout` to time out replies from other actors;
+4. How to use `Group` routers to divide work among your actors;
+5. How to use `Pool` routers to automatically create and manage pools of actors; and
+6. How to use HOCON to configure your routers.
 
-	Just because they're nomadic doesn't mean actors don't talk. Actors are constantly sending messages back and forth to each other.
+> NOTE: Unit 3 is not yet available.
 
-	*The key thing to know is that all communication within an actor system happens by sending messages to the mailboxes of actors*. 
+## How to get started
 
-	It's kind of like email: you can send someone a message, but it's up to them to handle the message and decide  whether or not to respond. Once messages are delivered by the system, it's up to each actor to process their own messages.
+Here's how Akka.NET bootcamp works!
 
-	Fun fact: even actors don't get to talk directly to each other. They use `ActorRef`s too.
+### Use Github to Make Life Easy
 
-1. **Actors are hierarchical.**
+This Github repository contains Visual Studio solution files and other assets you will need to complete the bootcamp. 
 
-	*All* actors have a supervisor. And every actor can supervise other actors, but doesn't have to. We'll talk about this more later.
-	
+Thus, if you want to follow the bootcamp we recommend doing the following:
+
+1. Sign up for [Github](https://github.com/), if you haven't already.
+2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine. 
+3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMes](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
+
+### Bootcamp Layout
+
+Akka.NET Bootcamp consists of three modules:
+
+* **Unit 1 - Beginning Akka.NET**
+* **Unit 2 - Intermediate Akka.NET**
+* **Unit 3 - Advanced Akka.NET**
+
+Each module contains the following structure (using **Unit 1** as an example:)
+
+````
+src\Unit1\README.MD - table of contents and instructions for the module
+src\Unit1\DoThis\ - contains the .SLN and project files that you will use through all lessons
+-- lesson 1
+src\Unit1\Lesson1\README.MD - README explaining lesson1
+src\Unit1\Lesson1\DoThis\ - C# classes, images, text files, and other junk you'll need to complete lesson1
+src\Unit1\Lesson1\Completed\ - Got stuck on lesson1? This folder shows the "expected" output for the lesson
+-- repeat for all lessons
+````
+
+Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/lesson1)**.
+
+### Lesson Layout
+Each Akka.NET Bootcamp lesson contains a README which explains the following:
+
+1. The Akka.NET concepts and tools you will be applying in the lesson, along with links to any relevant documentation or examples
+2. Step-by-step instructions on how to modify the .NET project inside the `Unit-[Num]/DoThis/` to match the expected output at the end of each lesson.
+3. If you get stuck following the step-by-step instructions, each lesson contains its own `/Completed/` folder that shows the full source code that will produce the expected output. You can compare this against your own code and see what you need to do differently.
+
+#### When you're doing the lessons...
+
+A few things to bear in mind when you're following the step-by-step instructions:
+
+1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) for the win.
+2. **You might be required to fill in some blanks during individual lessons.** Part of helping you learn Akka.NET involves leaving some parts of the exercise up to you - if you ever feel lost, always check the contents of the `/Completed` folder for that lesson.
+3. **Don't be afraid to ask questions**. You can [reach the Petabridge team in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) here.
 
 
-## [Now, go dive in!](1 - intro/0 - sending messages/)
+## Docs
+We will provide explanations of all key concepts throughout each lesson, but of course, you should bookmark (and feel free to use!) the [Akka.NET docs](http://getakka.net/).
+
+## Tools / prerequisites
+This course expects the following:
+
+- You have some programming experience and familiarity with C#
+- A Github account and basic knowledge of Git.
+- You are using a version of Visual Studio ([it's free now!](http://www.visualstudio.com/))
+  - We haven't had a chance to test these in Xamarin / on Mono yet, but that will be coming soon. If you try them there, please let us know how it goes! We are planning on having everything on all platforms ASAP.
+
+
+## Enough talk, let's go!
+[Let's begin!](src/Unit-1/lesson1)
+
+## About Petabridge
+
+![Petabridge logo](images/petabridge_logo.png)
+
+[Petabridge](http://petabridge.com/) is a company dedicated to making it easier for .NET developers to build distributed applications.
+
+**[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](http://petabridge.com/)!
+
+---
+Copyright 2015 Petabridge, LLC
