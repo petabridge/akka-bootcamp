@@ -1,5 +1,7 @@
 # Akka.NET Bootcamp
 
+[![Join the chat at https://gitter.im/petabridge/akka-bootcamp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## NOTE: The Bootcamp is being reworked and launches on February 21. Check back here then. In the meantime, peruse the below to get a head start on the concepts. 
 
 Here are some good blog posts to get a head start on the material:
