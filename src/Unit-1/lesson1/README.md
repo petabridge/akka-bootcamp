@@ -93,7 +93,7 @@ Then you'll need to add the `using` namespace to the top of `Program.cs`:
 
 
 ```csharp
-// Program.cs
+// in Program.cs
 using Akka.Actor;
 ```
 
