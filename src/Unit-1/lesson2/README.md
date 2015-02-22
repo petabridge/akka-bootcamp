@@ -135,12 +135,12 @@ Add the following internal message type to `ConsoleReaderActor`:
 public const string StartCommand = "start";
 ```
 
-// in Program.cs
 Update the `Main` method to use `ConsoleReaderActor.StartCommand`:
 
 Replace
 
 ```csharp
+// in Program.cs
 // tell console reader to begin
 consoleReaderActor.Tell("start");
 ```
@@ -148,6 +148,7 @@ consoleReaderActor.Tell("start");
 with
 
 ```csharp
+// in Program.cs
 // tell console reader to begin
 consoleReaderActor.Tell(ConsoleReaderActor.StartCommand);
 ```
