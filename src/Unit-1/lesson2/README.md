@@ -135,6 +135,7 @@ Add the following internal message type to `ConsoleReaderActor`:
 public const string StartCommand = "start";
 ```
 
+// in Program.cs
 Update the `Main` method to use `ConsoleReaderActor.StartCommand`:
 
 Replace
