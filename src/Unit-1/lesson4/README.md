@@ -206,7 +206,6 @@ public class MyActor : UntypedActor
                 else return Directive.Restart;
             });
     }
-
     ...
 }
 ```
