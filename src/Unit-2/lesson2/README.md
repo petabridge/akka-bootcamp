@@ -1,189 +1,165 @@
-# Lesson 2.2: Switching Actor Behavior at Run-time with `Become` and `Unbecome`
+# Lesson 2.1: Using `ReceiveActor` for Smarter Message Handling
 
-In this lesson we're going to learn about one the really cool things actors can do - [change their behavior at run-time](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")! Woah!
+Module 2! Let's go!
 
-This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received!
+In the first module, you learned how to use the `UntypedActor` ([docs](http://getakka.net/wiki/Working%20with%20actors#untypedactor-api "Akka.NET Untyped Actors")) to build your first actors and handle some simple message types. 
+
+In this lesson we're going to show you how to use the `ReceiveActor` ([docs](http://getakka.net/wiki/ReceiveActor "Akka.NET - ReceiveActor")) to easily handle more sophisticated types of pattern matching and message handling in Akka.NET!
 
 ## Key Concepts / background
+Actors in Akka.NET depend heavily on the concept of pattern matching - being able to selectively handle messages based on their [.NET Type](https://msdn.microsoft.com/en-us/library/ms173104.aspx) and their values.
 
-Let's start with a real-world scenario for when you might want to change an actor's behavior...
-
-### Real-World Scenario: Authentication
-
-Imagine you're building a simple chat system using Akka.NET actors, and here's what your `UserActor` looks like - this is the actor that is responsible for all communication to and from a specific human user.
+In the first module, you learned how to use the `UntypedActor` to handle and receive messages using blocks of code that looked a lot like this:
 
 ```csharp
-public class UserActor : ReceiveActor{
-	private readonly string _userId;
-	private readonly string _chatRoomId;
-
-	public UserActor(string userId, string chatRoomId){
-		_userId = userId;
-		_chatRoomId = chatRoomId;
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// send message to chatroom				
-			});
+protected override void OnReceive(object message){
+	if(message is Foo){
+		var foo = message as Foo;
+		//do something with foo
+	}
+	else if(message is Bar){
+		var bar = message as Bar;
+		//do something with bar
+	}
+	//.... other matches
+	else{
+		//couldn't match this message
+		Unhandled(message);
 	}
 }
 ```
 
-So we have basic chat working - yay! But... There's nothing to guarantee that this user is who they say they are. 
+This method of pattern matching in Akka.NET works great for simple matches, but what if your matching needs were a little bit more sophisticated? How would you handle these use cases?
 
-How could we rewrite this actor to handle these same types of messages differently when:
+1. Match `message` if it's a `string` and begins with "AkkaDotNet" or
+2. Match `message` if it's of type `Foo` and `Foo.Count` is less than 4 and `Foo.Max` is greater than 10?
 
-* The user is **authenticating**;
-* The user is **authenticated** (yay!); or
-* The user **couldn't authenticate** (doh!) ?
-
-Simple! We can use [switchable actor behaviors](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - switchable actor behavior") to do this!
-
-### Switching Message-Handling Behaviors
-
-Here's how we might implement switchable message behavior in our `UserActor` from the previous snippet:
+Hmmm... Well if we tried to do all of that inside an `UntypedActor` we'd end up with something like this:
 
 ```csharp
-public class UserActor : ReceiveActor{
-	private readonly string _userId;
-	private readonly string _chatRoomId;
-
-	public UserActor(string userId, string chatRoomId){
-		_userId = userId;
-		_chatRoomId = chatRoomId;
-		
-		//start with the Authenticating behavior
-		Authenticating();
+protected override void OnReceive(object message){
+	if(message is string 
+		&& message.AsInstanceOf<string>()
+			.BeginsWith("AkkaDotNet")){
+		var str = message as string;
+		//do some work with str...
 	}
-
-	protected override void PreStart(){
-		//start the authentication process for this user
-		Context.ActorSelection("/user/authenticator/")
-			.Tell(new AuthenticatePlease(_userId));
+	else if(message is Foo 
+			&& message.AsInstanceOf<Foo>().Count < 4
+			&& message.AsInstanceOf<Foo>().Max > 10){
+		var foo = message as Foo;
+		//do something with foo
 	}
-
-	private void Authenticating(){
-		Receive<AuthenticationSuccess>(auth => {
-			Become(Authenticated); //switch behavior to Authenticated
-		});
-		Receive<AuthenticationFailure>(auth => {
-			Become(Unauthenticated); //switch behavior to Unauthenticated
-		});
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// can't accept message yet - not auth'd
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// can't send message yet - not auth'd			
-			});
-	}
-
-	private void Unauthenticated(){
-		//switch to Authenticating
-		Receive<RetryAuthentication>(retry => Become(Authenticating));
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// have to reject message - auth failed
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// have to reject message - auth failed	
-			});
-	}
-
-	private void Authenticated(){
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// send message to chatroom				
-			});
+	//.... other matches
+	else{
+		//couldn't match this message
+		Unhandled(message);
 	}
 }
 ```
 
-Woah! What's all this stuff? We took the `Receive<T>` handlers we defined on our receive Actor and put them into three separate methods:
+### *Yuck!*
 
-* `Authenticating()` - the default behavior we use for when the user is attempting to authenticate;
-* `Authenticated()` - when the authentication operation is successful; and
-* `Unauthenticated()` - when the authentication operation is **not** successful.
+There has to be a better way of doing this, right? *Yes, there is* - the `ReceiveActor` ([docs](http://getakka.net/wiki/ReceiveActor "Akka.NET - ReceiveActor"))!
 
-We called `Authenticating()` from the constructor, which meant that all of `UserActor`'s  `Receive<T>` handlers would be only defined by what's in the `Authenticating()` method.
+### Introducing the `ReceiveActor`
 
-However, whenever we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure` we  use the `Become` method ([docs](http://getakka.net/wiki/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to `Authenicated` or `Unauthenticated` respectively. 
+The `ReceiveActor` is built on top of the `UntypedActor` and exposes some capabilities for easily handling more sophisticated pattern matching and message handling.
 
-What's going on there?
+Here's what that ugly code sample from a few moments ago would look like, rewritten as a `ReceiveActor`:
 
-### The Behavior Stack
+```csharp
+public class FooActor : ReceiveActor
+{
+    public FooActor()
+    {
+        Receive<string>(s => s.StartsWith("AkkaDotNet"), s =>
+        {
+            //handle string
+        });
 
-Akka.NET actors have the concept of a "behavior stack":
+        Receive<Foo>(foo => foo.Count < 4 && foo.Max > 10, foo =>
+        {
+            //handle foo
+        });
+    }
+}
+```
 
-![Initial Behavior Stack for UserActor](images/behavior stack - initialization.png)
+### *Much better*.
 
-Whichever method sits at the top of the behavior stack defines the actor's current behavior. 
+So what's the secret sauce that helped us simplify and cleanup all of that pattern matching code from earlier?
 
-> The current behavior of an actor dictates which `Receive` methods will be used to process any messages delivered to an actor.
-
-Whenever we call `Become`, we tell the `ReceiveActor` to push a new behavior onto the stack:
-
-![Become Authenticated - push a new behavior onto the stack](images/behavior stack - become.gif)
-
-And whenever we call `Unbecome`, we pop our current behavior off of the stack and replace it with the previous behavior from before:
-
-![Unbecome - pop the current behavior off of the stack](images/behavior stack - unbecome.gif)
-
-> NOTE: By default, `Become` will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time. This is because most Akka.NET users don't use `Unbecome`.
+> It's the *`Receive<T>` handler*, i.e. `Receive<T>(Predicate<T>, Action<T>)`; 
 > 
-> To preserve the previous behavior on the stack, call `Become(Method(), false)`
+> A `ReceiveActor` enables developers like you to add an easily configurable layer of strongly typed, compile-time pattern matching to your actors.
 
-We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). So the new message processing behavior doesn't get applied until the next message arrives.
+### Different Flavors of `Receive<T>` Handlers
 
-How deep can the behavior stack go? *Really* deep, but not to an unlimited extent. And each time your actor restarts the behavior stack is cleared and you start from scratch.
+So what can these handlers do? Here's a few important flavors to remember:
 
-And what happens if you call `Unbecome` and there's nothing left in the behavior stack? The answer is: *nothing* - `Unbecome` is a safe method and won't do anything unless there's more than one behavior in the stack.
+* `Receive<T>(Action<T> handler)` - executes the message handler only if the message is of type T.
+* `Receive<T>(Predicate<T> pred, Action<T> handler)` and `Receive<T>(Action<T> handler, Predicate<T> pred)` - executes the message handler only if the message is of type T **and** the [predicate function](https://msdn.microsoft.com/en-us/library/bfcke1bz.aspx) returns true for this instance of T.
+* `Receive(Type type, Action<object> handler)` and `Receive(Type type, Action<object> handler, Predicate<object> pred)` - a non-generic version of the typed + predicate message handlers.
+* `ReceiveAny` - a catch-all handler. Accepts all `object` instances.
 
-### Switchable Behaviors Also Work for `UntypedActor`
+You can match messages easily based on type, and then use typed predicates to perform additional checks or validations when deciding whether or not your actor can handle a specific message.
 
-`Become` looks slightly different for `UntypedActor` instances:
+### The Order of `Receive<T>` Handlers Matters!
+
+So what happens if we need to handle two overlapping types of messages? For instance:
+
+1. `string` messages that begin with `AkkaDotNetSuccess` and
+2. `string` messages that begin with `AkkaDotNet`?
+
+What would happen if our `ReceiveActor` was written like this?
 
 ```csharp
-public class MyActor : UntypedActor{
-	protected override void OnReceive(object message){
-		if(message is SwitchMe){
-			//preserve the previous behavior on the stack
-			Context.Become(OtherBehavior, false);
-		}
-	}
-
-	private void OtherBehavior(object message){
-		if(message is SwitchMeBack){
-			//switch back to previous behavior on the stack
-			Context.Unbecome();
-		}
-	}
+public class StringActor : ReceiveActor
+{
+    public StringActor()
+    {
+        Receive<string>(s => s.StartsWith("AkkaDotNet"), s =>
+        {
+            //handle string
+        });
+		
+		//NEVER gets hit
+        Receive<string>(s => s.StartsWith("AkkaDotNetSuccess"), s =>
+        {
+            //handle string
+        });
+    }
 }
 ```
 
-To switch behaviors in an `UntypedActor`, you have to use the following methods:
+The answer is that the second handler never gets invoked, and this is because `ReceiveActor` is lazy!
 
-* `Context.Become(Receive rec, bool discardPrevious = true)` - pushes a new behavior on the stack or
-* `Context.Unbecome()` - pops the current behavior and switches to the previous (if applicable.)
 
-`Context.Become` takes a `Receive` delegate, which is really any method with the following signature:
+> `ReceiveActor` will handle your message using the *first* matching handler, not the *best* match!
+
+So how do we solve this problem? Simple - `ReceiveActor` [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/wiki/ReceiveActor#handler-priority)! Therefore, we can fix this problem by making sure that the more specific handlers get called first!
 
 ```csharp
-void MethodName(object someParameterName);
+public class StringActor : ReceiveActor
+{
+    public StringActor()
+    {
+		//Works as expected
+        Receive<string>(s => s.StartsWith("AkkaDotNetSuccess"), s =>
+        {
+            //handle string
+        });
+
+        Receive<string>(s => s.StartsWith("AkkaDotNet"), s =>
+        {
+            //handle string
+        });
+    }
+}
 ```
 
-Aside from those syntactical differences, behavior switching works exactly the same way across both `UntypedActor` and `ReceiveActor`.
-
-Now let's put behavior switching to work for us!
+And with that knowledge in-hand, we can put `ReceiveActor` to work for us.
 
 ## Exercise
 
@@ -191,4 +167,4 @@ Now let's put behavior switching to work for us!
 Compare your code to the code in the /Completed/ folder to see what the instructors included in their samples.
 
 ## Great job!
-Ready for more? Let's move onto the next lesson.
+Awesome work! Well done on completing your first lesson.
