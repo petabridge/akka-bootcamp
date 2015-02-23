@@ -299,9 +299,6 @@ namespace WinTail
                     Sender.Tell(new Messages.ContinueProcessing());
                 }
             }
-
-
-
         }
 
         /// <summary>
@@ -385,7 +382,6 @@ namespace WinTail
 
             // start watching
             _watcher.EnableRaisingEvents = true;
-
         }
 
         /// <summary>
@@ -419,9 +415,7 @@ namespace WinTail
                 // since this event can happen many times, this is a little microoptimization
                 _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRef.NoSender);
             }
-
         }
-
     }
 }
 ```
@@ -496,13 +490,9 @@ namespace WinTail
                 var msg = message as StartTail;
                 // YOU NEED TO FILL IN HERE
             }
-
         }
     }
 }
-
-
-
 ```
 
 
@@ -611,7 +601,6 @@ namespace WinTail
                 {
                     _reporterActor.Tell(text);
                 }
-
             }
             else if (message is FileError)
             {
@@ -647,7 +636,6 @@ protected override void OnReceive(object message)
 		// of this instance of TailCoordinatorActor
         Context.ActorOf(Props.Create(() => new TailActor(msg.ReporterActor, msg.FilePath)));
     }
-
 }
 ```
 
