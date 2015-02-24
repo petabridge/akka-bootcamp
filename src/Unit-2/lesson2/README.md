@@ -1,6 +1,4 @@
-# Lesson 2.1: Using `ReceiveActor` for Smarter Message Handling
-
-Module 2! Let's go!
+# Lesson 2.2: Using `ReceiveActor` for Smarter Message Handling
 
 In the first module, you learned how to use the `UntypedActor` ([docs](http://getakka.net/wiki/Working%20with%20actors#untypedactor-api "Akka.NET Untyped Actors")) to build your first actors and handle some simple message types. 
 
