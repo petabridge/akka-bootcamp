@@ -160,9 +160,126 @@ public class StringActor : ReceiveActor
 And with that knowledge in-hand, we can put `ReceiveActor` to work for us.
 
 ## Exercise
+In this exercise we're going to add the ability to add multiple data series to our chart, and we're going to modify the `ChartingActor` to handle commands to do this.
+
+### Phase 1 - Add a "Add Series" Button to the UI
+
+First thing we're going to do is add a new button called "Add Series" to our form - here's where we put it:
+
+![Adding a 'Add Series' button in Design view in Visual Studio](images/add-series-button.png)
+
+Double click on the button in the **[Design]** view so it automatically adds a click handler for you inside `Main.cs`:
+
+```csharp
+// automatically added inside main.cs if you double click on button in designer
+private void button1_Click(object sender, EventArgs e)
+{
+
+}
+```
+
+Leave this blank for now - we'll wire up this button to our `ChartingActor` shortly.
+
+### Phase 2 - Add a `AddSeries` Message Type to the `ChartingActor`
+
+Let's define a new message class for putting additional `Series` on the `Chart` managed by the `ChartingActor` - the `AddSeries` message type.
+
+```csharp
+// add this to the Actors/ChartingActor.cs file inside the #Messages region
+
+/// <summary>
+/// Add a new <see cref="Series"/> to the chart
+/// </summary>
+public class AddSeries
+{
+    public AddSeries(Series series)
+    {
+        Series = series;
+    }
+
+    public Series Series { get; private set; }
+}
+```
+
+### Phase 3 - Have `ChartingActor` Inherit from `ReceiveActor`
+
+Now for the meaty part - changing the `ChartingActor` from an `UntypedActor` to a `ReceiveActor`.
+
+So let's change the declaration for `ChartingActor`:
+
+```csharp
+// Actors/ChartingActor.cs
+
+public class ChartingActor : ReceiveActor 
+```
+
+And** delete the current `OnReceive` method for the `ChartingActor`**.
+
+### Phase 4 - Define `Receive<T>` Handlers for `ChartingActor`
+
+Right now our `ChartingActor` can't handle any messages that are sent to it - so let's fix that by defining some `Receive<T>` handlers for the types of messages we want to accept.
+
+First things first, add the following method to the `Individual Message Type Handlers` region of the `ChartingActor`:
+
+```csharp
+// Actors/ChartingActor.cs in the ChartingActor class (Individual Message Type Handlers region)
+
+private void HandleAddSeries(AddSeries series)
+{
+    if(!string.IsNullOrEmpty(series.Series.Name) && !_seriesIndex.ContainsKey(series.Series.Name))
+    {
+        _seriesIndex.Add(series.Series.Name, series.Series);
+        _chart.Series.Add(series.Series);
+    }
+}
+```
+
+And now let's modify the constructor of the `ChartingActor` to set a `Recieve<T>` hook for `InitializeChart` and `AddSeries`.
+
+```csharp
+// Actors/ChartingActor.cs in the ChartingActor constructor
+
+public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex)
+{
+    _chart = chart;
+    _seriesIndex = seriesIndex;
+
+    Receive<InitializeChart>(ic => HandleInitialize(ic));
+    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
+}
+```
+
+
+
+> **NOTE**: The other constructor for `ChartingActor`, `ChartingActor(Chart chart)` doesn't need to be modified, as it calls `ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex)` anyway.
+
+And with that, our `ChartingActor` should now be able to receive and process both types of messages easily.
+
+### Phase 5 - Have the Button Clicked Handler for "Add Series" Button Send `ChartingActor` an `AddSeries` Message
+
+Let's go back to the click handler we added for the button in phase 1.
+
+In `Main.cs`, add this code to the body of the click handler:
+
+```csharp
+// Main.cs - class Main
+private void button1_Click(object sender, EventArgs e)
+{
+    var series = ChartDataHelper.RandomSeries("FakeSeries" + _seriesCounter.GetAndIncrement());
+    _chartActor.Tell(new ChartingActor.AddSeries(series));
+}
+```
+
+And that should do it!
 
 ### Once you're done
-Compare your code to the code in the /Completed/ folder to see what the instructors included in their samples.
+Build and run `SystemCharting.sln` and you should see the following:
+
+![Successful Lesson 2 Output](images/dothis-successful-run2.gif)
+
+Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
 ## Great job!
-Awesome work! Well done on completing your first lesson.
+Nice work, again. After having completed this lesson you should have a much better understanding of pattern matching in Akka.NET and an appreciation for how `ReceiveActor` is different than `UntypedActor`.
+
+**Let's move onto [Lesson 3 - Using the `Scheduler` to Send Recurring Messages](../lesson3).**

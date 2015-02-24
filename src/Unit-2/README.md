@@ -30,7 +30,7 @@ In Unit 2 you will learn:
 
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
 2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**
-3. **[Lesson 3: Using the `Scheduler` for Recurring Messages](lesson3/)**
+3. **[Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/)**
 4. **[Lesson 4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`](lesson4/)**
 5. **[Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)**
 
