@@ -168,6 +168,96 @@ In this instance, we're going to use the `CurrentSynchronizationContextDispatche
 
 #### Question: is it a bad idea to have actors run on the UI thread?
 
-The short answer is "no" - as long as you don't perform any long-running operations, such as disk or network I/O, inside the actors who run on the UI thread then you'll be fine.
+The short answer is "no" - as long as you don't perform any long-running operations, such as disk or network I/O, inside the actors who run on the UI thread then you'll be fine. In fact, *running actors on the UI thread is a smart thing to do for handling UI events and updates* as they eliminate all of the normal synchronization worries you'd otherwise have to do in a multi-threaded WPF or WinForms apps. 
 
 > **Remember: [Akka.NET actors are lazy](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)**. They don't do any work when they're not receiving messages.
+
+## Exercise
+We need to configure `ChartingActor` to use the `CurrentSynchronizationContextDispatcher` in order to make this example run.
+
+### Phase 1 - Add Akka.NET Config Section to App.Config
+The first thing you need to do is declare the `AkkaConfigurationSection` at the top of your App.config:
+
+````
+<!-- add this just below the openining `config` tag -->
+<configSections>
+    <section name="akka" type="Akka.Configuration.Hocon.AkkaConfigurationSection, Akka" />
+</configSections>
+````
+
+Next, we need to add the content of the `AkkaConfigurationSection` to this document:
+
+````
+<!-- add this anywhere in app.config after the `configSections` element -->
+<akka>
+    <hocon>
+      <![CDATA[
+          akka {
+            actor{
+              deployment{
+                #used to configure our ChartingActor
+                /charting{
+				  #causes ChartingActor to run on the UI thread for WinForms
+                  dispatcher = akka.actor.synchronized-dispatcher 
+                }
+              }
+            }
+          }
+      ]]>
+    </hocon>
+  </akka>
+````
+
+> **NOTE**: As you might have guessed, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/wiki/HOCON).
+
+`akka.actor.synchronized-dispatcher` is the shorthand name built into Akka.NET's default configuration for the `CurrentSynchronizationContextDispatcher`, so you don't need to use a fully-qualified type name or anything like that.
+
+You might have also noticed that the configuration section that pertains to the `ChartingActor` was declared as `/charting` - **this is because actor deployment is done by the path and name of the actor, not the actor's type**.
+
+Here's how we deploy the `ChartingActor` inside `Main.cs`:
+
+```csharp
+ _chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart)), "charting");
+```
+
+When we call `ActorSystem.ActorOf` the `ActorOf` method will automatically look for any deployments declared in the `akka.actor.deployment` configuration section that correspond to the path of this actor - `/user/charting` in this case. 
+
+> And because you, as the Akka.NET end-user, can only specify deployment settings for actors created inside the `/user/` hierarchy, you don't specify `/user` on your deployments - **it's implicit**.
+
+### Phase 2 - Consume Your `AkkaConfigurationSection` Inside Your `ActorSystem`
+
+[In the near future this step will be done automatically for you by Akka.NET](https://github.com/akkadotnet/akka.net/issues/671), but in the meantime we have to manually load your `AkkaConfigurationSection`.
+
+Go to `Program.cs` and modify the `ActorSystem.Create` code to look like this:
+
+```csharp
+// program.cs - update all of the using statements
+using System;
+using System.Configuration;
+using System.Windows.Forms;
+using Akka.Actor;
+using Akka.Configuration.Hocon;
+```
+
+And then load the `Config` into your `ActorSystem`:
+
+```csharp
+// program.cs - Main() method.
+// replace the existing ActorSystem.Create call with this.
+var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
+var config = section.AkkaConfig;
+ChartActors = ActorSystem.Create("ChartActors", config);
+```
+And we're finished!
+
+### Once you're done
+Build and run `SystemCharting.sln` and you should see the following:
+
+![Successful Lesson 1 Output](images/dothis-successful-run.png)
+
+Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
+
+## Great job!
+Nice work on completing your first lesson in Unit 2! We covered a lot of concepts and hopefully you're going to walk away from this with an appreciation for just how powerful Akka.NET's configuration model truly is.
+
+**Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2).**
