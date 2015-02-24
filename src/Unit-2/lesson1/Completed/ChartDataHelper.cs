@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
+using Akka.Util;
 
 namespace ChartApp
 {
@@ -17,7 +15,8 @@ namespace ChartApp
             var series = new Series(seriesName) {ChartType = type};
             foreach (var i in Enumerable.Range(0, points))
             {
-                series.Points.Add(new DataPoint(i, Math.PI*Math.Sin(i) + Math.Tan(i/4.5)));
+                var rng = ThreadLocalRandom.Current.NextDouble();
+                series.Points.Add(new DataPoint(i, 2.0*Math.Sin(rng) + Math.Sin(rng/4.5)));
             }
             series.BorderWidth = 3;
             return series;
