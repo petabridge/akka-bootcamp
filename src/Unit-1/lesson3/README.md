@@ -36,8 +36,13 @@ As shown in the above example, you create an actor in the context of the actor t
 
 You make child actors the same way, except you create them from another actor, like so:
 ```csharp
-// assume we have the top-level actor called "myFirstActor" already
-ActorRef myFirstChildActor = myFirstActor.ActorOf(Props.Create(() => new MyChildActorClass()), "myFirstChildActor")
+// have to create the child actor somewhere inside myFirstActor
+// usually happens inside OnReceive or PreStart
+class MyActorClass : UntypedActor{
+	protected override void PreStart(){
+		ActorRef myFirstChildActor = Context.ActorOf(Props.Create(() => new MyChildActorClass()), "myFirstChildActor")
+	}
+}
 ```
 
 **\*CAUTION***: Do NOT call `new MyActorClass()` outside of `Props` and the `ActorSystem` to make an actor. We can't go into all the details here, but essentially, by doing so you're trying to create an actor outside the context of the `ActorSystem`. This will produce a completely unusable, undesirable object.
