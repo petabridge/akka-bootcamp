@@ -426,6 +426,7 @@ namespace WinTail
 }
 ```
 
+// just adding `tailCoordinatorActor` arg to this Props
 ### Phase 2: Make your first parent/child actors!
 Great! Now we're ready to create our actor classes that will form a parent/child relationship.
 
