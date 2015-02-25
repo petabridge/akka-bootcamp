@@ -4,7 +4,7 @@ In this lesson we're going to learn about one the really cool things actors can 
 
 This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received!
 
-## Key Concepts / background
+## Key Concepts / Background
 
 Let's start with a real-world scenario for when you might want to change an actor's behavior...
 
@@ -360,10 +360,10 @@ YEAAAAAAAAAAAAAH! We have a live updating chart that we can pause over time!
 
 But wait a minute, what happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
 
-![Lesson 4 Output BUgs](images/dothis-fail4.gif)
+![Lesson 4 Output Bugs](images/dothis-fail4.gif)
 
 ### DOH!!!!!! It doesn't work!
 
 *This is the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
 
-**Let's move onto [Lesson 5 - Using a `Stash` to Defer Processing of Messages](../lesson5).**
+**Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
