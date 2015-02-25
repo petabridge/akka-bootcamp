@@ -183,7 +183,7 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ## Great job!
 ### WOW! YOU WIN! Phenomenal work finishing Unit 1.
 
-**Ready for more? [Start Unit 2 now](../../unit2 "Akka.NET Bootcamp Unit 2").**
+**Ready for more? [Start Unit 2 now](../../Unit-2 "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
 [Create an issue](/issues) and let us know. We'll get right on it, and it will benefit other people going through Bootcamp.
