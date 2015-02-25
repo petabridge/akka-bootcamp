@@ -181,9 +181,9 @@ That's it! Hit `F5` to run the solution and it should work exactly the same as b
 Compare your code to the solution in the [Completed](Completed/) folder to see what the instructors included in their samples.
 
 ## Great job!
-### WOW! YOU WIN! Phenomenal work finishing Unit 1. Now go enjoy a well-deserved break, and gear up for Unit 2!
+### WOW! YOU WIN! Phenomenal work finishing Unit 1.
 
-[Sign up here for email updates for when Unit 2 is ready](http://learnakka.net/)!
+**Ready for more? [Start Unit 2 now](../../unit2 "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
 [Create an issue](/issues) and let us know. We'll get right on it, and it will benefit other people going through Bootcamp.
