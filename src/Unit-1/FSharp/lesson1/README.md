@@ -116,7 +116,7 @@ let main argv =
     // let's tell the second actor to get started
     consoleReaderActor <! "start"
     
-    // wait for the system to terminate - this will happen when the actor's finish their work
+    // wait for the system to terminate - this will happen when the actors finish their work
     myActorSystem.AwaitTermination ()
     
     // return '0' from main
