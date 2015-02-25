@@ -80,5 +80,5 @@ let tailActorBuilder (reporter: ActorRef) (filePath: string) (mailbox: Actor<_>)
 
 let tailCoordinatorActor (mailbox: Actor<_>) message =
     match message with
-    | StartTail(filePath,reporter) -> spawn mailbox.Context "TailActor" (tailActorBuilder reporter filePath) |> ignore
+    | StartTail(filePath,reporter) -> spawn mailbox.Context "tailActor" (tailActorBuilder reporter filePath) |> ignore
     | _ -> ()
