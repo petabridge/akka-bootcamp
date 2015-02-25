@@ -7,13 +7,16 @@ open Akka.FSharp
 [<Literal>]
 let ExitCommand = "exit"
 
+[<Literal>]
+let ContinueCommand = "continue"
+
 let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = 
-    let read = Console.ReadLine ()
-    match read.ToLower () with
+    let line = Console.ReadLine ()
+    match line.ToLower () with
     | ExitCommand -> mailbox.Context.System.Shutdown ()
     | _ -> 
-        consoleWriter <! read
-        mailbox.Self <! "continue"
+        consoleWriter <! line
+        mailbox.Self  <! ContinueCommand
 
 let consoleWriterActor message = 
     let (|Even|Odd|) n = if n % 2 = 0 then Even else Odd
