@@ -4,7 +4,7 @@ In the first module, you learned how to use the `UntypedActor` ([docs](http://ge
 
 In this lesson we're going to show you how to use the `ReceiveActor` ([docs](http://getakka.net/wiki/ReceiveActor "Akka.NET - ReceiveActor")) to easily handle more sophisticated types of pattern matching and message handling in Akka.NET!
 
-## Key Concepts / background
+## Key Concepts / Background
 Actors in Akka.NET depend heavily on the concept of pattern matching - being able to selectively handle messages based on their [.NET Type](https://msdn.microsoft.com/en-us/library/ms173104.aspx) and their values.
 
 In the first module, you learned how to use the `UntypedActor` to handle and receive messages using blocks of code that looked a lot like this:
