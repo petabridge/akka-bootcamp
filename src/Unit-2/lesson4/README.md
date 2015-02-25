@@ -1,4 +1,4 @@
-# Lesson 2.2: Switching Actor Behavior at Run-time with `Become` and `Unbecome`
+# Lesson 2.4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`
 
 In this lesson we're going to learn about one the really cool things actors can do - [change their behavior at run-time](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")! Woah!
 
@@ -124,7 +124,7 @@ What's going on there?
 
 Akka.NET actors have the concept of a "behavior stack":
 
-![Initial Behavior Stack for UserActor](images/behavior stack - initialization.png)
+![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
 
 Whichever method sits at the top of the behavior stack defines the actor's current behavior. 
 
@@ -132,11 +132,11 @@ Whichever method sits at the top of the behavior stack defines the actor's curre
 
 Whenever we call `Become`, we tell the `ReceiveActor` to push a new behavior onto the stack:
 
-![Become Authenticated - push a new behavior onto the stack](images/behavior stack - become.gif)
+![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
 
 And whenever we call `Unbecome`, we pop our current behavior off of the stack and replace it with the previous behavior from before:
 
-![Unbecome - pop the current behavior off of the stack](images/behavior stack - unbecome.gif)
+![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
 
 > NOTE: By default, `Become` will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time. This is because most Akka.NET users don't use `Unbecome`.
 > 
@@ -186,9 +186,184 @@ Aside from those syntactical differences, behavior switching works exactly the s
 Now let's put behavior switching to work for us!
 
 ## Exercise
+In this lesson we're going to add the ability to pause and resume live updates to the `ChartingActor` via switchable actor behaviors.
+
+### Phase 1 - Add a New `Pause / Resume` Button to `Main.cs`
+
+This is the last button you'll have to add, we promise.
+
+Go to the **[Design]** view of `Main.cs` and add a new button with the following text: `PAUSE ||`
+
+![Add a Pause / Resume Button to Main](images/design-pauseresume-button.png)
+
+Got to the **Properties** window in Visual Studio and change the name of this button to `btnPauseResume`.
+
+![Use the Properties window to rename the button to btnPauseResume](images/pauseresume-properties.png)
+
+Double click on the `btnPauseResume` to add a click handler to `Main.cs`.
+
+```csharp
+private void btnPauseResume_Click(object sender, EventArgs e)
+{
+
+}
+```
+
+We'll fill this click handler in shortly.
+
+### Phase 2 - Add Switchable Behavior to `ChartingActor`
+We're going to add some dynamic behavior to the `ChartingActor` - but first we need to do a little cleanup.
+
+First, add a `using` reference for the Windows Forms namespace at the top of `Actors/ChartingActor.cs`.
+
+```csharp
+// Actors/ChartingActor.cs
+
+using System.Windows.Forms;
+```
+
+Next we need to declare a new message type inside the `Messages` region of `ChartingActor`.
+
+```csharp
+// Actors/ChartingActor.cs - add inside the Messages region
+/// <summary>
+/// Toggles the pausing between charts
+/// </summary>
+public class TogglePause { }
+```
+
+Next, add the following field declaration just above the `ChartingActor` constructor declarations:
+
+```csharp
+// Actors/ChartingActor.cs - just above ChartingActor's constructors
+
+private readonly Button _pauseButton;
+```
+
+Move all of the `Receive<T>` declarations from `ChartingActor`'s main constructor into a new method called `Charting()`.
+
+```csharp
+// Actors/ChartingActor.cs - just after ChartingActor's constructors
+private void Charting()
+{
+    Receive<InitializeChart>(ic => HandleInitialize(ic));
+    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
+    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
+    Receive<Metric>(metric => HandleMetrics(metric));
+
+	//new receive handler for the TogglePause message type
+    Receive<TogglePause>(pause =>
+    {
+        SetPauseButtonText(true);
+        Become(Paused, false);
+    });
+}
+```
+
+Add a new method called `HandleMetricsPaused` to the `ChartingActor`'s `Individual Message Type Handlers` region.
+
+```csharp
+// Actors/ChartingActor.cs - inside Individual Message Type Handlers region
+private void HandleMetricsPaused(Metric metric)
+{
+    if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
+    {
+        var series = _seriesIndex[metric.Series];
+        series.Points.AddXY(xPosCounter++, 0.0d); //set the Y value to zero when we're paused
+        while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
+        SetChartBoundaries();
+    }
+}
+```
+
+Define a new method called `SetPauseButtonText` at the *very* bottom of the `ChartingActor` class:
+
+```csharp
+// Actors/ChartingActor.cs - add to the very bottom of the ChartingActor class
+private void SetPauseButtonText(bool paused)
+    {
+        _pauseButton.Text = string.Format("{0}", !paused ? "PAUSE ||" : "RESUME ->");
+    }
+```
+
+Add a new method called `Paused` just after the `Charting` method inside `ChartingActor`:
+
+```csharp
+// Actors/ChartingActor.cs - just after the Charting method
+private void Paused()
+{
+    Receive<Metric>(metric => HandleMetricsPaused(metric));
+    Receive<TogglePause>(pause =>
+    {
+        SetPauseButtonText(false);
+        Unbecome();
+    });
+}
+```
+
+And finally, let's **replace both of `ChartingActor`'s constructors**:
+
+```csharp
+public ChartingActor(Chart chart, Button pauseButton) : this(chart, new Dictionary<string, Series>(), pauseButton)
+{
+}
+
+public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button pauseButton)
+{
+    _chart = chart;
+    _seriesIndex = seriesIndex;
+    _pauseButton = pauseButton;
+    Charting();
+}
+
+private void Charting()
+{
+    Receive<InitializeChart>(ic => HandleInitialize(ic));
+    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
+    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
+    Receive<Metric>(metric => HandleMetrics(metric));
+    Receive<TogglePause>(pause =>
+    {
+        SetPauseButtonText(true);
+        Become(Paused, false);
+    });
+}
+``` 
+
+### Phase 3 - Update the `Main_Load` and `Pause / Resume` Click Handler in Main.cs
+Since we changed the constructor arguments for `ChartingActor` in Phase 2, we need to fix this inside our `Main_Load` event handler.
+
+```csharp
+//Main.cs - Main_Load event handler
+_chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart, btnPauseResume)), "charting");
+```
+
+And finally, we need to update our `btnPauseResume` click event handler to have it tell the `ChartingActor` to pause or resume live updates:
+
+```csharp
+//Main.cs - btnPauseResume click handler
+private void btnPauseResume_Click(object sender, EventArgs e)
+{
+    _chartActor.Tell(new ChartingActor.TogglePause());
+}
+```
 
 ### Once you're done
-Compare your code to the code in the /Completed/ folder to see what the instructors included in their samples.
+Build and run `SystemCharting.sln` and you should see the following:
+
+![Successful Lesson 4 Output](images/dothis-successful-run4.gif)
+
+Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
 ## Great job!
-Ready for more? Let's move onto the next lesson.
+YEAAAAAAAAAAAAAH! We have a live updating chart that we can pause over time!
+
+But wait a minute, what happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
+
+![Lesson 4 Output BUgs](images/dothis-fail4.gif)
+
+### DOH!!!!!! It doesn't work!
+
+*This is the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
+
+**Let's move onto [Lesson 5 - Using a `Stash` to Defer Processing of Messages](../lesson5).**
