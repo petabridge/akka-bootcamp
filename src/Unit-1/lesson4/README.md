@@ -110,7 +110,7 @@ ActorRef b2 = a2.ActorOf(Props.Create<BasicActor>(), "b2");
 ```
 
 #### Actor path == actor position in hierarchy
-Every actor has an address. To send a message from one actor to another, you just have to know it's address (AKA its "ActorPath"). To refresh your memory, this is what a full actor address looks like:
+Every actor has an address. To send a message from one actor to another, you just have to know it's address (AKA its "ActorPath"). This is what a full actor address looks like:
 
 ![Akka.NET actor address and path](Images/actor_path.png)
 

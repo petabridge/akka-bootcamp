@@ -17,7 +17,7 @@ In Unit 1 you will learn:
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
-## Table of Conents
+## Table of Contents
 
 1. **[Lesson 1 - Actors and the `ActorSystem`](lesson1/)**
 2. **[Lesson 2 - Defining and Handling Messages](lesson2/)**
