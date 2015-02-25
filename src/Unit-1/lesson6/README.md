@@ -20,7 +20,7 @@ There are 5 stages of the actor life cycle in Akka.NET:
 Let's take them in turn.
 
 #### `Starting`
-Ze actor is waking up! This is the initial state of the actor, when it is being initialized by the `ActorSystem`.
+The actor is waking up! This is the initial state of the actor, when it is being initialized by the `ActorSystem`.
 
 #### `Receiving`
 The actor is now available to process messages. Its `Mailbox` (more on that later) will begin delivering messages into the `OnReceive` method of the actor for processing.
