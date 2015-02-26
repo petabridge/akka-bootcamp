@@ -71,7 +71,9 @@ That said, **the best practice is to name your actors**. Why? Because the name o
 #### Are there different types of `ActorRef`s?
 Actually, yes. The most common, by far, is just a plain-old `ActorRef` or handle to an actor, as above.
 
-However, there are also some other `ActorRef`s available to you within the context of an actor. As we said, all actors have a context. That context holds metadata, which includes information  about the current message being processed. That information includes things like the `Parent` or `Children` of the current actor, as well as the `Sender` of the current message. These are all `ActorRef`s that you can use.
+However, there are also some other `ActorRef`s available to you within the context of an actor. As we said, all actors have a context. That context holds metadata, which includes information  about the current message being processed. That information includes things like the `Parent` or `Children` of the current actor, as well as the `Sender` of the current message.
+
+`Parent`, `Children`, and `Sender` all provide `ActorRef`s that you can use.
 
 ### Props
 #### What are `Props`?
@@ -196,8 +198,8 @@ Okay, now we can get to the good stuff! We are going to use what we've learned a
 
 Again, we do not recommend using the `typeof` syntax. For practice, use both of the lambda and generic syntax!
 
-> **Remember**: do NOT try to create `Props` by calling `new Props(...)`. 
-> 
+> **Remember**: do NOT try to create `Props` by calling `new Props(...)`.
+>
 > When you do that, kittens die, unicorns vanish, Mordor wins and all manner of badness happens. Let's just not.
 
 In this section, we're going to split out the `Props` objects onto their own lines for easier reading. In practice, we usually inline them into the call to `ActorOf`.
@@ -294,7 +296,7 @@ You may not have noticed it, but we actually are using a special `ActorRef` now:
 Sender.Tell(new Messages.ContinueProcessing());
 ```
 
-This is the special `Sender` handle that is made available within an actors context when it is processing a message. The `ActorContext` always makes this reference available, along with some other metadata (more on that later).
+This is the special `Sender` handle that is made available within an actors `Context` when it is processing a message. The `Context` always makes this reference available, along with some other metadata (more on that later).
 
 ### Phase 4: A bit of cleanup
 Just a bit of cleanup since we've changed our class structure. Then we can run our app again!
@@ -395,7 +397,7 @@ Since we harped on it earlier, let's illustrate the risk of using the `typeof` `
 
 We've left a little landmine as a demonstration. You should blow it up just to see what happens.
 
-1. Open up [WinTail.sln](Completed/WinTail.sln).
+1. Open up [Completed/WinTail.sln](Completed/WinTail.sln).
 1. Find the lines containing `fakeActorProps` and `fakeActor` (should be around line 18).
 2. Uncomment these lines.
 	- Look at what we're doing here—intentionally substituting a non-actor class into a `Props` object! Ridiculous! Terrible!
