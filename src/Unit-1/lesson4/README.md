@@ -431,11 +431,11 @@ In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it
 ```csharp
 // Program.Main
 // make tail coordinator & pass to fileValidatorActorProps
-var tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
+Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
 ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
 
 // just adding `tailCoordinatorActor` arg to this Props
-var fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
 ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
 ```
 

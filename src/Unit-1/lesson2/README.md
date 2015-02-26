@@ -197,7 +197,7 @@ private void GetAndValidateInput()
         // received input was blank
         Self.Tell(new Messages.NullInputError("No input received."));
     }
-    else if (message.Equals(ExitCommand))
+    else if (String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
     {
         // shut down the entire actor system (allows the process to exit)
         Context.System.Shutdown();
@@ -300,6 +300,6 @@ If everything is working as it should, you should see an output like this:
 Compare your code to the solution in the [Completed](Completed/) folder to see what the instructors included in their samples.
 
 ##  Great job! Onto Lesson 3!
-Awesome work! Well done on completing this lesson. 
+Awesome work! Well done on completing this lesson.
 
 **Let's move onto [Lesson 3 - `Props` and `ActorRef`s](../lesson3).**

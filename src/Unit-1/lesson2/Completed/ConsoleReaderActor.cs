@@ -55,7 +55,7 @@ namespace WinTail
                 // received input was blank
                 Self.Tell(new Messages.NullInputError("No input received."));
             }
-            else if (message.Equals(ExitCommand))
+            else if (String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
                 // shut down the entire actor system (allows the process to exit)
                 Context.System.Shutdown();
