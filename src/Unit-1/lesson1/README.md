@@ -56,6 +56,7 @@ In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.n
 
 ### How do you make an actor?
 There are 2 key things to know about creating an actor:
+
 1. All actors are created within a certain context. That is, they are "actor of" a context.
 1. Actors need `Props` to be created. A `Props` object is just an object that encapsulates the formula for making a given kind of actor.
 

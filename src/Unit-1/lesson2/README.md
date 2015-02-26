@@ -137,7 +137,7 @@ public const string StartCommand = "start";
 
 Update the `Main` method to use `ConsoleReaderActor.StartCommand`:
 
-Replace
+Replace this:
 
 ```csharp
 // in Program.cs
@@ -145,7 +145,7 @@ Replace
 consoleReaderActor.Tell("start");
 ```
 
-with
+with this:
 
 ```csharp
 // in Program.cs
