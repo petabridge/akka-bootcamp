@@ -108,10 +108,10 @@ let main argv =
     let myActorSystem = System.create "MyActorSystem" (Configuration.load ())
     
     // now let's spawn an actor that simply processes a message...
-    let consoleWriterActor = spawn myActorSystem "ConsoleWriterActor" (actorOf Actors.consoleWriterActor)
+    let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
     
     // ...and one that sends a message to the other actor
-    let consoleReaderActor = spawn myActorSystem "ConsoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
+    let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
     
     // let's tell the second actor to get started
     consoleReaderActor <! "start"
@@ -156,7 +156,7 @@ You will need to do the following:
 1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
 
 	```
-	consoleWriter <! read;
+	consoleWriter <! line;
 	```
 
 2. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
