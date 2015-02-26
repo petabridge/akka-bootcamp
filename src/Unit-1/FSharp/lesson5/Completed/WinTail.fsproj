@@ -54,6 +54,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="AkkaExtensions.fs" />
     <Compile Include="Strategies.fs" />
     <Compile Include="Messages.fs" />
     <Compile Include="FileObserver.fs" />

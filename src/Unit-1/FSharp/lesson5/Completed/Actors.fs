@@ -56,29 +56,25 @@ let fileValidatorActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message =
         consoleWriter <! InputError (sprintf "%s is not an existing URI on disk." message, ErrorType.Validation)
         mailbox.Sender () <! ContinueProcessing
 
-let tailActorBuilder (reporter: ActorRef) (filePath: string) (mailbox: Actor<_>) =
-    let observer = new FileObserver(mailbox.Self, Path.GetFullPath(filePath))
-    observer.Start ()
+type TailActor(reporter, filePath) as this =
+    inherit UntypedActor()
+
+    let observer = new FileObserver(this.Self, Path.GetFullPath(filePath))
+    do observer.Start ()
     let fileStream = new FileStream(Path.GetFullPath(filePath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
     let fileStreamReader = new StreamReader(fileStream, Encoding.UTF8)
     let text = fileStreamReader.ReadToEnd ()
-    mailbox.Self <! InitialRead(filePath, text)
+    do this.Self <! InitialRead(filePath, text)
     
-    let tailActor message =
-        match message with
+    override this.OnReceive message =
+        match message :?> FileCommand with
         | FileWrite(_) -> 
             let text = fileStreamReader.ReadToEnd ()
             if not <| String.IsNullOrEmpty text then reporter <! text else ()
         | FileError(_,reason) -> reporter <! sprintf "Tail error: %s" reason
         | InitialRead(_,text) -> reporter <! text
 
-    let rec loop () = actor {
-        let! message = mailbox.Receive ()
-        tailActor <| message
-        return! loop () }
-    loop ()
-
 let tailCoordinatorActor (mailbox: Actor<_>) message =
     match message with
-    | StartTail(filePath,reporter) -> spawn mailbox.Context "tailActor" (tailActorBuilder reporter filePath) |> ignore
+    | StartTail(filePath,reporter) -> spawnObj mailbox.Context "tailActor" (<@ (fun () -> new TailActor(reporter, filePath)) @>) |> ignore
     | _ -> ()
