@@ -711,6 +711,10 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ## Great job! Onto Lesson 5!
 Awesome work! Well done on completing this lesson, we know it was a bear! It was a big jump forward for our system and in your understanding.
 
+Here is a high-level overview of our working system!
+
+![Akka.NET Unit 1 Tail System Diagram](Images/system_overview.png)
+
 **Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5).**
 
 *****
