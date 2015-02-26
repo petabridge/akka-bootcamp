@@ -86,8 +86,6 @@ namespace WinTail
         {
             if (message is FileWrite)
             {
-                var fw = message as FileWrite;
-
                 // move file cursor forward
                 // pull results from cursor to end of file and write to output
                 // (tis is assuming a log file type format that is append-only)

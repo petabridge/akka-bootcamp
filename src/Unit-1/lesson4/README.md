@@ -317,6 +317,7 @@ namespace WinTail
 ```
 
 You'll also want to make sure to update the `Props` instance in `Main` that references the class:
+
 ```csharp
 // Program.cs
 Props validationActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
@@ -425,20 +426,6 @@ namespace WinTail
 }
 ```
 
-#### Create `ActorRef` for `TailCoordinatorActor`
-In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
-
-```csharp
-// Program.Main
-// make tail coordinator & pass to fileValidatorActorProps
-Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
-ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
-
-// just adding `tailCoordinatorActor` arg to this Props
-Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
-ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
-```
-
 ### Phase 2: Make your first parent/child actors!
 Great! Now we're ready to create our actor classes that will form a parent/child relationship.
 
@@ -451,6 +438,7 @@ Add the following code, which defines our coordinator actor (which will soon be 
 
 ```csharp
 // TailCoordinatorActor.cs
+using System;
 using Akka.Actor;
 
 namespace WinTail
@@ -505,6 +493,19 @@ namespace WinTail
 
 ```
 
+#### Create `ActorRef` for `TailCoordinatorActor`
+In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
+
+```csharp
+// Program.Main
+// make tailCoordinatorActor
+Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
+ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
+
+// pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
+ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
+```
 
 #### Add `TailActor`
 Now, add a class called `TailActor` in its own file. This actor is the actor that is actually responsible for tailing a given file. `TailActor` will be created and supervised by `TailCoordinatorActor` in a moment.
@@ -601,8 +602,6 @@ namespace WinTail
         {
             if (message is FileWrite)
             {
-                var fw = message as FileWrite;
-
                 // move file cursor forward
                 // pull results from cursor to end of file and write to output
                 // (tis is assuming a log file type format that is append-only)
@@ -711,6 +710,10 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 
 ## Great job! Onto Lesson 5!
 Awesome work! Well done on completing this lesson, we know it was a bear! It was a big jump forward for our system and in your understanding.
+
+Here is a high-level overview of our working system!
+
+![Akka.NET Unit 1 Tail System Diagram](Images/system_overview.png)
 
 **Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5).**
 
