@@ -43,7 +43,7 @@ namespace WinTail
         private void GetAndValidateInput()
         {
             var message = Console.ReadLine();
-            if (!string.IsNullOrEmpty(message) && message.ToLowerInvariant().Equals(ExitCommand))
+            if (!string.IsNullOrEmpty(message) && String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
                 // if user typed ExitCommand, shut down the entire actor system (allows the process to exit)
                 Context.System.Shutdown();
