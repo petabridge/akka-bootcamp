@@ -102,7 +102,7 @@ Very simple: `var selection = Context.ActorSelection("/path/to/actorName")`
 
 ```csharp
 class FooActor : UntypedActor {}
-var props = Props.Create<FooActor>();
+Props props = Props.Create<FooActor>();
 
 // the ActorPath for myFooActor is "/user/barBazActor"
 // NOT "/user/myFooActor" or "/user/FooActor"
@@ -163,7 +163,7 @@ Context.ActorSelection("/user/validationActor").Tell(message);
 Finally, let's update `consoleReaderProps` accordingly in `Program.cs` since its constructor no longer takes any arguments:
 ```csharp
 // Program.Main
-var consoleReaderProps = Props.Create<ConsoleReaderActor>();
+Props consoleReaderProps = Props.Create<ConsoleReaderActor>();
 ```
 
 ### Phase 2: Decouple `FileValidatorActor` and `TailCoordinatorActor`
@@ -193,7 +193,7 @@ And finally, let's update `fileValidatorProps` in `Program.cs` to reflect the di
 
 ```csharp
 // Program.Main
-var fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
 ```
 
 ### Phase 3: Build and Run!
