@@ -1,8 +1,9 @@
 # Lesson 2.1: Using HOCON Configuration to Configure Akka.NET
+We're going to be spending most of our time in Unit 2 working with the `ChartingActor`, an actor that is responsible for actually plotting all the data on this chart:
 
-If you try to build and run `SystemCharting.sln` in the [/DoThis/ folder](../DoThis/) for Unit 2 right away, you'll see the following output:
+![Pretty output](../lesson5/images/syncharting-complete-output.gif)
 
-> ars: need more intro of the overview of the system before we start into the `ChartingActor` stuff => maybe a diagram of system? explanation of the components behind what we're building? I don't know what `ChartingActor` is at all at this point or what the context is. Dove in too fast.
+BUT, if you try to build and run `SystemCharting.sln` right now (in the [/DoThis/ folder](../DoThis/)) for Unit 2 right away, you'll see the following output:
 
 ![No output?](images/dothis-failed-run.png)
 
@@ -13,27 +14,78 @@ Oh wait, there's an exception in the **Debug** window. What does it say?
 > [ERROR][2/24/2015 11-48-34 AM][Thread 0010][akka://ChartActors/user/charting] Cross-thread operation not valid: Control 'sysChart' accessed from a thread other than the thread it was created on.
 Cause: System.InvalidOperationException: Cross-thread operation not valid: Control 'sysChart' accessed from a thread other than the thread it was created on.
 
-> ars: users may get a different exception than this
+### What's wrong here?
+None of the events we want to chart are getting graphed. Hmm... sounds like our events aren't getting to the UI thread. We need to find some way to dispatch and synchronize events with the UI thread so that our chart is updated!
 
-> ars: what are the concepts underlying all of this that I need to understand? App.config, HOCON ...
+Does this mean we have to rewrite `ChartingActor` with some evil code to manually synchronize with the UI thread?
 
-Oh crap, you mean to say that the `ChartingActor` responsible for updating the [`System.Windows.Forms.DataVisualization.Charting.Chart`](https://msdn.microsoft.com/en-us/library/system.windows.forms.datavisualization.charting.chart.aspx) on this form isn't running on the UI thread? Does this mean we have to rewrite our actors to do something horrible?
+Nope! We can relax.
 
-No, we can relax.
+**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/wiki/Configuration) without updating any of the code that defines `ChartingActor`.**
 
-**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/wiki/Configuration) without updating any of our code.**
+But first, we need to understand `Dispatcher`s.
 
-## Keys Concepts / Background
+## Key Concepts / Background
+### `Dispatcher`
+#### What is a `Dispatcher`?
+A `Dispatcher` is the piece of glue that pushes messages from your actor's mailbox into your actor instances themselves. That is, the `Dispatcher` is what pushes messages into the `OnReceive()` method of your actors. All actors which share a given `Dispatcher` also share that `Dispatcher`'s threads for parallel execution.
+
+The default dispatcher in Akka.NET is the `ThreadPoolDispatcher`. As you can probably guess, this dispatcher runs all of our actors on top of the CLR `ThreadPool`.
+
+#### What kinds of `Dispatcher`s are there?
+There are several types of `Dispatcher`s we can use with our actors:
+
+##### `SingleThreadDispatcher`
+This `Dispatcher` runs multiple actors on a single thread;
+
+##### `ThreadPoolDispatcher` (default)
+This `Dispatcher` runs actors on top of the CLR `ThreadPool` for maximum concurrency;
+
+##### `CurrentSynchronizationContextDispatcher`
+This `Dispatcher` schedules all actor messages to be processed in the same synchronization context as the caller. 99% of the time, this is where you're going to run actors that need access to the UI thread, such as in client applications.
+
+In this lesson, we're going to use the `CurrentSynchronizationContextDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way, the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
+
+##### `ForkJoinDispatcher`
+This `Dispatcher` runs actors on top of a dedicated group of threads, for tunable concurrency (**[not yet implemented](https://github.com/akkadotnet/akka.net/issues/675)**).
+
+This is meant for actors that need their own dedicated threads in order to run (that need isolation guarantees). This is primarily used by `System` actors so you won't touch it much.
+
+#### Is it a bad idea to run actors on the UI thread?
+The short answer is "no".
+
+Running actors on the UI thread is fine, as long as those actors don't perform any long-running operations such as disk or network I/O. In fact, *running actors on the UI thread is a smart thing to do for handling UI events and updates*.
+
+Why? Because *running actors on the UI thread eliminates all of the normal synchronization worries* you'd otherwise have to do in a multi-threaded WPF or WinForms app.
+
+> **Remember: [Akka.NET actors are lazy](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)**. They don't do any work when they're not receiving messages. They don't consume resources when they're inactive.
+
+#### How do `Dispatcher`s relate to our broken chart?
+As we realized before, our chart isn't updating because the actor doing the graphing (`ChartingActor`) is not synchronizing its events with the UI thread.
+
+To solve this problem, all we have to do is change the `ChartingActor` to use the `CurrentSynchronizationContextDispatcher`, and it will automatically run on / synchronize with the UI thread for us!
+
+BUT: we want to do this without touching our actual actor code. How can we deploy the `ChartingActor` so that it uses the `CurrentSynchronizationContextDispatcher` without modifying the actor itself?
+
+Time to meet HOCON.
+
+### HOCON
 Akka.NET leverages a configuration format, called HOCON, to allow you to configure your Akka.NET applications with whatever level of granularity you want.
 
-### What is HOCON?
+#### What is HOCON?
 [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's ActorRefProvider implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
-### What can I do with HOCON?
-- common examples of where it's used
+Values raturned by HOCON are strongly typed (i.e. you can fetch out an `int`, a `Timespan`, etc).
 
-### HOCON in Action
-Here's an example of using HOCON with an `ActorSystem`, taken directly from the C# documentation for Akka.NET:
+#### What can I do with HOCON?
+HOCON allows you to embed easily-readable configuration inside of the otherwise hard-to-read XML `Config`.  One other nice feature is that you can query an entire section of the config and HOCON will return you fully-parsed object that you can use.
+
+HOCON also lets you nest and/or chain sections of configuration, creating layers of granularity and providing you a semantically namespaced config.
+
+#### What is HOCON usually used for?
+HOCON is commonly used for tuning logging settings, enabling special modules (such as `Akka.Persistence`), or configuring deployments such as the `Dispatcher` for our `ChartingActor` in this lesson.
+
+For example, let's configure an `ActorSystem` with HOCON:
 
 ```csharp
 var config = ConfigurationFactory.ParseString(@"
@@ -48,19 +100,31 @@ akka.remote.helios.tcp {
 var system = ActorSystem.Create("MyActorSystem", config);
 ```
 
-> NOTE: In this case we're configuring a specific network transport for use with Akka.Remoting, a concept that goes well beyond what's covered in Unit 2. Don't worry about the specifics for now.
+As you can see in that example, a HOCON `Config` object can be parsed from a `string` using the `ConfigurationFactory.ParseString` method. Once you have a `Config` object, you can then pass this to your `ActorSystem` inside the `ActorSystem.Create` method.
 
-As you can see, you can create a HOCON `Config` object from a simple `string` using the `ConfigurationFactory.ParseString` method - and once you have a `Config` object you can pass this to your `ActorSystem` inside the `ActorSystem.Create` method.
+> NOTE: In this example we configured a specific network transport for use with `Akka.Remote`, a concept that goes well beyond what's covered in Unit 2. Don't worry about the specifics for now.
 
-### HOCON from `App.config` and Web.config
-Parsing HOCON from a `string` is handy for small configuration sections, but what if you want to be able to take advantage of [Configuration Transforms for App.config and Web.config](https://msdn.microsoft.com/en-us/library/dd465326.aspx) and all of the other nice tools we have in the `System.Configuration` namespace?
+#### "Deployment"? What's that?
+Deployment is a vague concept, but it's closely tied to HOCON. "Deployed" basically means "instantiated and put into service within the `ActorSystem`".
 
-> ars: i dont know what that is, maybe say "read straight from web.config"?
-> ars: we never touch Web.config here
+When an actor is instantiated within the `ActorSystem`, it can be deployed in one of two places: inside the local process, or in another process.
 
-As it turns out, you can use HOCON inside these configuration files too! Here's an example, also taken from the Akka.NET docs:
+When an actor is deployed by the `ActorSystem`, it has a range of configuration settings. These settings control a wide range of behavior options for the actor, such as: is this actor going to be a router? What `Dispatcher` will it use? What type of mailbox will it have? (More on these concepts in later lessons.)
 
-````
+We haven't gone over what all these options mean, but *the key thing to know for now is that the settings used by the `ActorSystem` to deploy an actor into service can be set within HOCON. *
+
+***This also means that you can change the behavior of actors dramatically (by changing these settings) without having to actually touch the actor code itself.***
+
+Flexible config FTW!
+
+#### HOCON can be used inside `App.config` and `Web.config`
+Parsing HOCON from a `string` is handy for small configuration sections, but what if you want to be able to take advantage of [Configuration Transforms for `App.config` and `Web.config`](https://msdn.microsoft.com/en-us/library/dd465326.aspx) and all of the other nice tools we have in the `System.Configuration` namespace?
+
+As it turns out, you can use HOCON inside these configuration files too!
+
+Here's an example of using HOCON inside `App.config`:
+
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <configSections>
@@ -72,9 +136,11 @@ As it turns out, you can use HOCON inside these configuration files too! Here's 
     <hocon>
       <![CDATA[
           akka {
+            # here we are configuring log levels
             log-config-on-start = off
             stdout-loglevel = INFO
             loglevel = ERROR
+            # this config section will be referenced as akka.actor
             actor {
               provider = "Akka.Remote.RemoteActorRefProvider, Akka.Remote"
               debug {
@@ -85,6 +151,7 @@ As it turns out, you can use HOCON inside these configuration files too! Here's 
                   unhandled = on
               }
             }
+            # here we're configuring the Akka.Remote module
             remote {
               helios.tcp {
                   transport-class =
@@ -100,16 +167,14 @@ As it turns out, you can use HOCON inside these configuration files too! Here's 
     </hocon>
   </akka>
 </configuration>
-````
+```
 
 And then we can load this configuration section into our `ActorSystem` via the following code:
-
-> ars: what is `ConfigurationManager`?
-> ars: not clear what the `section.AkkaConfig` refers to from above config sample
 
 ```csharp
 var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
 var system = ActorSystem.Create("Mysystem", section.AkkaConfig);
+// FYI, section.AkkaConfig is built into Akka.NET for you
 ```
 
 > **NOTE:** [There's currently an open issue in Akka.NET](https://github.com/akkadotnet/akka.net/issues/671) to automatically take care of the `ConfigurationManager.GetSection("akka")` loading for you, so in the future you'll only need to write
@@ -120,12 +185,7 @@ var system = ActorSystem.Create("Mysystem", section.AkkaConfig);
 >
 > and your config section will be automatically loaded for you.
 
-> ars: should that be `var system = ...` or `ActorSystem system = ...` ?
-> ars: seems basic, but I dont understand what the point of consuming my configurations
-> ars: when do we commonly use this? (query config for value)
-> ars: what are common examples of things that I'm going to configure?
-### HOCON Configuration Supports Fallbacks
-
+#### HOCON Configuration Supports Fallbacks
 Although this isn't a concept we leverage explicitly in Unit 2, it's a powerful trait of the `Config` class that comes in handy in lots of production use cases.
 
 HOCON supports the concept of "fallback" configurations - it's easiest to explain this concept visually.
@@ -151,13 +211,13 @@ If we request a value for a HOCON object with key "a", using the following code:
 var a = yourConfig.GetString("a");
 ```
 
-> ars: "matches a path `a`"? or "contains key `a`"?
+Then the internal HOCON engine will match the first HOCON file that contains a definition for key `a`. In this case, that is `f0`, which returns the value "bar".
 
-Then the internal HOCON engine will match the first HOCON file that contains a definition for a key that matches path `a`. In this case, that is `f0`, which returns the value "bar".
+####  Why wasn't "foo" returned as the value for "a"?
+The reason is because HOCON only searches through fallback `Config` objects if a match is NOT found earlier in the `Config` chain. If the top-level `Config` object has a match for `a`, then the fallbacks won't be searched. In this case, a match for `a` was found in `f0` so the `a=foo` in `f3` was never reached.
 
-> **Why didn't we return "foo" as the value for "a"?**  The reason is because HOCON only searches through fallback `Config` objects if a match isn't found earlier in the `Config` chain. If the top-level `Config` object has a match for `a`, then the fallbacks won't be searched.
-
-Now what happens if we run the following code?
+#### What happens when there is a HOCON key miss?
+What happens if we run the following code, given that `c` isn't defined in `f0` or `f1`?
 
 ```csharp
 var c = yourConfig.GetString("c");
@@ -167,50 +227,15 @@ var c = yourConfig.GetString("c");
 
 In this case `yourConfig` will fallback twice to `f2` and return "baz" as the value for key `c`.
 
-> ars: what can I configure? (just /user? /system?)
-> ars: what can't I configure?
-
-### Dispatchers: The Thing We're Going to Configure!
-> ars: would put this before config, so we know what the point is
-
-Now that you have some background on Akka.NET Configuration, let's talk about the problem we're going to solve via configuration: changing the [`Dispatcher`](http://getakka.net/wiki/Dispatchers) for the `ChartingActor`.
-
-> ars: i still dont know what the `ChartingActor` is
-
-#### What's a `Dispatcher`?
-
-A `Dispatcher` is the piece of glue that pushes messages from your actor's mailbox into your actor instances themselves. That is, the `Dispatcher` is what pushes messages into the `OnReceive()` method of your actors. All actors which share a given `Dispatcher` also share that `Dispatcher`'s threads for parallel execution.
-
-The default dispatcher in Akka.NET is the `ThreadPoolDispatcher`, and as you might have guessed - this dispatcher runs all of our actors on top of the CLR `ThreadPool`.
-
-> ars: is this significant in some way that it's all on the CLR `ThreadPool`?
-
-#### `Dispatcher` Varieties
-There are several types of `Dispatcher`s we can use with our actors:
-
-* `SingleThreadDispatcher`: runs multiple actors on a single thread;
-* `ThreadPoolDispatcher`: runs actors on top of the CLR `ThreadPool` for maximum concurrency;
-* `CurrentSynchronizationContextDispatcher`: this schedules all actor messages to be processed on the same synchronization context as the caller; and,
-* `ForkJoinDispatcher`: runs actors on top of a dedicated group of threads, for tunable concurrency (**[not yet implemented](https://github.com/akkadotnet/akka.net/issues/675)**).
-
-> ars: when do I use each kind of dispatcher? give me some guidance
-
-> ars: in what instance? i have no context
-In this instance, we're going to use the `CurrentSynchronizationContextDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
-
-#### Is it a bad idea to have actors run on the UI thread?
-
-The short answer is no. You'll be fine as long as you don't perform any long-running operations, such as disk or network I/O, inside the actors running on the UI thread. In fact, *running actors on the UI thread is a smart thing to do for handling UI events and updates*. Why? Running actors on the UI thread eliminates all of the normal synchronization worries you'd otherwise have to do in a multi-threaded WPF or WinForms app.
-
-> **Remember: [Akka.NET actors are lazy](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)**. They don't do any work when they're not receiving messages. They don't consume resources when they're inactive.
+Now that we understand HOCON, let's use it to fix the `Dispatcher` for `ChartingActor`!
 
 ## Exercise
-We need to configure `ChartingActor` to use the `CurrentSynchronizationContextDispatcher` in order to make this example run.
+We need to configure `ChartingActor` to use the `CurrentSynchronizationContextDispatcher` in order to make our charting work correctly on the UI thread.
 
-### Phase 1 - Add Akka.NET Config Section to `App.config`
+### Add Akka.NET Config Section to `App.config`
 The first thing you need to do is declare the `AkkaConfigurationSection` at the top of your `App.config`:
 
-```
+```xml
 <!-- in App.config file -->
 <!-- add this right after the opening <configuration> tag -->
 <configSections>
@@ -220,18 +245,19 @@ The first thing you need to do is declare the `AkkaConfigurationSection` at the 
 
 Next, add the content of the `AkkaConfigurationSection` to `App.config`:
 
-```
+```xml
 <!-- in App.config file -->
 <!-- add this anywhere after <configSections> -->
 <akka>
   <hocon>
     <![CDATA[
         akka {
-          actor{
-            deployment{
-              #used to configure our ChartingActor
-              /charting{
-			  # causes ChartingActor to run on the UI thread for WinForms
+          actor {
+            deployment {
+              # this nested section will be accessed by akka.actor.deployment
+              # used to configure our ChartingActor
+              /charting {
+				 # causes ChartingActor to run on the UI thread for WinForms
                 dispatcher = akka.actor.synchronized-dispatcher
               }
             }
@@ -242,31 +268,27 @@ Next, add the content of the `AkkaConfigurationSection` to `App.config`:
 </akka>
 ```
 
-#### What do these `App.config` sections do?
-##### `<configSections>`
-##### `<akka>`
 
-> ars: not sure what to do w/ these yet
-`akka.actor.synchronized-dispatcher` is the shorthand name built into Akka.NET's default configuration for the `CurrentSynchronizationContextDispatcher`, so you don't need to use a fully-qualified type name.
+We should point out that `akka.actor.synchronized-dispatcher` is the shorthand name built into Akka.NET's default configuration for the `CurrentSynchronizationContextDispatcher`. So you don't need to use a fully-qualified type name.
 
 You might have also noticed that the configuration section that pertains to the `ChartingActor` was declared as `/charting` - **this is because actor deployment is done by the path and name of the actor, not the actor's type**.
 
-Here's how we deploy the `ChartingActor` inside `Main.cs`:
+Here's how we create the `ChartingActor` inside `Main.cs`:
 
 ```csharp
  _chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart)), "charting");
 ```
 
-When we call `ActorSystem.ActorOf` the `ActorOf` method will automatically look for any deployments declared in the `akka.actor.deployment` configuration section that correspond to the path of this actor - `/user/charting` in this case.
+When we call `ActorSystem.ActorOf` the `ActorOf` method will automatically look for any deployments declared in the `akka.actor.deployment` configuration section that correspond to the path of this actor. In this case, the path of this actor is `/user/charting`, which corresponds to the `akka.actor.deployment` values for `/charting` in the config section above.
 
-> ars: at this point I don't know what talking about w/ "deployments"
+> As the Akka.NET end-user, you can only specify deployment settings for actors created inside the `/user/` hierarchy. Because of this, you don't need to specify `/user` when you declare your deployment settings - **it's implicit**.
+>
+> By extension, you also cannot specify how to deploy the `/system` actors. This is up to the `ActorSystem`.
 
-> And because you, as the Akka.NET end-user, can only specify deployment settings for actors created inside the `/user/` hierarchy, you don't specify `/user` on your deployments - **it's implicit**.
+### Consume Your `AkkaConfigurationSection` Inside Your `ActorSystem`
+[As we mentioned, very soon this will be done automatically for you by Akka.NET](https://github.com/akkadotnet/akka.net/issues/671), but in the meantime we have to manually load your `AkkaConfigurationSection`.
 
-### Phase 2 - Consume Your `AkkaConfigurationSection` Inside Your `ActorSystem`
-
-[In the near future this step will be done automatically for you by Akka.NET](https://github.com/akkadotnet/akka.net/issues/671), but in the meantime we have to manually load your `AkkaConfigurationSection`.
-
+#### Require HOCON
 Go to `Program.cs` and modify the `using` statements to this:
 
 ```csharp
@@ -278,6 +300,7 @@ using Akka.Actor;
 using Akka.Configuration.Hocon;
 ```
 
+#### Load HOCON config into `ActorSystem`
 And then load the `Config` into your `ActorSystem` by updating the call to `ActorSystem.Create()`:
 
 ```csharp
@@ -287,10 +310,8 @@ var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
 var config = section.AkkaConfig;
 ChartActors = ActorSystem.Create("ChartActors", config);
 ```
-And we're finished!
 
-> ars: what did we just do? not clear to me
-> ars: should I worry about the VS message on `App.config` that it can't find schema info for akka/hocon? (squiggly blue line under App.config in solution explorer)
+And... we're finished!
 
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
@@ -299,10 +320,10 @@ Build and run `SystemCharting.sln` and you should see the following:
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
-## Further reading
-As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/wiki/HOCON).
-
 ## Great job!
 Nice work on completing your first lesson in Unit 2! We covered a lot of concepts and hopefully you're going to walk away from this with an appreciation for just how powerful Akka.NET's configuration model truly is.
 
 **Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2).**
+
+## Further reading
+As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/wiki/HOCON).
