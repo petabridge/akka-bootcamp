@@ -413,7 +413,7 @@ namespace ChartApp.Actors
         {
             if (message is GatherMetrics)
             {
-                //publish latest counter value to all subscribers
+                // publish latest counter value to all subscribers
                 var metric = new Metric(_seriesName, _counter.NextValue());
                 foreach(var sub in _subscriptions)
                     sub.Tell(metric);
@@ -523,7 +523,7 @@ protected override void PreStart()
 Notice that inside the `PerformanceCounterActor`'s `PostStop` method, we invoke the `CancellationTokenSource` we created to cancel this recurring message:
 
 ```csharp
- //terminate the scheduled task
+ // terminate the scheduled task
 _cancelPublishing.Cancel(false);
 ```
 
@@ -638,18 +638,18 @@ namespace ChartApp.Actors
             {
                 if (!_counterActors.ContainsKey(watch.Counter))
                 {
-                    //create a child actor to monitor this counter if one doesn't exist already
+                    // create a child actor to monitor this counter if one doesn't exist already
                     var counterActor = Context.ActorOf(Props.Create(() =>
 						new PerformanceCounterActor(watch.Counter.ToString(), CounterGenerators[watch.Counter])));
 
-                    //add this counter actor to our index
+                    // add this counter actor to our index
                     _counterActors[watch.Counter] = counterActor;
                 }
 
-                //register this series with the ChartingActor
+                // register this series with the ChartingActor
                 _chartingActor.Tell(new ChartingActor.AddSeries(CounterSeries[watch.Counter]()));
 
-                //tell the counter actor to begin publishing its statistics to the _chartingActor
+                // tell the counter actor to begin publishing its statistics to the _chartingActor
                 _counterActors[watch.Counter].Tell(new SubscribeCounter(watch.Counter, _chartingActor));
             });
 
@@ -660,10 +660,10 @@ namespace ChartApp.Actors
                     return; // noop
                 }
 
-                //unsubscribe the ChartingActor from receiving anymore updates
+                // unsubscribe the ChartingActor from receiving anymore updates
                 _counterActors[unwatch.Counter].Tell(new UnsubscribeCounter(unwatch.Counter, _chartingActor));
 
-                //remove this series from the ChartingActor
+                // remove this series from the ChartingActor
                 _chartingActor.Tell(new ChartingActor.RemoveSeries(unwatch.Counter.ToString()));
             });
         }
@@ -799,7 +799,7 @@ public class RemoveSeries
 }
 ```
 
-Add the following method to the bottom of the `ChartingActor` class:
+Add the following method to the bottom of the `ChartingActor` class (don't worry about the specifics, it's adding UI management code that isn't directly related to actors):
 
 ```csharp
 // Actors/ChartingActor.cs
