@@ -1,86 +1,185 @@
-# Lesson 2.3: Using the `Scheduler` to Send Recurring Messages
+# Lesson 2.3: Using the `Scheduler` to Send Messages Later
+Welcome to Lesson 2.3!
 
-One of the most powerful capabilities Akka.NET exposes is the ability to schedule messages to be sent in the future, including regularly occurring messages. All of this accomplished via the [`Scheduler` in Akka.NET](http://getakka.net/wiki/Scheduler).
+Where are we? At this point, we have our basic chart set up, along with our `ChartingActor`  which is supposed to be graphing system metrics. Except right now, `ChartingActor` isn't actually graphing anything! It's time to change that.
 
-In this lesson you're going to get to learn two really powerful Akka.NET concepts:
+In this lesson, we'll be hooking up the various components of our system to make our Resource Monitor application actually chart system resource consumption! **This is a big lesson—it's the core of Unit 2—so get your coffee and get comfortable!**
 
-1. How to use the `Scheduler` and
-2. How to implement the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) using Actors, a powerful technique for creating reactive systems.
+To make our Resource Monitor work as intended, we need to wire up `ChartingActor` to the actual system [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#") for the graph data. This needs to happen on an ongoing basis so that our chart regularly updates.
 
-## Keys Concepts / Background
+One of the most powerful capabilities Akka.NET exposes is the ability to schedule messages to be sent in the future, including regularly occurring messages. And it turns out, this is exactly the functionality we need to have `ChartingActor` regularly update our graphs.
 
-Being able to schedule messages to be sent at in the future is really useful in situations where you want to an actor to do *something later*. 
+In this lesson you'll learn two powerful Akka.NET concepts:
 
-If you want an actor to fetch the latest information from a [Performance Counter](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#"), for instance, you might schedule a specific message to be sent to that actor at a regular interval.
+1. How to use the `Scheduler`, and
+2. How to implement the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) using actors. This is a powerful technique for creating reactive systems.
 
-And this is exactly what the [`Scheduler`](http://getakka.net/wiki/Scheduler) allows you to do!
+## Key Concepts / Background
+How do you get an actor to do something in the future? And what if you want that actor to do something on a recurring basis in the future?
 
-> **FUTURE BREAKING CHANGES:** [The `Scheduler` API is going to be modified as part of the upcoming Akka.NET V1 release](https://github.com/akkadotnet/akka.net/issues/468). All of the `Scheduler`'s capabilities will remain intact, but the API signatures will be different. 
+Perhaps you want an actor to periodically fetch information, or to occasionally ping another actor within the system for its status.
 
-### Scheduling Future Messages
-Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use the `Scheduler` to do that:
+Akka.NET provides a mechanism for doing just this sort of thing. Meet your new best friend: the `Scheduler`.
+
+### What is the `Scheduler`?
+The `Scheduler` is a singleton within every `ActorSystem` that allows you to schedule messages to be sent to an actor in the future. The `Scheduler` can send both one-off and recurring messages.
+
+### How do I use the `Scheduler`?
+As we mentioned, you can schedule one-off or recurring messages to an actor.
+
+You can also schedule an `Action` to occur in the future, instead of sending a message to an actor.
+
+#### Access the `Scheduler` via the `ActorSystem`
+`Scheduler` must be accessed through the `ActorSystem`, like so:
+
+```csharp
+// inside Main.cs we have direct handle to the ActorSystem
+var system = ActorSystem.Create("MySystem");
+system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+				              someActor,
+				              someMessage);
+
+// but inside an actor, we access the ActorSystem via the ActorContext
+Context.System.system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+								             someActor,
+								             someMessage);
+```
+
+#### Schedule one-off messages with `ScheduleOnce()`
+Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use `Scheduler.ScheduleOnce()` to do that:
 
 ```csharp
 var system = ActorSystem.Create("MySystem");
 var someActor = system.ActorOf<SomeActor>("someActor");
 var someMessage = new FetchFeed() {Url = ...};
+// schedule the message
 system
    .Scheduler
-   .Schedule(TimeSpan.FromMinutes(30), //initial delay of 30 min
+   .ScheduleOnce(TimeSpan.FromMinutes(30), // initial delay of 30 min
              someActor, someMessage);
 ```
 
-Viola - `someActor` will receive `someMessage` in 30 minutes time.
+Voila! `someActor` will receive `someMessage` in 30 minutes time.
 
-Now **what if we want to schedule this message to be delivered once *every 30 minutes*?** Then we can use the following `Schedule` overload.
+#### Schedule recurring messages with `Schedule()`
+Now, **what if we want to schedule this message to be delivered once *every 30 minutes*?**
+
+For this we can use the following `Scheduler.Schedule()` overload.
 
 ```csharp
 var system = ActorSystem.Create("MySystem");
 var someActor = system.ActorOf<SomeActor>("someActor");
 var someMessage = new FetchFeed() {Url = ...};
+// schedule recurring message
 system
    .Scheduler
-   .Schedule(TimeSpan.FromMinutes(30), //initial delay of 30 min
-			 TimeSpan.FromMinutes(30) //recur every 30 minutes
+   .Schedule(TimeSpan.FromMinutes(30), // initial delay of 30 min
+			 TimeSpan.FromMinutes(30) // recur every 30 minutes
              someActor, someMessage);
 ```
 
 That's it!
 
-### Cancelling Scheduled Messages
+### Can I schedule a message to go to multiple actors?
+Sure. There are two ways to do this: either manually schedule multiple messages, or schedule an `Action` that will forward on the message to those actors.
 
-What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken` by way of a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that!
+We'll demonstrate doing this with an `Action`:
+
+```csharp
+// custom message type
+public class MultipleActorsNeedThisMessage {}
+
+public class MessageForwarder
+{
+    public static Action ForwardMessage<TMessage>()
+    {
+        actor1.Tell(TMessage);
+        actor2.Tell(TMessage);
+        actor3.Tell(TMessage);
+    }
+}
+
+// schedule a message that needs to be forwarded to multiple actors
+public class MyActor : UntypedActor
+{
+    protected override void PreStart()
+    {
+        // schedule a message that needs to be forwarded on
+        // will occur initially in 250ms, then every 5 minutes
+        Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), // initial delay of 250ms
+        								  TimeSpan.FromMinutes(5), // recur every 5 minutes
+							              MessageForwarder.ForwardMessage<MultipleActorsNeedThisMessage>());
+    }
+}
+```
+
+### How do I cancel a scheduled message?
+What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken`, which is retrieved from a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that. 
+
+First, the message must be scheduled so that it can be cancelled. If a message is cancelable, we then just have to call `Cancel()` on our handle to the `CancellationTokenSource` and it will not be delivered. For example:
 
 ```csharp
 var cancellation = new CancellationTokenSource();
 var system = ActorSystem.Create("MySystem");
 var someActor = system.ActorOf<SomeActor>("someActor");
 var someMessage = new FetchFeed() {Url = ...};
+
+// first, set up the message so that it can be cancelled
 system
    .Scheduler
-   .Schedule(TimeSpan.FromMinutes(30), //initial delay of 30 min
-             someActor, someMessage, 
-			cancellation.Token); //add cancellation support
-cancellation.Cancel(); //stop the delivery of the message
+   .ScheduleOnce(TimeSpan.FromMinutes(30),
+                 someActor, someMessage,
+  			     cancellation.Token); // add cancellation support
+
+// here we actually cancel the message and prevent it from being delivered
+cancellation.Cancel();
 ```
 
-### Pub/Sub with Akka.NET Actors
-There's nothing magic about pub/sub with Akka.NET actors - it can literally be as simple as this:
+### How precise is the timing of scheduled messages?
+Scheduled messages are precise enough for almost all use cases, but if you need timing at a granularity below 15 milliseconds, then the `Scheduler` is not precise enough for you (nor are typical operating systems, like Windows/OSX/Linux). This is because 15ms is how often typical OSs actually update the system clock (their "clock granularity").
+
+### What are the various overloads of `Schedule` and `ScheduleOnce`?
+Here are all the overload options you have for scheduling.
+
+#### Overloads of `Schedule`
+```csharp
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action);
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action, CancellationToken cancellationToken);
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message);
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken
+```
+
+#### Overloads of `ScheduleOnce`
+```csharp
+public Task ScheduleOnce(TimeSpan initialDelay, Action action);
+public Task ScheduleOnce(TimeSpan initialDelay, Action action, CancellationToken cancellationToken);
+public Task ScheduleOnce(TimeSpan initialDelay, ActorRef receiver, object message);
+public Task ScheduleOnce(TimeSpan initialDelay, ActorRef receiver, object message, CancellationToken cancellationToken);
+```
+
+> **NOTE: THE `Scheduler` API is changing soon.** [The `Scheduler` API is going to be modified as part of the upcoming Akka.NET v1.0 release](https://github.com/akkadotnet/akka.net/issues/468).
+> 
+> All of the `Scheduler`'s capabilities will remain intact, but the API signatures will be different.
+
+### How do I do Pub/Sub with Akka.NET Actors?
+It's actually very simple. Many people expect this to be very complicated and are suspicious that there isn't more code involved. Rest assured, there's nothing magic about pub/sub with Akka.NET actors. It can literally be as simple as this:
 
 ```csharp
-public class PubActor : ReceiveActor{
-	//HashSet automatically eliminates duplicates
+public class PubActor : ReceiveActor {
+	// HashSet automatically eliminates duplicates
 	private HashSet<ActorRef> _subscribers;
-	PubActor(){
+	
+	PubActor() {
 		_subscribers = new HashSet<ActorRef>();
+		
 		Receive<Subscribe>(sub => {
 			_subscribers.Add(sub.ActorRef);
 		});
-		
-		Receive<ThingSubscribersWant>(thing => {
-			//notify each subscriber
-			foreach(var sub in _subscribers){
-				sub.Tell(thing);
+
+		Receive<MessageSubscribersWant>(message => {
+			// notify each subscriber
+			foreach(var sub in _subscribers) {
+				sub.Tell(message);
 			}
 		});
 
@@ -91,19 +190,22 @@ public class PubActor : ReceiveActor{
 }
 ```
 
-Pub sub is trivial to implement in Akka.NET, and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it.
+Pub sub is trivial to implement in Akka.NET, and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it. 
+
+Pub/sub is also another way you could schedule a message to go to multiple actors at once—just create a `ForwardingActor` whose only job is to forward messages it receives on to the actors that need the message.
+
+Now that you're familiar with how the `Scheduler` works, lets put it to use and make our charting UI reactive!
 
 ## Exercise
+**HEADS UP:** This section is where 90% of the work happens in all of Unit 2. We're going to add a few new actors who are responsible for setting up pub/sub relationships with the `ChartingActor` in order to graph `PeformanceCounter` data at regular intervals.
 
-**HEADS UP.** This is where 90% of the work happens in Unit 2. We're going to introduce a few new actors who are responsible for setting up pub / sub relationships with the `ChartingActor` in order to publish `PeformanceCounter` data at regular intervals.
-
-### Phase 1 - Delete the "Add Series" Button and Click Handler from Lesson 2
+### Step 1 - Delete the "Add Series" Button and Click Handler from Lesson 2
 
 We're not doing to need it. **Delete the "Add Series" button** from the **[Design]** view of `Main.cs` and remove the click handler:
 
 ```csharp
 // Main.cs - Main
-// DELETE ME
+// DELETE THIS:
 private void button1_Click(object sender, EventArgs e)
 {
     var series = ChartDataHelper.RandomSeries("FakeSeries" + _seriesCounter.GetAndIncrement());
@@ -111,7 +213,7 @@ private void button1_Click(object sender, EventArgs e)
 }
 ```
 
-### Phase 2 - Add 3 New Buttons to `Main.cs`
+### Step 2 - Add 3 New Buttons to `Main.cs`
 
 We're going to add three new buttons and click handlers for each:
 
@@ -133,29 +235,29 @@ Here are the names we'll be using for each button when we refer to them later:
 * **MEMORY (OFF)** - `btnMemory`
 * **DISK (OFF)** - `btnDisk`
 
-Once you've renamed your buttons, add click handlers for each by simply double-clicking on the buttons in **[Design]** view.
+Once you've renamed your buttons, *add click handlers for each button by double-clicking on the button* in the **[Design]** view.
 
 ```csharp
 // Main.cs - Main
 private void btnCpu_Click(object sender, EventArgs e)
 {
-   
+
 }
 
 private void btnMemory_Click(object sender, EventArgs e)
 {
-    
+
 }
 
 private void btnDisk_Click(object sender, EventArgs e)
 {
-    
+
 }
 ```
 
 We'll fill these handlers in later.
 
-### Phase 3 - Add Some New Message Types
+### Step 3 - Add Some New Message Types
 We're going to add a few new actors to our project in a moment, but before we do that let's create a new file inside the `/Actors` folder in our project and define some new message types:
 
 ```csharp
@@ -240,7 +342,7 @@ namespace ChartApp.Actors
 
 Now we can start adding the actors who depend on these message definitions.
 
-### Phase 4 - Create the `PerformanceCounterActor`
+### Step 4 - Create the `PerformanceCounterActor`
 
 The `PerformanceCounterActor` is the actor who's going to publish `PerformanceCounter` values to the `ChartingActor` using Pub/Sub and the `Scheduler`.
 
@@ -281,7 +383,7 @@ namespace ChartApp.Actors
 
         protected override void PreStart()
         {
-            //create a new instance of the performance counter
+            // create a new instance of the performance counter
             _counter = _performanceCounterGenerator();
             Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
                 new GatherMetrics(), _cancelPublishing.Token);
@@ -291,17 +393,17 @@ namespace ChartApp.Actors
         {
             try
             {
-                //terminate the scheduled task
+                // terminate the scheduled task
                 _cancelPublishing.Cancel(false);
                 _counter.Dispose();
             }
-            catch 
+            catch
             {
-                //don't care about additional "ObjectDisposed" exceptions
+                // we don't care about additional "ObjectDisposed" exceptions
             }
             finally
             {
-                base.PostStop();    
+                base.PostStop();
             }
         }
 
@@ -334,52 +436,61 @@ namespace ChartApp.Actors
 }
 ```
 
-Before we move onto the next phase, let's talk about what you just did.
+*Before we move onto the next step, let's talk about what you just did...*
 
-#### Functional Programming for Relability
+#### Borrowing from Functional Programming for reliability
+Did you notice how, in the constructor of `PerformanceCounterActor`, we took a `Func<PerformanceCounter>` and NOT a `PerformanceCounter`? If you didn't, go back and look now. What gives?
 
-First and foremost, notice how we take a `Func<PerformanceCounter>` in the constructor of the `PerformanceCounterActor` and not a `PerformanceCounter`? This is a functional programming technique, and we use it whenever we have to inject an `IDisposable` object into the constructor of an actor.
+This is a technique borrowed from functional programming. We use it whenever we have to inject an `IDisposable` object into the constructor of an actor. Why?
 
-Why? Because what happens the `PerformanceCounter` instance fails, becomes `Disposed`, and the `PerformanceCounterActor` needs to restart? **Every time the `PeformanceCounterActor` attempts to restart it will re-use its original constructor arguments, which includes reference types**. If we re-use the same reference to the disposed `PerformanceCounter` the actor will crash repeatedly until its parent decides to just kill it altogether.
+Well, we've got an actor that takes an `IDisposable` object as a parameter. So we're going to assume that this object will actually become `Disposed` at some point and will no longer be available.
 
-A better technique is to pass a function the `PerformanceCounterActor` can use to get a fresh instance of its `PeformanceCounter`, and that's exactly why we use a `Func<PerformanceCounter>` in the constructor, which gets invoked during the actor's `PreStart()` lifecycle method.
+What happens when the `PerformanceCounterActor` needs to restart?
+
+**Every time the `PeformanceCounterActor` attempts to restart it will re-use its original constructor arguments, which includes reference types**. If we re-use the same reference to the now-`Disposed` `PerformanceCounter`, the actor will crash repeatedly. Until its parent decides to just kill it altogether.
+
+A better technique is to pass a factory function that `PerformanceCounterActor` can use to get a fresh instance of its `PeformanceCounter`, so it knows that `PeformanceCounter` is available. That's exactly why we use a `Func<PerformanceCounter>` in the constructor, which gets invoked during the actor's `PreStart()` lifecycle method.
 
 ```csharp
-//create a new instance of the performance counter
+// create a new instance of the performance counter from factory that was passed in
 _counter = _performanceCounterGenerator();
 ```
 
-Because of this, we also have to clean up the `PeformanceCounter` instance inside the `PostStop` lifecycle method of the actor - because we know we're going to get a fresh instance of that counter if the actor restarts and we want to prevent resource leaks.
+Because our `PeformanceCounter` is `IDisposable`, we also need to clean up the `PeformanceCounter` instance inside the `PostStop` lifecycle method of the actor.
+
+We already know that we're going to get a fresh instance of that counter when the actor restarts, so we want to prevent resource leaks. This is how we do that:
 
 ```csharp
+// Actors/PerformanceCounterActor.cs
+// prevent resource leaks by disposing of our current PeformanceCounter
 protected override void PostStop()
 {
     try
     {
-        //terminate the scheduled task
+        // terminate the scheduled task
         _cancelPublishing.Cancel(false);
         _counter.Dispose();
     }
-    catch 
+    catch
     {
-        //don't care about additional "ObjectDisposed" exceptions
+        // we don't care about additional "ObjectDisposed" exceptions
     }
     finally
     {
-        base.PostStop();    
+        base.PostStop();
     }
 }
 ```
 
 #### Pub / Sub Made Easy
-
 The `PerformanceCounterActor` has pub / sub built into it by way of its handlers for `SubscribeCounter` and `UnsubscribeCounter` messages inside its `OnReceive` method:
 
 ```csharp
+// Actors/PerformanceCounterActor.cs
+// ...
 else if (message is SubscribeCounter)
 {
-    // add a subscription for this counter
-    // (it's parent's job to filter by counter types)
+    // add a subscription for this counter (it is up to the parent to filter by counter types)
     var sc = message as SubscribeCounter;
     _subscriptions.Add(sc.Subscriber);
 }
@@ -391,22 +502,25 @@ else if (message is UnsubscribeCounter)
 }
 ```
 
-In this example we're only going to have one subscriber (the instance of `ChartingActor` started from inside `Main.cs`) but with a little re-architecture you could have these actors publishing their `PeformanceCounter` data to multiple recipients. Maybe that's a do-it-yourself exercise you can try later? ;)
+In this lesson, `PerformanceCounterActor` only has one subscriber (`ChartingActor`, from inside `Main.cs`) but with a little re-architecting you could have these actors publishing their `PeformanceCounter` data to multiple recipients. Maybe that's a do-it-yourself exercise you can try later? ;)
 
-#### Scheduled Publishing of `PeformanceCounter` Data
-Inside the `PreStart` lifecycle method we use the `Context` object to get access to the `Scheduler`, and then we have the `PeformanceCounterActor` send itself a `GatherMetrics` method once every 250 milliseconds - which will give us a framerate of 4 FPS.
+#### How did we schedule publishing of `PeformanceCounter` data?
+Inside the `PreStart` lifecycle method, we used the `Context` object to get access to the `Scheduler`, and then we had `PeformanceCounterActor` send itself a `GatherMetrics` method once every 250 milliseconds.
+
+This causes `PeformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live Resource Monitor with a framerate of 4 FPS.
 
 ```csharp
- protected override void PreStart()
+// Actors/PerformanceCounterActor.cs 
+protected override void PreStart()
 {
-    //create a new instance of the performance counter
+    // create a new instance of the performance counter
     _counter = _performanceCounterGenerator();
     Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
         new GatherMetrics(), _cancelPublishing.Token);
 }
 ```
 
-Notice that inside the `PerformanceCounterActor`'s `PostStop` method we invoke the `CancellationTokenSource` we created to cancel this recurring message:
+Notice that inside the `PerformanceCounterActor`'s `PostStop` method, we invoke the `CancellationTokenSource` we created to cancel this recurring message:
 
 ```csharp
  //terminate the scheduled task
@@ -415,9 +529,9 @@ _cancelPublishing.Cancel(false);
 
 We do this for the same reason we `Dispose` the `PerformanceCounter` - to eliminate resource leaks and to prevent the `Scheduler` from sending recurring messages to dead or restarted actors.
 
-### Phase 5 - Create the `PerformanceCounterCoordinatorActor`
+### Step 5 - Create the `PerformanceCounterCoordinatorActor`
 
-The `PerformanceCounterCoordinatorActor` is the interface between the `ChartingActor` and all of the `PerformanceCounterActor` instances. 
+The `PerformanceCounterCoordinatorActor` is the interface between the `ChartingActor` and all of the `PerformanceCounterActor` instances.
 
 It has the following jobs:
 
@@ -426,7 +540,7 @@ It has the following jobs:
 * Manage all counter subscriptions for the `ChartingActor`; and
 * Tell the `ChartingActor` how to render each of the individual counter metrics (which colors and plot types to use for each `Series` that corresponds with a `PeformanceCounter`.)
 
-Sound complicated? Then prepare to be surprised when you see how small the code footprint is!
+Sounds complicated, right? Well, you'll be surprised when you see how small the code footprint is!
 
 Create a new file in the `/Actors` folder called `PerformanceCounterCoordinatorActor.cs` and type the following:
 
@@ -480,7 +594,7 @@ namespace ChartApp.Actors
         /// <summary>
         /// Methods for generating new instances of all <see cref="PerformanceCounter"/>s we want to monitor
         /// </summary>
-        private static readonly Dictionary<CounterType, Func<PerformanceCounter>> CounterGenerators = 
+        private static readonly Dictionary<CounterType, Func<PerformanceCounter>> CounterGenerators =
 			new Dictionary<CounterType, Func<PerformanceCounter>>()
         {
             {CounterType.Cpu, () => new PerformanceCounter("Processor", "% Processor Time", "_Total", true)},
@@ -492,17 +606,17 @@ namespace ChartApp.Actors
         /// Methods for creating new <see cref="Series"/> with distinct colors and names
 		/// corresponding to each <see cref="PerformanceCounter"/>
         /// </summary>
-        private static readonly Dictionary<CounterType, Func<Series>> CounterSeries = 
+        private static readonly Dictionary<CounterType, Func<Series>> CounterSeries =
 			new Dictionary<CounterType, Func<Series>>()
         {
-            {CounterType.Cpu, () => 
+            {CounterType.Cpu, () =>
 			new Series(CounterType.Cpu.ToString()){ ChartType = SeriesChartType.SplineArea,
 			 Color = Color.DarkGreen}},
-            {CounterType.Memory, () => 
-			new Series(CounterType.Memory.ToString()){ ChartType = SeriesChartType.FastLine, 
+            {CounterType.Memory, () =>
+			new Series(CounterType.Memory.ToString()){ ChartType = SeriesChartType.FastLine,
 			Color = Color.MediumBlue}},
-            {CounterType.Disk, () => 
-			new Series(CounterType.Disk.ToString()){ ChartType = SeriesChartType.SplineArea, 
+            {CounterType.Disk, () =>
+			new Series(CounterType.Disk.ToString()){ ChartType = SeriesChartType.SplineArea,
 			Color = Color.DarkRed}},
         };
 
@@ -510,7 +624,7 @@ namespace ChartApp.Actors
 
         private ActorRef _chartingActor;
 
-        public PerformanceCounterCoordinatorActor(ActorRef chartingActor) : 
+        public PerformanceCounterCoordinatorActor(ActorRef chartingActor) :
 			this(chartingActor, new Dictionary<CounterType, ActorRef>())
         {
         }
@@ -525,7 +639,7 @@ namespace ChartApp.Actors
                 if (!_counterActors.ContainsKey(watch.Counter))
                 {
                     //create a child actor to monitor this counter if one doesn't exist already
-                    var counterActor = Context.ActorOf(Props.Create(() => 
+                    var counterActor = Context.ActorOf(Props.Create(() =>
 						new PerformanceCounterActor(watch.Counter.ToString(), CounterGenerators[watch.Counter])));
 
                     //add this counter actor to our index
@@ -543,7 +657,7 @@ namespace ChartApp.Actors
             {
                 if (!_counterActors.ContainsKey(unwatch.Counter))
                 {
-                    return; // do nothing
+                    return; // noop
                 }
 
                 //unsubscribe the ChartingActor from receiving anymore updates
@@ -558,16 +672,16 @@ namespace ChartApp.Actors
     }
 }
 ```
-One more actor to go!
+Okay, we're almost there. Just one more actor to go!
 
-### Phase 6 - Create the `ButtonToggleActor`
-You didn't think we were going to let you just fire off those buttons you created in Phase 2 without adding some actors to manage them, did you? ;)
+### Step 6 - Create the `ButtonToggleActor`
+You didn't think we were going to let you just fire off those buttons you created in Step 2 without adding some actors to manage them, did you? ;)
 
-In this step we're going to add a new type of actor who, just like the `ChartingActor`, also runs on the UI thread.
+In this step, we're going to add a new type of actor that will run on the UI thread just like the `ChartingActor`.
 
-The `ButtonToggleActor`'s job to turn click events on the `Button` it manages into messages for the `PerformanceCounterCoordinatorActor` and to make sure that the visual state of the `Button` accurately reflects the state of the subscription managed by the `PeformanceCounterCoordinatorActor`.
+The job of the `ButtonToggleActor` is to turn click events on the `Button` it manages into messages for the `PerformanceCounterCoordinatorActor`. The `ButtonToggleActor` also makes sure that the visual state of the `Button` accurately reflects the state of the subscription managed by the `PeformanceCounterCoordinatorActor` (e.g. ON/OFF).
 
-Create a new file in the `/Actors` folder called `ButtonToggleActor.cs` and type the following:
+Okay, create a new file in the `/Actors` folder called `ButtonToggleActor.cs` and type the following:
 
 ```csharp
 // Actors/ButtonToggleActor.cs
@@ -597,7 +711,7 @@ namespace ChartApp.Actors
         private readonly Button _myButton;
         private readonly ActorRef _coordinatorActor;
 
-        public ButtonToggleActor(ActorRef coordinatorActor, Button myButton, 
+        public ButtonToggleActor(ActorRef coordinatorActor, Button myButton,
 				CounterType myCounterType, bool isToggledOn = false)
         {
             _coordinatorActor = coordinatorActor;
@@ -610,18 +724,18 @@ namespace ChartApp.Actors
         {
             if (message is Toggle && _isToggledOn)
             {
-                //toggle is currently on
+                // toggle is currently on
 
-                //stop watching this counter
+                // stop watching this counter
                 _coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Unwatch(_myCounterType));
 
                 FlipToggle();
             }
             else if (message is Toggle && !_isToggledOn)
             {
-                //toggle is currently off
+                // toggle is currently off
 
-                //start watching this counter
+                // start watching this counter
                 _coordinatorActor.Tell(new PerformanceCounterCoordinatorActor.Watch(_myCounterType));
 
                 FlipToggle();
@@ -634,10 +748,10 @@ namespace ChartApp.Actors
 
         private void FlipToggle()
         {
-            //flip the toggle
+            // flip the toggle
             _isToggledOn = !_isToggledOn;
-            
-            //change the text of the button
+
+            // change the text of the button
             _myButton.Text = string.Format("{0} ({1})", _myCounterType.ToString().ToUpperInvariant(),
                 _isToggledOn ? "ON" : "OFF");
         }
@@ -645,11 +759,12 @@ namespace ChartApp.Actors
 }
 ```
 
-### Phase 7 - Update the `ChartingActor`
+### Step 7 - Update the `ChartingActor`
+Home stretch! We're almost there.
 
-We need to integrate all of the new message types we defined in Phase 3 into the `ChartingActor`, and we also need to make some changes to the way we render the `Chart` since we're going to be making *live updates* to it continuously.
+We need to integrate all of the new message types we defined in Step 3 into the `ChartingActor`. We also need to make some changes to the way we render the `Chart` since we're going to be making *live updates* to it continuously.
 
-Start by defining the following at the very top of the `ChartingActor` class:
+To start, add this code at the very top of the `ChartingActor` class:
 
 ```csharp
 // Actors/ChartingActor.cs
@@ -665,7 +780,7 @@ public const int MaxPoints = 250;
 private int xPosCounter = 0;
 ```
 
-Next, let's add a new message type that the `ChartingActor` is going to use - add this inside the `Messages` region.
+Next, add a new message type that the `ChartingActor` is going to use. Add this inside the `Messages` region of `Actors/ChartingActor.cs`:
 
 ```csharp
 // Actors/ChartingActor.cs - inside the Messages region
@@ -692,7 +807,7 @@ Add the following method to the bottom of the `ChartingActor` class:
 private void SetChartBoundaries()
 {
     double maxAxisX, maxAxisY, minAxisX, minAxisY = 0.0d;
-    var allPoints = _seriesIndex.Values.Aggregate(new HashSet<DataPoint>(), 
+    var allPoints = _seriesIndex.Values.Aggregate(new HashSet<DataPoint>(),
 			(set, series) => new HashSet<DataPoint>(set.Concat(series.Points)));
     var yValues = allPoints.Aggregate(new List<double>(), (list, point) => list.Concat(point.YValues).ToList());
     maxAxisX = xPosCounter;
@@ -712,9 +827,9 @@ private void SetChartBoundaries()
 
 > **NOTE**: the `SetChartBoundaries()` method is used to make sure that the boundary area of our chart gets updated as we remove old points from the beginning of the chart as time elapses.
 
-Next, we're going to redefine all of our message handlers to use the new `SetChartBoundaries()` method. 
+Next, we're going to redefine all of our message handlers to use the new `SetChartBoundaries()` method.
 
-**Delete everything inside the previous `Individual Message Type Handlers` region** and **replace with the following**:
+**Delete everything inside the previous `Individual Message Type Handlers` region**, and then **replace it with the following**:
 
 ```csharp
 // Actors/ChartingActor.cs - inside the Individual Message Type Handlers region
@@ -722,26 +837,26 @@ private void HandleInitialize(InitializeChart ic)
 {
     if (ic.InitialSeries != null)
     {
-        //swap the two series out
+        // swap the two series out
         _seriesIndex = ic.InitialSeries;
     }
 
-    //delete any existing series
+    // delete any existing series
     _chart.Series.Clear();
 
-    //set the axes up
+    // set the axes up
     var area = _chart.ChartAreas[0];
     area.AxisX.IntervalType = DateTimeIntervalType.Number;
     area.AxisY.IntervalType = DateTimeIntervalType.Number;
 
     SetChartBoundaries();
 
-    //attempt to render the initial chart
+    // attempt to render the initial chart
     if (_seriesIndex.Any())
     {
         foreach (var series in _seriesIndex)
         {
-            //force both the chart and the internal index to use the same names
+            // force both the chart and the internal index to use the same names
             series.Value.Name = series.Key;
             _chart.Series.Add(series.Value);
         }
@@ -783,7 +898,7 @@ private void HandleMetrics(Metric metric)
 }
 ```
 
-And finally, we need to add a couple of `Receive<T>` handlers to the constructor for `ChartingActor`:
+And finally, add these `Receive<T>` handlers to the constructor for `ChartingActor`:
 
 ```csharp
 // Actors/ChartingActor.cs - add these below the original Receive<T> handlers in the constructor
@@ -791,10 +906,10 @@ Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
 Receive<Metric>(metric => HandleMetrics(metric));
 ```
 
-### Phase 8 - Replace the `Main_Load` Handler in `Main.cs`
+### Step 8 - Replace the `Main_Load` Handler in `Main.cs`
 Now that we have real data we want to plot in real-time, we need to replace the original `Main_Load` event handler, which supplied fake data to our `ChartActor` with a real one that sets us up for live charting.
 
-First things first, you need to add the following declarations to the top of the `Main` class inside `Main.cs`:
+Add the following declarations to the top of the `Main` class inside `Main.cs`:
 
 ```csharp
 // Main.cs - at top of Main class
@@ -802,34 +917,34 @@ private ActorRef _coordinatorActor;
 private Dictionary<CounterType, ActorRef> _toggleActors = new Dictionary<CounterType, ActorRef>();
 ```
 
-Then we can replace the `Main_Load` event handler.
+Then, replace the `Main_Load` event handler in the `Init` region so that it matches this:
 
 ```csharp
-// Main.cs - replace Main_Load event handler
+// Main.cs - replace Main_Load event handler in the Init region
 private void Main_Load(object sender, EventArgs e)
 {
     _chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart)), "charting");
     _chartActor.Tell(new ChartingActor.InitializeChart(null)); //no initial series
 
-    _coordinatorActor = Program.ChartActors.ActorOf(Props.Create(() => 
+    _coordinatorActor = Program.ChartActors.ActorOf(Props.Create(() =>
 			new PerformanceCounterCoordinatorActor(_chartActor)), "counters");
 
-    //CPU button toggle actor
+    // CPU button toggle actor
     _toggleActors[CounterType.Cpu] = Program.ChartActors.ActorOf(
         Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnCpu, CounterType.Cpu, false))
             .WithDispatcher("akka.actor.synchronized-dispatcher"));
 
-    //MEMORY button toggle actor
+    // MEMORY button toggle actor
     _toggleActors[CounterType.Memory] = Program.ChartActors.ActorOf(
        Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnMemory, CounterType.Memory, false))
            .WithDispatcher("akka.actor.synchronized-dispatcher"));
 
-    //DISK button toggle actor
+    // DISK button toggle actor
     _toggleActors[CounterType.Disk] = Program.ChartActors.ActorOf(
        Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnDisk, CounterType.Disk, false))
            .WithDispatcher("akka.actor.synchronized-dispatcher"));
 
-    //Set the CPU toggle to ON so we start getting some data
+    // Set the CPU toggle to ON so we start getting some data
     _toggleActors[CounterType.Cpu].Tell(new ButtonToggleActor.Toggle());
 }
 ```
@@ -837,16 +952,19 @@ private void Main_Load(object sender, EventArgs e)
 #### Wait a minute, what's this `WithDispatcher` nonsense?!
 `Props` has a built-in fluent interface which allows you to configure your actor deployments programmatically, and in this instance we decided to use the `Props.WithDispatcher` method to guarantee that each of the `ButtonToggleActor` instances run on the UI thread.
 
-> **NOTE**: If an actor has both a programmatic configuration declared via `Props`' fluent interface and a deployment configuration declared inside the `Config` used by the `ActorSystem`, the `Config` object will always override the programmatic configuration.
+As we saw in Lesson 2.1, you can also configure the `Dispatcher` for an actor via the HOCON config. So if an actor has a `Dispatcher` set in HOCON, *and* one declared programmatically via the `Props` fluent interface, which wins?
 
-### Phase 9 - Have Button Handlers Send `Toggle` Messages to Corresponding `ButtonToggleActor`
+*In case of a conflict, `Config` wins and `Props` loses .* If an actor has both a programmatic configuration declared via the `Props` fluent interface, and a deployment configuration declared inside the `Config` used by the `ActorSystem`, the `Config` object will always override the programmatic configuration.
 
-**LAST STEP.** We need to wire up the button handlers we created in Phase 3.
+### Step 9 - Have Button Handlers Send `Toggle` Messages to Corresponding `ButtonToggleActor`
+**THE LAST STEP.** We promise :) Thanks for hanging in there.
 
-Here's what the code should look like:
+Finally, we need to wire up the button handlers we created in Step 3.
+
+Wire up your button handlers in `Main.cs`. They should look like this:
 
 ```csharp
-// Main.cs - button handlers added in phase 3
+// Main.cs - wiring up the button handlers added in step 3
 private void btnCpu_Click(object sender, EventArgs e)
 {
     _toggleActors[CounterType.Cpu].Tell(new ButtonToggleActor.Toggle());
@@ -863,8 +981,6 @@ private void btnDisk_Click(object sender, EventArgs e)
 }
 ```
 
-Make sure that your `ButtonToggleActor`s correspond to their respective buttons!
-
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
 
@@ -873,10 +989,10 @@ Build and run `SystemCharting.sln` and you should see the following:
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
 ## Great job!
-*Phew*. That was *a lot* of code.
+*Wow*. That was *a lot* of code. Great job and thanks for sticking it out! We now have a fully functioning Resource Monitor app, implemented with actors.
 
-Every other lesson builds on this one, so make sure your code matches the output of the [/Completed/ folder](Completed/).
+Every other lesson builds on this one, so before continuing, please make sure your code matches the output of the [/Completed/ folder](Completed/).
 
-After this lesson you should understand how the `Scheduler` works and how you use it alongside patterns like Pub-sub with actors. 
+At this point. you should understand how the `Scheduler` works and how you can use it alongside patterns like Pub-sub to make very reactive systems with actors that have a comparatively small code footprint.
 
 **Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4).**
