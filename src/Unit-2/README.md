@@ -8,7 +8,7 @@ In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET,
 
 ## Concepts you'll learn
 
-In Unit 2 you're going to build your own version of Resource Monitor using Windows Forms, some of the data visualization tools built into .NET, and [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#"). 
+In Unit 2 you're going to build your own version of Resource Monitor using Windows Forms, some of the data visualization tools built into .NET, and [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#").
 
 In fact, here's what the final output from lesson 5 looks like:
 

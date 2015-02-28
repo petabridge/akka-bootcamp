@@ -1,71 +1,125 @@
 # Lesson 2.4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`
 
-In this lesson we're going to learn about one the really cool things actors can do - [change their behavior at run-time](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")! Woah!
-
-This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received!
+In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
 
 ## Key Concepts / Background
-
-Let's start with a real-world scenario for when you might want to change an actor's behavior...
+Let's start with a real-world scenario in which you'd want the ability to change an actor's behavior.
 
 ### Real-World Scenario: Authentication
-
 Imagine you're building a simple chat system using Akka.NET actors, and here's what your `UserActor` looks like - this is the actor that is responsible for all communication to and from a specific human user.
 
 ```csharp
-public class UserActor : ReceiveActor{
+public class UserActor : ReceiveActor {
 	private readonly string _userId;
 	private readonly string _chatRoomId;
 
-	public UserActor(string userId, string chatRoomId){
+	public UserActor(string userId, string chatRoomId) {
 		_userId = userId;
 		_chatRoomId = chatRoomId;
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
+			inc => {
 				// print message for user
 			});
 		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// send message to chatroom				
+			inc => {
+				// send message to chatroom
 			});
 	}
 }
 ```
 
-So we have basic chat working - yay! But... There's nothing to guarantee that this user is who they say they are. 
+So we have basic chat working - yay! But&hellip; right now there's nothing to guarantee that this user is who they say they are. This system needs some authentication.
 
-How could we rewrite this actor to handle these same types of messages differently when:
+How could we rewrite this actor to handle these same types of chat messages differently when:
 
-* The user is **authenticating**;
-* The user is **authenticated** (yay!); or
-* The user **couldn't authenticate** (doh!) ?
+* The user is **authenticating**
+* The user is **authenticated**, or
+* The user **couldn't authenticate**?
 
-Simple! We can use [switchable actor behaviors](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - switchable actor behavior") to do this!
+Simple: we can use switchable actor behaviors to do this!
 
-### Switching Message-Handling Behaviors
+### What is switchable behavior?
+One of the core attributes of an actor in the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) is that an actor can change its behavior between messages that it processes.
 
-Here's how we might implement switchable message behavior in our `UserActor` from the previous snippet:
+This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received.
+
+Switchable behavior is one of the most powerful and fundamental capabilities of any true actor system. It's one of the key features enabling actor reusability, and helping you to do a massive amount of work with a very small code footprint.
+
+How does switchable behavior work?
+
+#### The Behavior Stack
+Akka.NET actors have the concept of a "behavior stack". Whichever method sits at the top of the behavior stack defines the actor's current behavior. Currently, that behavior is `Authenticating()`:
+
+![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
+
+#### Use `Become` to adopt a new behavior
+Whenever we call `Become`, we tell the `ReceiveActor` to push a new behavior onto the stack. This new behavior dictates which `Receive` methods will be used to process any messages delivered to an actor.
+
+Here's what happens to the behavior stack when our example actor `Become`s `Authenticated`:
+
+![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
+
+> NOTE: By default, `Become` will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time. This is because most Akka.NET users don't use `Unbecome`.
+>
+> To preserve the previous behavior on the stack, call `Become(Method(), false)`
+
+#### Use `Unbecome` to revert to old behavior
+To make an actor revert to the previous behavior, all we have to do is call `Unbecome`.
+
+Whenever we call `Unbecome`, we pop our current behavior off of the stack and replace it with the previous behavior from before (again, this new behavior will dictate which `Receive` methods are used to handle incoming messages).
+
+Here's what happens to the behavior stack when our example actor `Unbecome`s:
+
+![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
+
+### Isn't it problematic for actors to change behaviors?
+No, actually it's safe and is a feature that gives your `ActorSystem` a ton of flexibility and code reuse.
+
+Here are some common questions about switchable behavior:
+
+#### When is the new behavior applied?
+We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). The new message processing behavior won't be applied until the next message arrives.
+
+#### How deep can the behavior stack go?
+The stack can go *really* deep, but it's not unlimited.
+
+Also, each time your actor restarts, the behavior stack is cleared and the actor starts from the initial behavior you've coded.
+
+#### What happens if you call `Unbecome` and with nothing left in the behavior stack?
+The answer is: *nothing* - `Unbecome` is a safe method and won't do anything unless there's more than one behavior in the stack.
+
+
+### Back to the real-world example
+Okay, now that you understand switchable behavior, let's return to our real-world scenario and see how it is used. Recall that we need to add authentication to our chat system actor.
+
+So, how could we rewrite this actor to handle chat messages differently when:
+
+* The user is **authenticating**
+* The user is **authenticated**, or
+* The user **couldn't authenticate**?
+
+Here's one way we can implement switchable message behavior in our `UserActor` to handle basic authentication:
 
 ```csharp
-public class UserActor : ReceiveActor{
+public class UserActor : ReceiveActor {
 	private readonly string _userId;
 	private readonly string _chatRoomId;
 
-	public UserActor(string userId, string chatRoomId){
+	public UserActor(string userId, string chatRoomId) {
 		_userId = userId;
 		_chatRoomId = chatRoomId;
-		
-		//start with the Authenticating behavior
+
+		// start with the Authenticating behavior
 		Authenticating();
 	}
 
-	protected override void PreStart(){
-		//start the authentication process for this user
+	protected override void PreStart() {
+		// start the authentication process for this user
 		Context.ActorSelection("/user/authenticator/")
 			.Tell(new AuthenticatePlease(_userId));
 	}
 
-	private void Authenticating(){
+	private void Authenticating() {
 		Receive<AuthenticationSuccess>(auth => {
 			Become(Authenticated); //switch behavior to Authenticated
 		});
@@ -73,123 +127,101 @@ public class UserActor : ReceiveActor{
 			Become(Unauthenticated); //switch behavior to Unauthenticated
 		});
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
+			inc => {
 				// can't accept message yet - not auth'd
 			});
 		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// can't send message yet - not auth'd			
+			inc => {
+				// can't send message yet - not auth'd
 			});
 	}
 
-	private void Unauthenticated(){
+	private void Unauthenticated() {
 		//switch to Authenticating
 		Receive<RetryAuthentication>(retry => Become(Authenticating));
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
+			inc => {
 				// have to reject message - auth failed
 			});
 		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// have to reject message - auth failed	
+			inc => {
+				// have to reject message - auth failed
 			});
 	}
 
-	private void Authenticated(){
+	private void Authenticated() {
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
+			inc => {
 				// print message for user
 			});
 		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => { 
-				// send message to chatroom				
+			inc => {
+				// send message to chatroom
 			});
 	}
 }
 ```
 
-Woah! What's all this stuff? We took the `Receive<T>` handlers we defined on our receive Actor and put them into three separate methods:
+Whoa! What's all this stuff? Let's review it.
 
-* `Authenticating()` - the default behavior we use for when the user is attempting to authenticate;
-* `Authenticated()` - when the authentication operation is successful; and
-* `Unauthenticated()` - when the authentication operation is **not** successful.
+First, we took the `Receive<T>` handlers defined on our `ReceiveActor` and moved them into three separate methods. Each of these methods represents a state that will control how the actor processes messages:
 
-We called `Authenticating()` from the constructor, which meant that all of `UserActor`'s  `Receive<T>` handlers would be only defined by what's in the `Authenticating()` method.
+* `Authenticating()`: this behavior is used to process messages when the user is attempting to authenticate (initial behavior).
+* `Authenticated()`: this behavior is used to process messages when the authentication operation is successful; and,
+* `Unauthenticated()`: this behavior is used to process messages when the authentication operation fails.
 
-However, whenever we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure` we  use the `Become` method ([docs](http://getakka.net/wiki/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to `Authenicated` or `Unauthenticated` respectively. 
+We called `Authenticating()` from the constructor, so our actor began in the `Authenticating()` state.
 
-What's going on there?
+*This means that only the `Receive<T>` handlers defined in the `Authenticating()` method will be used to process messages (initially)*.
 
-### The Behavior Stack
+However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](http://getakka.net/wiki/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
 
-Akka.NET actors have the concept of a "behavior stack":
+### Can I switch behaviors in an `UntypedActor`?
+Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `Become` and `Unbecome` via the `ActorContext`, instead of calling them directly.
 
-![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
+These are the API calls inside an `UntypedActor`:
 
-Whichever method sits at the top of the behavior stack defines the actor's current behavior. 
+* `Context.Become(Receive rec, bool discardPrevious = true)` - pushes a new behavior on the stack or
+* `Context.Unbecome()` - pops the current behavior and switches to the previous (if applicable.)
 
-> The current behavior of an actor dictates which `Receive` methods will be used to process any messages delivered to an actor.
-
-Whenever we call `Become`, we tell the `ReceiveActor` to push a new behavior onto the stack:
-
-![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
-
-And whenever we call `Unbecome`, we pop our current behavior off of the stack and replace it with the previous behavior from before:
-
-![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
-
-> NOTE: By default, `Become` will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time. This is because most Akka.NET users don't use `Unbecome`.
-> 
-> To preserve the previous behavior on the stack, call `Become(Method(), false)`
-
-We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). So the new message processing behavior doesn't get applied until the next message arrives.
-
-How deep can the behavior stack go? *Really* deep, but not to an unlimited extent. And each time your actor restarts the behavior stack is cleared and you start from scratch.
-
-And what happens if you call `Unbecome` and there's nothing left in the behavior stack? The answer is: *nothing* - `Unbecome` is a safe method and won't do anything unless there's more than one behavior in the stack.
-
-### Switchable Behaviors Also Work for `UntypedActor`
-
-`Become` looks slightly different for `UntypedActor` instances:
+The first argument to `Context.Become` is a `Receive` delegate, which is really any method with the following signature:
 
 ```csharp
-public class MyActor : UntypedActor{
-	protected override void OnReceive(object message){
-		if(message is SwitchMe){
-			//preserve the previous behavior on the stack
+void MethodName(object someParameterName);
+```
+
+This delegate is just used to represent another method in the actor that receives a message and represents the new behavior state.
+
+Here's an example (`OtherBehavior` is the `Receive` delegate):
+
+```csharp
+public class MyActor : UntypedActor {
+	protected override void OnReceive(object message) {
+		if(message is SwitchMe) {
+			// preserve the previous behavior on the stack
 			Context.Become(OtherBehavior, false);
 		}
 	}
 
-	private void OtherBehavior(object message){
-		if(message is SwitchMeBack){
-			//switch back to previous behavior on the stack
+	// OtherBehavior is a Receive delegate
+	private void OtherBehavior(object message) {
+		if(message is SwitchMeBack) {
+			// switch back to previous behavior on the stack
 			Context.Unbecome();
 		}
 	}
 }
 ```
 
-To switch behaviors in an `UntypedActor`, you have to use the following methods:
-
-* `Context.Become(Receive rec, bool discardPrevious = true)` - pushes a new behavior on the stack or
-* `Context.Unbecome()` - pops the current behavior and switches to the previous (if applicable.)
-
-`Context.Become` takes a `Receive` delegate, which is really any method with the following signature:
-
-```csharp
-void MethodName(object someParameterName);
-```
 
 Aside from those syntactical differences, behavior switching works exactly the same way across both `UntypedActor` and `ReceiveActor`.
 
-Now let's put behavior switching to work for us!
+Now, let's put behavior switching to work for us!
 
 ## Exercise
 In this lesson we're going to add the ability to pause and resume live updates to the `ChartingActor` via switchable actor behaviors.
 
 ### Phase 1 - Add a New `Pause / Resume` Button to `Main.cs`
-
 This is the last button you'll have to add, we promise.
 
 Go to the **[Design]** view of `Main.cs` and add a new button with the following text: `PAUSE ||`
@@ -328,7 +360,7 @@ private void Charting()
         Become(Paused, false);
     });
 }
-``` 
+```
 
 ### Phase 3 - Update the `Main_Load` and `Pause / Resume` Click Handler in Main.cs
 Since we changed the constructor arguments for `ChartingActor` in Phase 2, we need to fix this inside our `Main_Load` event handler.
@@ -364,6 +396,6 @@ But wait a minute, what happens if I toggle a chart on or off when the `Charting
 
 ### DOH!!!!!! It doesn't work!
 
-*This is the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
+*This is exactly the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
 
 **Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
