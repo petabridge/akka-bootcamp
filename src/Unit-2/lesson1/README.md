@@ -63,7 +63,7 @@ Why? Because *running actors on the UI thread eliminates all of the normal synch
 #### How do `Dispatcher`s relate to our broken chart?
 As we realized before, our chart isn't updating because the actor doing the graphing (`ChartingActor`) is not synchronizing its events with the UI thread.
 
-To solve this problem, all we have to do is change the `ChartingActor` to use the `CurrentSynchronizationContextDispatcher`, and it will automatically run on / synchronize with the UI thread for us!
+To solve this problem, all we have to do is change the `ChartingActor` to use the `CurrentSynchronizationContextDispatcher`, and it will automatically run on the UI thread for us!
 
 BUT: we want to do this without touching our actual actor code. How can we deploy the `ChartingActor` so that it uses the `CurrentSynchronizationContextDispatcher` without modifying the actor itself?
 
@@ -75,15 +75,15 @@ Akka.NET leverages a configuration format, called HOCON, to allow you to configu
 #### What is HOCON?
 [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's ActorRefProvider implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
-Values raturned by HOCON are strongly typed (i.e. you can fetch out an `int`, a `Timespan`, etc).
+Values returned by HOCON are strongly typed (i.e. you can fetch out an `int`, a `Timespan`, etc).
 
 #### What can I do with HOCON?
-HOCON allows you to embed easily-readable configuration inside of the otherwise hard-to-read XML `Config`.  One other nice feature is that you can query an entire section of the config and HOCON will return you fully-parsed object that you can use.
+HOCON allows you to embed easily-readable configuration inside of the otherwise hard-to-read XML in App.config and Web.config.  HOCON also lets you query configs by their section paths, and those sections are exposed strongly typed and parsed values you can use inside your applications.
 
 HOCON also lets you nest and/or chain sections of configuration, creating layers of granularity and providing you a semantically namespaced config.
 
 #### What is HOCON usually used for?
-HOCON is commonly used for tuning logging settings, enabling special modules (such as `Akka.Persistence`), or configuring deployments such as the `Dispatcher` for our `ChartingActor` in this lesson.
+HOCON is commonly used for tuning logging settings, enabling special modules (such as `Akka.Remote`), or configuring deployments such as the `Dispatcher` for our `ChartingActor` in this lesson.
 
 For example, let's configure an `ActorSystem` with HOCON:
 
@@ -105,9 +105,9 @@ As you can see in that example, a HOCON `Config` object can be parsed from a `st
 > NOTE: In this example we configured a specific network transport for use with `Akka.Remote`, a concept that goes well beyond what's covered in Unit 2. Don't worry about the specifics for now.
 
 #### "Deployment"? What's that?
-Deployment is a vague concept, but it's closely tied to HOCON. "Deployed" basically means "instantiated and put into service within the `ActorSystem`".
+Deployment is a vague concept, but it's closely tied to HOCON. An actor is "deployed" when it is instantiated and put into service within the `ActorSystem` somewhere.
 
-When an actor is instantiated within the `ActorSystem`, it can be deployed in one of two places: inside the local process, or in another process.
+When an actor is instantiated within the `ActorSystem` it can be deployed in one of two places: inside the local process or in another process (this is what `Akka.Remote` does.)
 
 When an actor is deployed by the `ActorSystem`, it has a range of configuration settings. These settings control a wide range of behavior options for the actor, such as: is this actor going to be a router? What `Dispatcher` will it use? What type of mailbox will it have? (More on these concepts in later lessons.)
 

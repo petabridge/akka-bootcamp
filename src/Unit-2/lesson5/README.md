@@ -36,7 +36,7 @@ public class UserActor : ReceiveActor, WithUnboundedStash {
 ```
 
 #### When do we want a `BoundedStash` vs. an `UnboundedStash`
-99% of the time you are going to want to use `UnboundedStash` - which allows your `Stash` to accept an unlimited number of messages. a `BoundedStash` should only be used when you want to set a maximum number of messages that can be stashed at any given time - your actor will crash whenever your `Stash` exceeds the limit of your `BoundedStash`.
+99% of the time you are going to want to use `UnboundedStash` - which allows your `Stash` to accept an unlimited number of messages. A `BoundedStash` should only be used when you want to set a maximum number of messages that can be stashed at any given time - your actor will crash whenever your `Stash` exceeds the limit of your `BoundedStash`.
 
 #### Do we have to initialize the `Stash`?
 But wait a minute, there's a new `Stash` property on the `UserActor` that includes a public getter and setter - does this mean that we have to initialize `Stash` ourselves? **NO!**
@@ -54,13 +54,6 @@ Inside your actor's `OnReceive` or `Receive<T>` handler, you can call `Stash.Sta
 You only need to stash messages that you don't want to process now - in the below visualization, our actor happily processes Message 1 but stashes messages 2 and 0.
 
 Note: calling `Stash()` automatically stashes the current message, so you don't pass the message to the `Stash.Stash()` call.
-
-```csharp
-Stash.Stash() // good
-Stash.Stash(message) // bad
-// you do not pass an argument to the call to Stash()
-// as Stash takes the current message automatically
-```
 
 This is what that the full sequence of stashing a message looks like:
 

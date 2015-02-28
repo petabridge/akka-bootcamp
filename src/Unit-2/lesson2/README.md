@@ -123,7 +123,7 @@ Same as the previous.
 ##### 6) `ReceiveAny()`
 This is a catch-all handler which accepts all `object` instances. This is usually used to handle any messages that aren't handled by a previous, more specific `Receive()` handler.
 
-### What if I want to handle very similar messages in different ways?
+### The order in which you declare `Receive<T>` handlers matters
 What happens if we need to handle overlapping types of messages? 
 
 Consider the below messages: they start with the same substring, but assume they need to be handled differently.
@@ -155,10 +155,7 @@ What happens in this case is that the second handler (for `s.StartsWith("AkkaDot
 
 ***The order of the `Receive<T>` handlers matters!***
 
-### `ReceiveActor`s are lazy
-**`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler.**
-
-`ReceiveActor` [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/wiki/ReceiveActor#handler-priority).
+This is because **`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler** and it [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/wiki/ReceiveActor#handler-priority).
 
 So, how do we solve the above problem, where our handler for strings starting with "AkkaDotNetSuccess" is never triggered?
 
@@ -184,7 +181,7 @@ public class StringActor : ReceiveActor
 ```
 
 ### Where do I define message handlers in a `ReceiveActor`?
-`ReceiveActor`s do not have an `OnReceive()` method. This is replaced by the `Action` contained in the `Receive<T>` handler.
+`ReceiveActor`s do not have an `OnReceive()` method. 
 
 Instead, you must hook up `Receive` message handlers directly in the `ReceiveActor` constructor, or in a method called to by that constructor.
 
@@ -321,10 +318,3 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 Nice work, again. After having completed this lesson you should have a much better understanding of pattern matching in Akka.NET and an appreciation for how `ReceiveActor` is different than `UntypedActor`.
 
 **Let's move onto [Lesson 3 - Using the `Scheduler` to Send Recurring Messages](../lesson3).**
-
-####
-NOTES:
-
-- need some review of the key concepts from unit 1 throughout here
-- whenever we touch on something
-- in exercise, reinforce why and how we're using the `ReceiveActor` and why thatis preferential

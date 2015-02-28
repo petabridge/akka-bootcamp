@@ -5,7 +5,7 @@ Where are we? At this point, we have our basic chart set up, along with our `Cha
 
 In this lesson, we'll be hooking up the various components of our system to make our Resource Monitor application actually chart system resource consumption! **This is a big lesson—it's the core of Unit 2—so get your coffee and get comfortable!**
 
-To make our Resource Monitor work as intended, we need to wire up `ChartingActor` to the actual system [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#") for the graph data. This needs to happen on an ongoing basis so that our chart regularly updates.
+To make our resource monitoring app work as intended, we need to wire up `ChartingActor` to the actual system [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx "PerformanceCounter Class - C#") for the graph data. This needs to happen on an ongoing basis so that our chart regularly updates.
 
 One of the most powerful capabilities Akka.NET exposes is the ability to schedule messages to be sent in the future, including regularly occurring messages. And it turns out, this is exactly the functionality we need to have `ChartingActor` regularly update our graphs.
 
@@ -80,39 +80,6 @@ system
 
 That's it!
 
-### Can I schedule a message to go to multiple actors?
-Sure. There are two ways to do this: either manually schedule multiple messages, or schedule an `Action` that will forward on the message to those actors.
-
-We'll demonstrate doing this with an `Action`:
-
-```csharp
-// custom message type
-public class MultipleActorsNeedThisMessage {}
-
-public class MessageForwarder
-{
-    public static Action ForwardMessage<TMessage>()
-    {
-        actor1.Tell(TMessage);
-        actor2.Tell(TMessage);
-        actor3.Tell(TMessage);
-    }
-}
-
-// schedule a message that needs to be forwarded to multiple actors
-public class MyActor : UntypedActor
-{
-    protected override void PreStart()
-    {
-        // schedule a message that needs to be forwarded on
-        // will occur initially in 250ms, then every 5 minutes
-        Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), // initial delay of 250ms
-        								  TimeSpan.FromMinutes(5), // recur every 5 minutes
-							              MessageForwarder.ForwardMessage<MultipleActorsNeedThisMessage>());
-    }
-}
-```
-
 ### How do I cancel a scheduled message?
 What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken`, which is retrieved from a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that.
 
@@ -140,10 +107,8 @@ cancellation.Cancel();
 
 That said, there are two situations of imprecision that we're aware of:
 
-1. Scheduled messages become `Task`s, which are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
-2. Alternatively, if your scheduling requirements demand precision below 15 milliseconds, then the `Scheduler` is not precise enough for you. Nor is any typical operating system such as Windows, OSX, or Linux. This is because 15ms is the typical interval on which OSs update their system clock (their "clock granularity"), so these OSs can't support any timing more precise than their own system clocks.
-
-Frankly, if you need more precision than the CLR `Task.Delay` or OS clock granularity allows, you probably already know much more about this than we've said here. So we wouldn't worry about it.
+1. Scheduled messages become are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
+2. If your scheduling requirements demand precision below 15 milliseconds then the `Scheduler` is not precise enough for you. Nor is any typical operating system such as Windows, OSX, or Linux. This is because ~15ms is the interval in which Windows and other general OSes update their system clock ("clock resolution"), so these OSs can't support any timing more precise than their own system clocks.
 
 ### What are the various overloads of `Schedule` and `ScheduleOnce`?
 Here are all the overload options you have for scheduling a message.
@@ -201,9 +166,7 @@ public class PubActor : ReceiveActor {
 }
 ```
 
-Pub sub is trivial to implement in Akka.NET, and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it.
-
-Pub/sub is also another way you could schedule a message to go to multiple actors at once: just create a `ForwardingActor` whose only job is to forward messages it receives on to the actors that need the message.
+Pub/sub is trivial to implement in Akka.NET and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it.
 
 Now that you're familiar with how the `Scheduler` works, lets put it to use and make our charting UI reactive!
 
@@ -449,7 +412,7 @@ namespace ChartApp.Actors
 
 *Before we move onto the next step, let's talk about what you just did...*
 
-#### Borrowing from Functional Programming for reliability
+#### Functional Programming for Reliability
 Did you notice how, in the constructor of `PerformanceCounterActor`, we took a `Func<PerformanceCounter>` and NOT a `PerformanceCounter`? If you didn't, go back and look now. What gives?
 
 This is a technique borrowed from functional programming. We use it whenever we have to inject an `IDisposable` object into the constructor of an actor. Why?
@@ -460,7 +423,7 @@ What happens when the `PerformanceCounterActor` needs to restart?
 
 **Every time the `PeformanceCounterActor` attempts to restart it will re-use its original constructor arguments, which includes reference types**. If we re-use the same reference to the now-`Disposed` `PerformanceCounter`, the actor will crash repeatedly. Until its parent decides to just kill it altogether.
 
-A better technique is to pass a factory function that `PerformanceCounterActor` can use to get a fresh instance of its `PeformanceCounter`, so it knows that `PeformanceCounter` is available. That's exactly why we use a `Func<PerformanceCounter>` in the constructor, which gets invoked during the actor's `PreStart()` lifecycle method.
+A better technique is to pass a factory function that `PerformanceCounterActor` can use to get a fresh instance of its `PeformanceCounter`. That's why we use a `Func<PerformanceCounter>` in the constructor, which gets invoked during the actor's `PreStart()` lifecycle method.
 
 ```csharp
 // create a new instance of the performance counter from factory that was passed in
@@ -518,7 +481,7 @@ In this lesson, `PerformanceCounterActor` only has one subscriber (`ChartingActo
 #### How did we schedule publishing of `PeformanceCounter` data?
 Inside the `PreStart` lifecycle method, we used the `Context` object to get access to the `Scheduler`, and then we had `PeformanceCounterActor` send itself a `GatherMetrics` method once every 250 milliseconds.
 
-This causes `PeformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live Resource Monitor with a frame rate of 4 FPS.
+This causes `PeformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live graph with a frame rate of 4 FPS.
 
 ```csharp
 // Actors/PerformanceCounterActor.cs
@@ -965,7 +928,7 @@ private void Main_Load(object sender, EventArgs e)
 
 As we saw in Lesson 2.1, you can also configure the `Dispatcher` for an actor via the HOCON config. So if an actor has a `Dispatcher` set in HOCON, *and* one declared programmatically via the `Props` fluent interface, which wins?
 
-*In case of a conflict, `Config` wins and `Props` loses .* If an actor has both a programmatic configuration declared via the `Props` fluent interface, and a deployment configuration declared inside the `Config` used by the `ActorSystem`, the `Config` object will always override the programmatic configuration.
+*In case of a conflict, `Config` wins and `Props` loses .* Any conflicting settings declared by the `Props` fluent interface will always be overriden by what was declared in configuration.
 
 ### Step 9 - Have Button Handlers Send `Toggle` Messages to Corresponding `ButtonToggleActor`
 **THE LAST STEP.** We promise :) Thanks for hanging in there.
