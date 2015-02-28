@@ -37,19 +37,20 @@ In Unit 1 you will learn:
 
 **[Begin Unit 1](src/Unit-1)**.
 
-### Unit 2 (TBA)
+### Unit 2
 In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
 
 In Unit 2 you will learn:
 
-1. How to use `ReceiveActor` to handle more complex message matches;
-2. How (and why) to change your actors' behaviors at run-time;
-3. How to use `Stash` with your actors to defer processing of messages until they're ready;
-3. How to handle system failures gracefully;
-4. How to configure and use logging inside your actors; and
-5. How to use HOCON configuration inside your `ActorSystem`.
+1. How to use [HOCON configuration](http://getakka.net/wiki/Configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
+1. How to configure your actor's [Dispatcher](http://getakka.net/wiki/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
+1. How to handle more sophisticated types of pattern matching using `ReceiveActor`;
+1. How to use the `Scheduler` to send recurring messages to actors;
+1. How to use the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) between actors;
+1. How and why to switch actor's behavior at run-time; and
+2. How to `Stash` messages for deferred processing.
 
-> NOTE: Unit 2 is not yet available.
+**[Begin Unit 2](src/Unit-2)**.
 
 ### Unit 3 (TBA)
 In Unit 3, we will learn to make our system more scalable and resilient.
