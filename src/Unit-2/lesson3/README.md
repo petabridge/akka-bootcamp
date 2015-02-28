@@ -114,7 +114,7 @@ public class MyActor : UntypedActor
 ```
 
 ### How do I cancel a scheduled message?
-What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken`, which is retrieved from a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that. 
+What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken`, which is retrieved from a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that.
 
 First, the message must be scheduled so that it can be cancelled. If a message is cancelable, we then just have to call `Cancel()` on our handle to the `CancellationTokenSource` and it will not be delivered. For example:
 
@@ -124,7 +124,7 @@ var system = ActorSystem.Create("MySystem");
 var someActor = system.ActorOf<SomeActor>("someActor");
 var someMessage = new FetchFeed() {Url = ...};
 
-// first, set up the message so that it can be cancelled
+// first, set up the message so that it can be canceled
 system
    .Scheduler
    .ScheduleOnce(TimeSpan.FromMinutes(30),
@@ -136,12 +136,21 @@ cancellation.Cancel();
 ```
 
 ### How precise is the timing of scheduled messages?
-Scheduled messages are precise enough for almost all use cases, but if you need timing at a granularity below 15 milliseconds, then the `Scheduler` is not precise enough for you (nor are typical operating systems, like Windows/OSX/Linux). This is because 15ms is how often typical OSs actually update the system clock (their "clock granularity").
+***Scheduled messages are more than precise enough for all the use cases we've come across.***
+
+That said, there are two situations of imprecision that we're aware of:
+
+1. Scheduled messages become `Task`s, which are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
+2. Alternatively, if your scheduling requirements demand precision below 15 milliseconds, then the `Scheduler` is not precise enough for you. Nor is any typical operating system such as Windows, OSX, or Linux. This is because 15ms is the typical interval on which OSs update their system clock (their "clock granularity"), so these OSs can't support any timing more precise than their own system clocks.
+
+Frankly, if you need more precision than the CLR `Task.Delay` or OS clock granularity allows, you probably already know much more about this than we've said here. So we wouldn't worry about it.
 
 ### What are the various overloads of `Schedule` and `ScheduleOnce`?
-Here are all the overload options you have for scheduling.
+Here are all the overload options you have for scheduling a message.
 
 #### Overloads of `Schedule`
+These are the various API calls you can make to schedule recurring messages.
+
 ```csharp
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action);
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action, CancellationToken cancellationToken);
@@ -150,6 +159,8 @@ public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver
 ```
 
 #### Overloads of `ScheduleOnce`
+These are the various API calls you can make to schedule one-off messages.
+
 ```csharp
 public Task ScheduleOnce(TimeSpan initialDelay, Action action);
 public Task ScheduleOnce(TimeSpan initialDelay, Action action, CancellationToken cancellationToken);
@@ -158,7 +169,7 @@ public Task ScheduleOnce(TimeSpan initialDelay, ActorRef receiver, object messag
 ```
 
 > **NOTE: THE `Scheduler` API is changing soon.** [The `Scheduler` API is going to be modified as part of the upcoming Akka.NET v1.0 release](https://github.com/akkadotnet/akka.net/issues/468).
-> 
+>
 > All of the `Scheduler`'s capabilities will remain intact, but the API signatures will be different.
 
 ### How do I do Pub/Sub with Akka.NET Actors?
@@ -168,10 +179,10 @@ It's actually very simple. Many people expect this to be very complicated and ar
 public class PubActor : ReceiveActor {
 	// HashSet automatically eliminates duplicates
 	private HashSet<ActorRef> _subscribers;
-	
+
 	PubActor() {
 		_subscribers = new HashSet<ActorRef>();
-		
+
 		Receive<Subscribe>(sub => {
 			_subscribers.Add(sub.ActorRef);
 		});
@@ -190,9 +201,9 @@ public class PubActor : ReceiveActor {
 }
 ```
 
-Pub sub is trivial to implement in Akka.NET, and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it. 
+Pub sub is trivial to implement in Akka.NET, and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it.
 
-Pub/sub is also another way you could schedule a message to go to multiple actors at once—just create a `ForwardingActor` whose only job is to forward messages it receives on to the actors that need the message.
+Pub/sub is also another way you could schedule a message to go to multiple actors at once: just create a `ForwardingActor` whose only job is to forward messages it receives on to the actors that need the message.
 
 Now that you're familiar with how the `Scheduler` works, lets put it to use and make our charting UI reactive!
 
@@ -507,10 +518,10 @@ In this lesson, `PerformanceCounterActor` only has one subscriber (`ChartingActo
 #### How did we schedule publishing of `PeformanceCounter` data?
 Inside the `PreStart` lifecycle method, we used the `Context` object to get access to the `Scheduler`, and then we had `PeformanceCounterActor` send itself a `GatherMetrics` method once every 250 milliseconds.
 
-This causes `PeformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live Resource Monitor with a framerate of 4 FPS.
+This causes `PeformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live Resource Monitor with a frame rate of 4 FPS.
 
 ```csharp
-// Actors/PerformanceCounterActor.cs 
+// Actors/PerformanceCounterActor.cs
 protected override void PreStart()
 {
     // create a new instance of the performance counter
