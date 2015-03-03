@@ -339,7 +339,7 @@ private void DoPrintInstructions()
 #### Add `FileObserver`
 This is a utility class that we're providing for you to use. It does the low-level work of actually watching a file for changes.
 
-Create a new class called `FileObserver` and copy in the code for [FileObserver.cs](Completed/FileObserver.cs):
+Create a new class called `FileObserver` and type in thi code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
 
 ```csharp
 // FileObserver.cs
@@ -373,6 +373,9 @@ namespace WinTail
         /// </summary>
         public void Start()
         {
+            // Need this for Mono 3.12.0 workaround
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled"); // uncomment this line if you're running on Mono!
+
             // make watcher to observe our specific file
             _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
 
