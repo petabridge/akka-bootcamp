@@ -19,7 +19,7 @@ In F#, however, the primary mechanism for thinking about code is with functions 
 
 **Further reading: [What is an Akka.NET Actor](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)?**
 
-**Further reading about F#:[F# API Support in Akka.NET](https://github.com/akkadotnet/akka.net/tree/dev/src/core/Akka.FSharp)**
+**Further reading about F#: [F# API Support in Akka.NET](https://github.com/akkadotnet/akka.net/tree/dev/src/core/Akka.FSharp)**
 
 So in F#, Akka.NET actors are nothing more than functions. 
 
@@ -94,39 +94,19 @@ Install-Package Akka.FSharp
 
 This will install the latest Akka.NET binaries, which you will need in order to compile this sample.
 
+Note that the `open` keyword is used at the top of `Program.fs` to reference the necessary Akka modules:
+
 ```
 // in Program.fs
 
-open System
 open Akka.FSharp
 open Akka.FSharp.Spawn
 open Akka.Actor
-
-[<EntryPoint>]
-let main argv = 
-	// this is how we create an actor system
-    let myActorSystem = System.create "MyActorSystem" (Configuration.load ())
-    
-    // now let's spawn an actor that simply processes a message...
-    let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
-    
-    // ...and one that sends a message to the other actor
-    let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
-    
-    // let's tell the second actor to get started
-    consoleReaderActor <! "start"
-    
-    // wait for the system to terminate - this will happen when the actors finish their work
-    myActorSystem.AwaitTermination ()
-    
-    // return '0' from main
-    0
-
 ```
 
 ### Getting all Functional
 
-Open the "Actors.fs" file and take a look at the two actor functions there
+Open the `Actors.fs` file and take a look at the two actor functions there
 
 The simpler function is the one that simply processes a message by writing it to the console:
 
@@ -149,23 +129,61 @@ let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = .
 So we can bind the consoleWriter actor to the first parameter and get ourselves a function which can be consumed by ``actorOf2``. 
 
 ### Have ConsoleReaderActor Send a Message to ConsoleWriterActor
-Time to put your first actors to work!
+Time to give your actors instructions!
 
-You will need to do the following:
+You will need to do the following in `Actors.fs`:
 
 1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
 
+	```fsharp
+	consoleWriter <! line
 	```
-	consoleWriter <! line;
+	
+2. Add a literal for `ContinueCommand` at the top of `Actor.fs`
+
+	```fsharp
+	[<Literal>]
+	let ContinueCommand = "continue"
 	```
 
-2. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
+3. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
 
+	```fsharp
+	mailbox.Self <! ContinueCommand
 	```
-	mailbox.Self <! ContinueCommand // ContinueCommand is the 'continue' string literal
-	```
+	
+### Make your first `Actor System`
+Go to `Program.fs` and add this to create your first actor system:
 
-### Step 5: Build and Run!
+```
+let myActorSystem = System.create "MyActorSystem" (Configuration.load ()) 
+```
+    
+> 
+> **NOTE:** Unlike default (C#) actor system, F#-aware systems should be created using Akka.FSharp.System.create function. This function differs from it's C# equivalent by providing additional F#-specific features - i.e. serializers allowing to serialize F# quotations for remote deployment process.
+
+### Make ConsoleReaderActor & ConsoleWriterActor
+Now that you have given `ConsoleReaderActor` and `ConsoleWriterActor` something to do, it is time to create them!
+
+Go to `Program.fs`, and add this just below where you made your `ActorSystem`:
+
+```
+let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
+let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
+```
+    
+We will get into the details of `spawn` later, so don't worry too much for now.  Just know that this is how you make an actor.
+
+### Start ConsoleReaderActor
+
+Your actor system is in place, but now you have to start the process.  Add the following code below the creation of your actors in `Program.fs` to get consoleReaderActor to start reading from the console:
+
+```
+// in Program.fs
+consoleReaderActor <! "start"
+```
+
+### Build and Run!
 Once you've made your edits, press `F5` to compile and run the sample in Visual Studio.
 
 You should see something like this, when it is working correctly:
