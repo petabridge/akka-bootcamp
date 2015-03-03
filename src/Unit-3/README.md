@@ -13,14 +13,14 @@ In Unit 3, you're going to build your own GitHub scraper that can simultaneously
 
 In Unit 3 you will learn:
 
-1. How to perform work asynchronously inside your actors using `PipeTo`;
-2. How to use `Ask` to wait inline for actors to respond to your messages;
-2. How to use `ReceiveTimeout` to time out replies from other actors;
-4. How to use `Group` routers to divide work among your actors;
-5. How to use `Pool` routers to automatically create and manage pools of actors; and
-6. How to use HOCON to configure your routers.
+1. How to use `Group` routers to divide work among your actors
+2. How to use `Pool` routers to automatically create and manage pools of actors
+3. How to use HOCON to configure your routers
+4. How to use `Ask` to wait inline for actors to respond to your messages
+5. How to perform work asynchronously inside your actors using `PipeTo`
 
-## Table of Conents
+
+## Table of Contents
 
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
 2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**
