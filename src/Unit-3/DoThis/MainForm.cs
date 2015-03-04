@@ -1,20 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Akka.Actor;
+using GithubActors.Actors;
 
 namespace GithubActors
 {
     public partial class MainForm : Form
     {
+        private ActorRef _mainFormActor;
+
         public MainForm()
         {
             InitializeComponent();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            /* INITIALIZE ACTORS */
+            _mainFormActor = Program.GithubActors.ActorOf(Props.Create(() => new MainFormActor(lblIsValid)), ActorPaths.MainFormActor.Name);
+            Program.GithubActors.ActorOf(Props.Create(() => new GithubValidatorActor(GithubClientFactory.GetClient())), ActorPaths.GithubValidatorActor.Name);
+        }
+
+        private void btnLaunch_Click(object sender, EventArgs e)
+        {
+            _mainFormActor.Tell(new ProcessRepo(tbRepoUrl.Text));
         }
     }
 }
