@@ -28,19 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.tbRepoUrl = new System.Windows.Forms.TextBox();
             this.lblRepo = new System.Windows.Forms.Label();
             this.lblIsValid = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnLaunch = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // textBox1
+            // tbRepoUrl
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(95, 13);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(455, 24);
-            this.textBox1.TabIndex = 0;
+            this.tbRepoUrl.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbRepoUrl.Location = new System.Drawing.Point(95, 13);
+            this.tbRepoUrl.Name = "tbRepoUrl";
+            this.tbRepoUrl.Size = new System.Drawing.Size(455, 24);
+            this.tbRepoUrl.TabIndex = 0;
             // 
             // lblRepo
             // 
@@ -63,27 +63,29 @@
             this.lblIsValid.Text = "label1";
             this.lblIsValid.Visible = false;
             // 
-            // button1
+            // btnLaunch
             // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(218, 90);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(142, 37);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "GO";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnLaunch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLaunch.Location = new System.Drawing.Point(218, 90);
+            this.btnLaunch.Name = "btnLaunch";
+            this.btnLaunch.Size = new System.Drawing.Size(142, 37);
+            this.btnLaunch.TabIndex = 3;
+            this.btnLaunch.Text = "GO";
+            this.btnLaunch.UseVisualStyleBackColor = true;
+            this.btnLaunch.Click += new System.EventHandler(this.btnLaunch_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 151);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnLaunch);
             this.Controls.Add(this.lblIsValid);
             this.Controls.Add(this.lblRepo);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.tbRepoUrl);
             this.Name = "MainForm";
             this.Text = "Who Starred This Repo?";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -91,10 +93,10 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox tbRepoUrl;
         private System.Windows.Forms.Label lblRepo;
         private System.Windows.Forms.Label lblIsValid;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnLaunch;
     }
 }
 
