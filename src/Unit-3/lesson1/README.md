@@ -49,24 +49,116 @@ A "Pool" router is a `Router` that creates and manages its worker actors ("route
 Other than that, you should know that group routers send messages to their routees via an `ActorSelection` while pool routers send messages to their routees via an `ActorRef`. This is because group routers are given their routees rather than creating them.
 
 #### How do I configure a `Router`?
-In short, with HOCON. We'll be covering this in depth in Lesson 3.3.
+You can configure the router directly in your code, but we prefer to configure it using HOCON `Config`. We'll show direct configuration in this lesson and the next, but go in depth on using HOCON to configure routers in Lesson 3.3.
 
 #### How does a `Router` know where to forward a message?
-routing strategy
+A `Router` decides how to distribute messages to its routees based on the `RoutingStrategy` you assign it.
+
+Let's go through these.
 
 ### Routing Strategies
 #### What is a Routing Strategy?
-#### What are the routing strategies available? how do they each work?
-    + wont cover all here as we'll spread over the course of the unit
-    + broadcast
-    + roundrobin
-    + Consistent hash
+A `RoutingStrategy` is the strategy used by a router to distribute messages to its routees.
 
-- can i message all routees at once? (`Broadcast` message)
+#### What are the routing strategies available? How do they work?
+There are six strategies available out of the box:
+
+1. `Broadcast`
+1. `Random`
+1. `RoundRobin`
+1. `SmallestMailbox`
+1. `ScatterGatherFirstCompleted`
+1. `ConsistentHash`
+
+Let's do a quick overview of each of these options for a `RoutingStrategy`, starting with the simple and getting progressively more advanced.
+
+{% comment %}
+can you use all routing strategies w/ both group and pool routers? any restrictions?
+{% endcomment %}
+
+##### `Broadcast`
+This is the simplest `RoutingStrategy`. Under this `RoutingStrategy`, the router will just forward any messages it receives to ALL of its routees.
+
+Here's what the `Broadcast` `RoutingStrategy` looks like:
+![Broadcast RoutingStrategy](images/BroadcastRouter.png)
+
+##### `Random`
+Another very simple `RoutingStrategy`. Under this `RoutingStrategy`, each time the `Router` receives a message, it will pick a routee at random and send the routee the message. The router will repeat this process each time it receives a message, so messages 1, 2, 3...N will each be sent to a randomly selected actor.
+
+##### `RoundRobin`
+Under this `RoutingStrategy`, the router will use round-robin to select a connection. For concurrent calls, `RoundRobin` is just a best effort.
+
+{% comment %}
+what does that mean about best effort?
+{% endcomment %}
+
+Here's what the `RoundRobin` `RoutingStrategy` looks like:
+![RoundRobin RoutingStrategy](images/RoundRobinRouter.png)
+
+#### `ScatterGatherFirstCompleted`
+This is a simple `RoutingStrategy` in which the `Router` broadcasts the message to all routees, and then replies with the first response. You have to define the 'within: Duration' parameter (f.e: within = 10 seconds).
+
+{% comment %}
+- when is this used?
+- does the router reply back to its `Sender` or somewhere else?
+- what happens w/o a duration response? what if message comes back after the duration window?
+{% endcomment %}
+
+Here's what the `ScatterGatherFirstCompleted` `RoutingStrategy` looks like:
+![ScatterGatherFirstCompleted RoutingStrategy](images/ScatterGatherFirstCompletedRouter.png)
+
+#### `SmallestMailbox`
+Under this `RoutingStrategy`, the `Router` will try to send the message to the non-suspended routee with fewest messages in mailbox.
+
+This `RoutingStrategy` is effectively trying to automatically load balance messages across the routees.
+
+The selection is done in this order:
+
+1. Pick any idle routee (not currently processing a message) with an empty mailbox
+1. Pick any routee with an empty mailbox
+1. Pick the routee with the fewest pending messages in mailbox
+1. Pick any remote routee, remote actors are consider lowest priority, since their mailbox size is unknown
+
+Here's what the `SmallestMailbox` `RoutingStrategy` looks like:
+![SmallestMailbox RoutingStrategy](images/SmallestMailbox.png)
+
+{% comment %}
+- what is a suspended routee? how would a group router know?
+- how does a router know how many messages its routees have?
+- doesn't checking all this slow things down?
+-
+{% endcomment %}
+
+#### `ConsistentHash`
+While it sounds simple, this is the most complex of the routing strategies.
+
+With the `ConsistentHash` `RoutingStrategy`, the `Router` uses consistent hashing to select the routee based on the data of the message that was sent.
+
+Here's what the `ConsistentHash` `RoutingStrategy` looks like:
+![ConsistentHash RoutingStrategy](images/ConsistentHashRouter.png)
 
 
-### When should I use each kind of router?
-+ do i ever need to configure my own routers?
+{% comment %}
+can I define my own routing strategy? if so, when would i want to?
+do i ever need to configure my own routers?
+{% endcomment %}
+
+
+### When should I use each kind of `RoutingStrategy`?
+Of course it depends on your use case, but our general advice is to use the simplest `RoutingStrategy` that will get the job done. In practice, this usually means a `RoundRobin` strategy.
+
+{% comment %}
+is round robin the most common?
+{% endcomment %}
+
+That said, here are some thoughts on when it would make sense to use some of the more complex routing strategies.
+
+#### When to use the `ScatterGatherFirstCompleted` `RoutingStrategy`
+#### When to use the `SmallestMailbox` `RoutingStrategy`
+#### When to use the `ConsistentHash` `RoutingStrategy`
+
+
+Great! Now that you know what the different kinds of routers are, and how to use them, let's wrap up by covering how routers and routees recover from failures.
 
 ### `Router`s & Supervision
 How routees are supervised depends on whether you're using a group or pool router.
@@ -105,6 +197,11 @@ The reason is to make the default behavior such that adding `withRouter` to a ch
 [diagram of the hierarchy diff where router has routees as children]
 
 #### Isn't it bad that group routers usually don't know their routees have died?
+
+{% comment %}
+- do we need to add something about routee suspension? saw it in the docs
+{% endcomment %}
+
 
 ## Exercise
 
