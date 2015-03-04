@@ -1,4 +1,4 @@
-# Lesson 3.4: How to perform work asynchronously inside your actors using `PipeTo`
+# Lesson 3.5: How to perform work asynchronously inside your actors using `PipeTo`
 
 ## Key Concepts / Background
 

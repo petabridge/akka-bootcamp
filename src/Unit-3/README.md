@@ -6,7 +6,7 @@ In **[Unit 1](../Unit-1)**, we learned some of the fundamentals of Akka.NET and 
 
 In **[Unit 2](../Unit-2)** we learned some of the more sophisticated concepts behind Akka.NET, such as pattern matching, basic Akka.NET configuration, scheduled messages, and more!
 
-Here in Unit 3, we'll learn how to make our actor system more scalable, resilient, and parallel.
+Here in Unit 3, we'll learn how to make our actor system more scalable, resilient, and parallelized.
 
 ## Concepts you'll learn
 In Unit 3, you're going to build your own GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once.
@@ -18,18 +18,18 @@ In Unit 3 you will learn:
 3. How to use HOCON to configure your routers
 4. How to use `Ask` to wait inline for actors to respond to your messages
 5. How to perform work asynchronously inside your actors using `PipeTo`
+6. Stateful vs Stateless Routing
 
 
 ## Table of Contents
 
-1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
-2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**
-3. **[Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/)**
-4. **[Lesson 4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`](lesson4/)**
-5. **[Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)**
+1. **[Lesson 1:  Using `Group` routers to divide work among your actors](lesson1/)**
+2. **[Lesson 2: Using `Pool` routers to automatically create and manage pools of actors](lesson2/)**
+3. **[Lesson 3: How to use HOCON to configure your routers](lesson3/)**
+4. **[Lesson 4: How to use `Ask` to wait inline for actors to respond to your messages](lesson4/)**
+5. **[Lesson 5: How to perform work asynchronously inside your actors using `PipeTo`](lesson5/)**
 
 ## Get Started
-
-To get started, [go to the /DoThis/ folder](DoThis/) and open `SystemCharting.sln`.
+To get started, [go to the /DoThis/ folder](DoThis/) and open `GithubActors.sln`.
 
 And then go to [Lesson 1](lesson1/).
