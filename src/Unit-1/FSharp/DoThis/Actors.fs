@@ -1,4 +1,4 @@
-﻿module Actors
+module Actors
 
 open System
 open Akka.Actor
@@ -7,9 +7,12 @@ open Akka.FSharp
 [<Literal>]
 let ExitCommand = "exit"
 
+// add a literal for the Continue command
+// YOU NEED TO FILL IN HERE
+
 let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = 
-    let read = Console.ReadLine ()
-    match read.ToLower () with
+    let line = Console.ReadLine ()
+    match line.ToLower () with
     | ExitCommand -> mailbox.Context.System.Shutdown ()
     | _ -> 
         // send input to the console writer to process and print
