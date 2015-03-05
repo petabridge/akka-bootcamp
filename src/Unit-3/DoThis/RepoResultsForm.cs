@@ -24,7 +24,7 @@ namespace GithubActors
                     Props.Create(() => new RepoResultsActor(dgUsers, tsStatus, tsProgress))
                         .WithDispatcher("akka.actor.synchronized-dispatcher")); //run on the UI thread
 
-            Text = string.Format("Starrers for Repo {0} / {1}", _repo.Owner, _repo.Repo);
+            Text = string.Format("Repos Similar to {0} / {1}", _repo.Owner, _repo.Repo);
 
             //start subscribing to updates
             _githubCoordinator.Tell(new GithubCoordinatorActor.SubscribeToProgressUpdates(_formActor));
