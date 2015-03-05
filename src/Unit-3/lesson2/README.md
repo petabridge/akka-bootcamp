@@ -1,6 +1,6 @@
 # Lesson 3.2: Using `Pool` routers to automatically create and manage pools of actors
 
-In this lesson, we're going to build on the foundation we laid in the last lesson around routers and introduce you to a more powerful, flexible kind of router.
+In this lesson, we're going to build on the foundation we laid in the last lesson around routers and introduce you to a more powerful, flexible kind of router: the pool router.
 
 ## Key Concepts / Background
 ### What is a Pool router?
@@ -26,6 +26,39 @@ We recommend using a pool router unless you have a unique situation that falls i
 Frankly, we haven't come across many good use cases that call for a group router. You'll probably know it when you see it.
 
 ***Our advice: stick with pool routers unless you have a very good reason to use a group router.***
+
+### `RoutingStrategy`s
+A pool router can use all of the routing strategies that a group router can use. We covered in lesson 1.
+
+But there are two `RoutingStrategy`s that **only** work with pool routers. The reason is that each of these strategies needs the level of routee control and information that only the pool router can offer, since it creates and supervises its routees.
+
+Let's go through them.
+
+#### `SmallestMailbox`
+A `SmallestMailboxPoolRouter` will try to send the message to the non-suspended routee with fewest messages in its mailbox.
+
+The selection is done in this order:
+
+1. Pick any idle routee (not currently processing a message) with an empty mailbox
+1. Pick any routee with an empty mailbox
+1. Pick the routee with the fewest pending messages in mailbox
+1. Pick any remote routee, remote actors are consider lowest priority, since their mailbox size is unknown
+
+There is no Group router version of the `SmallestMailbox` because the information needed to execute the strategy is only practically available to a parent and not via an `ActorPath`.
+
+Here's what the `SmallestMailbox` looks like:
+
+![SmallestMailbox RoutingStrategy](../lesson1/images/SmallestMailbox.png)
+
+#### `ResizableRouter`
+*You can think of this as the "auto-scaling router".*
+
+A `ResizablePoolRouter` detects pressure on routee mailboxes and figures out if it needs to expand or contract the size of the routee pool.
+
+Essentially, a `ResizableRouter` defines thresholds on the average mailbox load of its routees. Above this threshold, the router will add routee(s) to the pool to lower average pressure below the threshold. Below a different threshold, the router will remove routee(s) and reduce the size of the worker pool.
+
+### Special `Router` messages
+You can send a pool router any of the special messages that you can send to a group router (`Broadcast`, `GetRoutees`, or `PoisonPill`). The function of these messages is the same across all routers.
 
 ### Supervision & Pool Routers
 #### How does supervision work with Pool routers?

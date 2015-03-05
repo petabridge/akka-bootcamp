@@ -3,7 +3,9 @@ Welcome to Unit 3! As you know, this unit focuses on making our actor systems mo
 
 Over the course of Unit 3, you're going to build a sophisticated GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once. This system will also be able to fetch information about the GitHubbers who have participated in those repos (e.g. starred or forked). By the end, we'll have a nicely scalable system for retrieving data from the GitHub API, capable of coordinating a huge amount of data retrieval in parallel!
 
-The most important new concept we need to understand to create our system is `Router`s ([docs](http://getakka.net/wiki/Routing)). Let's get started.
+> ***Heads up: This lesson is the most critical (and longest) of all the lessons in Unit 3. Grab some coffee and get comfortable!***
+
+The most important new concept we need to learn is `Router`s ([docs](http://getakka.net/wiki/Routing)). Let's get going.
 
 ## Key Concepts / Background
 ### `Router`s
@@ -19,7 +21,9 @@ That is true for 99.999% of cases. But remember: *The purpose of a `Router` is t
 Since a `Router` does not need to actually process messages and take any significant action on the message—it just has to forward the message on to another actor—it can break the "one message at a time" rule and everything is fine. In fact, it's better that way. Why?
 
 #### What does a `Router` give me?
-Fundamentally, what a `Router` gives you is massive message throughput and scalability. `Router`s are the critical component that breaks down large data streams into easily managed ones. `Router`s allow you to divide up a huge amount of work across a group of actors and scale up processing easily.
+***Fundamentally, what a `Router` gives you is massive message throughput and scalability***.
+
+`Router`s are the critical component that breaks down large data streams into easily managed ones. `Router`s allow you to divide up a huge amount of work across a group of actors and scale up processing easily.
 
 On the surface, `Router`s look like normal actors, but they are actually implemented differently. Routers are designed to be extremely efficient at one thing: receiving messages and quickly passing them on to routees.
 
@@ -41,9 +45,9 @@ A group router is a router that does not create/manage its routees. It only forw
 In this lesson, we'll be working with Group routers.
 
 #### How do I configure a `Router`?
-You can configure a router directly in your code, or you can configure it using HOCON `Config`.
+You can configure a router directly in your code (dubbed "procedural" or "programatic" configuration), or you can configure the router using HOCON and  `App.config`.
 
-We'll show direct configuration in this lesson and the next, but go in depth on using HOCON to configure routers in Lesson 3.3.
+We'll use procedural configuration in this lesson and the next, but go in depth on using HOCON to configure routers in Lesson 3.
 
 #### When a routee gets a message, is the `Sender` the `Router`, or the actor that sent the message to the `Router`?
 Great question. Glad you asked!
@@ -122,36 +126,17 @@ The goal of this router is to decrease latency by performing redundant queries t
 #### `ScatterGatherFirstCompleted`
 The `ScatterGatherFirstCompletedRouter` will send the message on to all its routees. It then waits for first reply it gets back. This result will be sent back to original sender. Other replies are discarded.
 
-It is expecting at least one reply within a configured duration, otherwise it will reply with an exception.
+`ScatterGatherFirstCompletedRouter` expects at least one reply within a configured duration, otherwise it will reply to its `Sender` with an exception.
 
 Here's what `ScatterGatherFirstCompleted` looks like:
 
 ![ScatterGatherFirstCompletedRouter](images/ScatterGatherFirstCompletedRouter.png)
 
 #### `SmallestMailbox`
-**This `RoutingStrategy` only works with Pool routers.**
-
-Under this `RoutingStrategy`, the `Router` will try to send the message to the non-suspended routee with fewest messages in its mailbox.
-
-The selection is done in this order:
-
-1. Pick any idle routee (not currently processing a message) with an empty mailbox
-1. Pick any routee with an empty mailbox
-1. Pick the routee with the fewest pending messages in mailbox
-1. Pick any remote routee, remote actors are consider lowest priority, since their mailbox size is unknown
-
-There is no Group router version of the `SmallestMailbox` because the information needed to execute the strategy is only practically available to a parent and not via an `ActorPath`.
-
-Here's what the `SmallestMailbox` looks like:
-
-![SmallestMailbox RoutingStrategy](images/SmallestMailbox.png)
+This `RoutingStrategy` only works with Pool routers, so we'll cover it in the next lesson.
 
 #### `ResizableRouter`
-**This `RoutingStrategy` only works with Pool routers.**
-
-You can think of this as the "auto-scaling router". A `ResizableRouter` detects pressure on routee mailboxes and figures out if it needs to expand or contract the size of the routee pool.
-
-Essentially, a `ResizableRouter` defines thresholds on the average mailbox load of its routees. Above this threshold, the router will add routee(s) to the pool to lower average pressure below the threshold. Below a different threshold, the router will remove routee(s) and reduce the size of the worker pool.
+This `RoutingStrategy` only works with Pool routers, so we'll cover it in the next lesson.
 
 ### Special `Router` messages
 Regardless of its `RoutingStrategy`, there are two special types of messages that you can send to a `Router` to cause special behavior.
@@ -163,16 +148,29 @@ When would you use this? It doesn't come up very often, but one use case we can 
 
 For example, perhaps you have a group of actors that all must be alerted if a critical system goes down. In this case, you could send their router a `Broadcast` message and all the routees would be alerted.
 
+```csharp
+// tell a router to broadcast message to all its routees
+// regardless of what type of router it actually is
+router.Tell(new Broadcast("Shields failing, Captain!"));
+```
+
 #### `GetRoutees`
-GetRoutees => return a list of available routees, usually used for debugging, gives list of routee classes that will contain actor ref or selection
-
-#### `PoisonPill`
-A `PoisonPill` message has special handling for all actors, including for routers. When any actor receives a `PoisonPill` message, that actor will be stopped immediately. For a group router, this only stops the router. For a pool router, it will also have the effect of shutting down its child routees.
-
-Sending a `PoisonPill` will terminate the actor immediately:
+The `GetRoutees` message type tells a router to return a list of its routees. This is most commonly used for debugging, but in our example we'll also use it to track how many jobs are open.
 
 ```csharp
-// kills router
+// get a list of a routers routees
+router.Tell(new GetRoutees());
+```
+
+#### `PoisonPill`
+A `PoisonPill` message has special handling for all actors, including for routers. When any actor receives a `PoisonPill` message, that actor will be stopped immediately.
+
+For a group router, this only stops the router and does not stop its routees. For a pool router, it will also have the effect of shutting down its child routees as they are supervised children of the router.
+
+Sending a `PoisonPill` will terminate any actor immediately:
+
+```csharp
+// kill router actor
 router.Tell(PoisonPill.Instance);
 ```
 
@@ -186,9 +184,11 @@ Recall that group routers do not create their routees, but instead are passed th
 Practically, this means that a group router usually won't know that its routees have died. A group router will attempt to [`DeathWatch`](http://getakka.net/wiki/Supervision#what-lifecycle-monitoring-means) its routees, but it doesn't always succeed in subscribing. Much of this is due to the fact that `ActorPath`s can have wildcards.
 
 #### Isn't it bad that group routers usually don't know their routees have died?
-Yes, it is.
+Yes, it is bad.
 
-This is one of the key reasons that in general we recommend using pool routers instead of group routers. For this lesson, we're limiting it to group routers, but going forward we'll be using pool routers almost exclusively.
+This is one of the key reasons that, in general, *we recommend using pool routers instead of group routers*.
+
+In this lesson, we're only using group routers, but going forward we'll be using pool routers almost exclusively.
 
 Phew! That was a LOT of new information. Now let's put it to use and make something!
 
