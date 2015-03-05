@@ -74,7 +74,7 @@
             this.btnLaunch.UseVisualStyleBackColor = true;
             this.btnLaunch.Click += new System.EventHandler(this.btnLaunch_Click);
             // 
-            // MainForm
+            // LauncherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -83,8 +83,9 @@
             this.Controls.Add(this.lblIsValid);
             this.Controls.Add(this.lblRepo);
             this.Controls.Add(this.tbRepoUrl);
-            this.Name = "MainForm";
+            this.Name = "LauncherForm";
             this.Text = "Who Starred This Repo?";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LauncherForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
