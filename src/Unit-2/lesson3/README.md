@@ -969,4 +969,8 @@ Every other lesson builds on this one, so before continuing, please make sure yo
 
 At this point. you should understand how the `Scheduler` works and how you can use it alongside patterns like Pub-sub to make very reactive systems with actors that have a comparatively small code footprint.
 
+Here is a high-level overview of our working system!
+
+![Akka.NET Bootcamp Unit 2 System Overview](images/unit2-system-overview.png)
+
 **Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4).**
