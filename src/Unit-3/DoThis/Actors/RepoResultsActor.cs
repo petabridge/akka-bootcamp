@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using Akka.Actor;
-using Octokit;
 
 namespace GithubActors.Actors
 {
@@ -63,6 +63,18 @@ namespace GithubActors.Actors
                     row.Cells[6].Value = repo.ForksCount;
                     _userDg.Rows.Add(row);
                 }
+            });
+
+            //critical failure, like not being able to connect to Github
+            Receive<GithubCoordinatorActor.JobFailed>(failed =>
+            {
+                _progressBar.Visible = true;
+                _progressBar.ForeColor = Color.Red;
+                _progressBar.Maximum = 1;
+                _progressBar.Value = 1;
+                _statusLabel.Visible = true;
+                _statusLabel.Text = string.Format("Failed to gather data for Github repository {0} / {1}",
+                    failed.Repo.Owner, failed.Repo.Repo);
             });
         }
     }

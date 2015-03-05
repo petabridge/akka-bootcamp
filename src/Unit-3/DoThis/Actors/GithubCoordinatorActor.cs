@@ -46,6 +46,19 @@ namespace GithubActors.Actors
             }
         }
 
+        /// <summary>
+        /// Let the subscribers know we failed
+        /// </summary>
+        public class JobFailed
+        {
+            public JobFailed(RepoKey repo)
+            {
+                Repo = repo;
+            }
+
+            public RepoKey Repo { get; private set; }
+        }
+
         #endregion
 
         private ActorRef _githubWorker;
@@ -169,7 +182,10 @@ namespace GithubActors.Actors
             //query failed, can't be retried, and it's a QueryStarrers operation - means the entire job failed
             Receive<RetryableQuery>(query => !query.CanRetry && query.Query is GithubWorkerActor.QueryStarrers, query =>
             {
-                //TODO: REPORT ERROR TO SUBSCRIBERS
+                foreach (var subscriber in _subscribers)
+                {
+                    subscriber.Tell(new JobFailed(_currentRepo));
+                }
                 BecomeWaiting();
             });
 
