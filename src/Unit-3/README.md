@@ -9,7 +9,7 @@ In **[Unit 2](../Unit-2)** we learned some of the more sophisticated concepts be
 Here in Unit 3, we'll learn how to make our actor system more scalable, resilient, and parallelized.
 
 ## Concepts you'll learn
-In Unit 3, you're going to build your own GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once.
+Over the course of Unit 3, you're going to build a sophisticated GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once. This system will also be able to fetch information about the GitHubbers who have participated in those repos (e.g. starred or forked). By the end, we'll have a nicely scalable system for retrieving data from the GitHub API, capable of coordinating a huge amount of data retrieval in parallel (up to the [allowed rate limit of the API](https://developer.github.com/v3/rate_limit/), of course)!
 
 In Unit 3 you will learn:
 
