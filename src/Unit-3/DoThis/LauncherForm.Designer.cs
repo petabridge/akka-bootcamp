@@ -1,6 +1,6 @@
 ﻿namespace GithubActors
 {
-    partial class MainForm
+    partial class LauncherForm
     {
         /// <summary>
         /// Required designer variable.

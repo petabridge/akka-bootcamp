@@ -6,7 +6,7 @@ namespace GithubActors.Actors
 {
     /// <summary>
     /// Actor that runs on the UI thread and handles
-    /// UI events for <see cref="MainForm"/>
+    /// UI events for <see cref="LauncherForm"/>
     /// </summary>
     public class MainFormActor : ReceiveActor, WithUnboundedStash
     {
