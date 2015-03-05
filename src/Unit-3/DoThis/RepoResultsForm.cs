@@ -26,6 +26,7 @@ namespace GithubActors
 
             Text = string.Format("Starrers for Repo {0} / {1}", _repo.Owner, _repo.Repo);
 
+            //start subscribing to updates
             _githubCoordinator.Tell(new GithubCoordinatorActor.SubscribeToProgressUpdates(_formActor));
         }
 

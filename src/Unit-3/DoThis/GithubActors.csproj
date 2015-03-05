@@ -59,6 +59,7 @@
     <Compile Include="ActorPaths.cs" />
     <Compile Include="Actors\GithubCommanderActor.cs" />
     <Compile Include="Actors\GithubCoordinatorActor.cs" />
+    <Compile Include="Actors\RepoResultsActor.cs" />
     <Compile Include="GithubProgressStats.cs" />
     <Compile Include="Actors\GithubValidatorActor.cs" />
     <Compile Include="Actors\GithubWorkerActor.cs" />

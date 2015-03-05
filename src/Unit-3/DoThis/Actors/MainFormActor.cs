@@ -47,7 +47,11 @@ namespace GithubActors.Actors
             });
 
             //launch the window
-            Receive<LaunchRepoResultsWindow>(window => new RepoResultsForm(window.Coordinator, window.Repo).Activate());
+            Receive<LaunchRepoResultsWindow>(window =>
+            {
+                var form = new RepoResultsForm(window.Coordinator, window.Repo);
+                form.Show();
+            });
         }
 
         /// <summary>
