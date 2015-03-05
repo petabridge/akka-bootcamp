@@ -27,5 +27,10 @@ namespace GithubActors
         {
             _mainFormActor.Tell(new ProcessRepo(tbRepoUrl.Text));
         }
+
+        private void LauncherForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }
