@@ -8,8 +8,25 @@ namespace GithubActors.Actors
     /// Actor that runs on the UI thread and handles
     /// UI events for <see cref="MainForm"/>
     /// </summary>
-    public class MainFormActor : ReceiveActor
+    public class MainFormActor : ReceiveActor, WithUnboundedStash
     {
+        #region Messages
+
+        public class LaunchRepoResultsWindow
+        {
+            public LaunchRepoResultsWindow(RepoKey repo, ActorRef coordinator)
+            {
+                Repo = repo;
+                Coordinator = coordinator;
+            }
+
+            public RepoKey Repo { get; private set; }
+
+            public ActorRef Coordinator { get; private set; }
+        }
+
+        #endregion
+
         private readonly Label _validationLabel;
 
         public MainFormActor(Label validationLabel)
@@ -28,6 +45,9 @@ namespace GithubActors.Actors
                 Context.ActorSelection(ActorPaths.GithubValidatorActor.Path).Tell(new GithubValidatorActor.ValidateRepo(repo.RepoUri));
                 BecomeBusy(repo.RepoUri);
             });
+
+            //launch the window
+            Receive<LaunchRepoResultsWindow>(window => new RepoResultsForm(window.Coordinator, window.Repo).Activate());
         }
 
         /// <summary>
@@ -48,13 +68,22 @@ namespace GithubActors.Actors
         {
             Receive<GithubValidatorActor.RepoIsValid>(valid => BecomeReady("Valid!"));
             Receive<GithubValidatorActor.InvalidRepo>(invalid => BecomeReady(invalid.Reason, false));
+            //yes
+            Receive<GithubCommanderActor.UnableToAcceptJob>(job => BecomeReady(string.Format("{0}/{1} is a valid repo, but system can't accept additional jobs", job.Repo.Owner, job.Repo.Repo), false));
+
+            //no
+            Receive<GithubCommanderActor.AbleToAcceptJob>(job => BecomeReady(string.Format("{0}/{1} is a valid repo - starting job!", job.Repo.Owner, job.Repo.Repo)));
+            Receive<LaunchRepoResultsWindow>(window => Stash.Stash());
         }
 
         private void BecomeReady(string message, bool isValid = true)
         {
             _validationLabel.Text = message;
             _validationLabel.ForeColor = isValid ? Color.Green : Color.Red;
+            Stash.UnstashAll();
             Become(Ready);
         }
+
+        public IStash Stash { get; set; }
     }
 }

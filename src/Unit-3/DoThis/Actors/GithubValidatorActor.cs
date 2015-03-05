@@ -63,10 +63,10 @@ namespace GithubActors.Actors
         public GithubValidatorActor(IGitHubClient gitHubClient)
         {
             _gitHubClient = gitHubClient;
-            InitialReceives();
+            ReadyToValidate();
         }
 
-        private void InitialReceives()
+        private void ReadyToValidate()
         {
             //Outright invalid URLs
             Receive<ValidateRepo>(repo => string.IsNullOrEmpty(repo.RepoUri) || !Uri.IsWellFormedUriString(repo.RepoUri, UriKind.Absolute),
@@ -99,8 +99,18 @@ namespace GithubActors.Actors
             // Octokit was able to retrieve this repository
             Receive<Repository>(repository =>
             {
-                Sender.Tell(RepoIsValid.Instance);
+                //ask the GithubCommander if we can accept this job
+                Context.ActorSelection(ActorPaths.GithubCommanderActor.Path).Tell(new GithubCommanderActor.CanAcceptJob(new RepoKey(repository.Owner.Login, repository.Name)));
             });
+
+
+            /* REPO is valid, but can we process it at this time? */
+
+            //yes
+            Receive<GithubCommanderActor.UnableToAcceptJob>(job => Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(job));
+            
+            //no
+            Receive<GithubCommanderActor.AbleToAcceptJob>(job => Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(job));
         }
 
         public static Tuple<string, string> SplitIntoOwnerAndRepo(string repoUri)

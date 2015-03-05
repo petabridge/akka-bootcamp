@@ -23,6 +23,11 @@ namespace GithubActors
             }
         }
 
+        public bool IsFinished
+        {
+            get { return ExpectedUsers == UsersThusFar + QueryFailures; }
+        }
+
         public GithubProgressStats()
         {
             StartTime = DateTime.UtcNow;
