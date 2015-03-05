@@ -29,6 +29,11 @@ In Unit 3 you will learn:
 4. **[Lesson 4: How to use `Ask` to wait inline for actors to respond to your messages](lesson4/)**
 5. **[Lesson 5: How to perform work asynchronously inside your actors using `PipeTo`](lesson5/)**
 
+## Things you'll need
+**You will make a GitHub OAuth access token for the API**.
+
+This will be a throwaway token used just for this app. Follow the instructions [here and write down the OAuth token.](https://help.github.com/articles/creating-an-access-token-for-command-line-use/)
+
 ## Get Started
 To get started, [go to the /DoThis/ folder](DoThis/) and open `GithubActors.sln`.
 
