@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Akka.Actor;
 using Octokit;
@@ -13,8 +14,6 @@ namespace GithubActors.Actors
     public class GithubCoordinatorActor : ReceiveActor
     {
         #region Message classes
-
-       
 
         public class BeginJob
         {
@@ -52,10 +51,12 @@ namespace GithubActors.Actors
         private ActorRef _githubWorker;
 
         private RepoKey _currentRepo;
+        private Dictionary<string, SimilarRepo> _similarRepos;
         private HashSet<ActorRef> _subscribers;
-        private List<User> _starredUsers;
         private CancellationTokenSource _publishTimer;
         private GithubProgressStats _githubProgressStats;
+
+        private bool _receivedInitialUsers = false;
 
         public GithubCoordinatorActor()
         {
@@ -83,7 +84,7 @@ namespace GithubActors.Actors
         {
             _currentRepo = repo;
             _subscribers = new HashSet<ActorRef>();
-            _starredUsers = new List<User>();
+            _similarRepos = new Dictionary<string, SimilarRepo>();
             _publishTimer = new CancellationTokenSource();
             _githubProgressStats = new GithubProgressStats();
             Become(Working);
@@ -99,34 +100,48 @@ namespace GithubActors.Actors
         private void Working()
         {
             //received a downloaded user back from the github worker
-            Receive<User>(user =>
+            Receive<GithubWorkerActor.StarredReposForUser>(user =>
             {
-                _starredUsers.Add(user);
                 _githubProgressStats = _githubProgressStats.UserQueriesFinished();
+                foreach (var repo in user.Repos)
+                {
+                    if (!_similarRepos.ContainsKey(repo.HtmlUrl))
+                    {
+                        _similarRepos[repo.HtmlUrl] = new SimilarRepo(repo);
+                    }
+
+                    //increment the number of people who starred this repo
+                    _similarRepos[repo.HtmlUrl].SharedStarrers++;
+                }
             });
 
             Receive<PublishUpdate>(update =>
             {
                 //check to see if the job is done
-                if (_githubProgressStats.IsFinished)
+                if (_receivedInitialUsers && _githubProgressStats.IsFinished)
                 {
                     _githubProgressStats = _githubProgressStats.Finish();
+                    
+                    //all repos minus forks of the current one
+                    var sortedSimilarRepos = _similarRepos.Values
+                        .Where(x => x.Repo.Name != _currentRepo.Repo).OrderByDescending(x => x.SharedStarrers).ToList();
+                    foreach (var subscriber in _subscribers)
+                    {
+                        subscriber.Tell(sortedSimilarRepos);
+                    }
                     BecomeWaiting();
                 }
 
                 foreach (var subscriber in _subscribers)
                 {
                     subscriber.Tell(_githubProgressStats);
-                    subscriber.Tell(_starredUsers.ToArray());
                 }
-
-                //drain the list each time we publish so the subscribers only get updates
-                _starredUsers = new List<User>(); 
             });
 
             //completed our initial job - we now know how many users we need to query
             Receive<User[]>(users =>
             {
+                _receivedInitialUsers = true;
                 _githubProgressStats = _githubProgressStats.SetExpectedUserCount(users.Length);
 
                 //queue up all of the jobs

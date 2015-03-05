@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Akka.Actor;
 using Octokit;
@@ -35,6 +36,19 @@ namespace GithubActors.Actors
             public string Login { get; private set; }
         }
 
+        public class StarredReposForUser
+        {
+            public StarredReposForUser(string login, IEnumerable<Repository> repos)
+            {
+                Repos = repos;
+                Login = login;
+            }
+
+            public string Login { get; private set; }
+
+            public IEnumerable<Repository> Repos { get; private set; }
+        }
+
         #endregion
 
         private IGitHubClient _gitHubClient;
@@ -60,12 +74,12 @@ namespace GithubActors.Actors
                 var starrer = (query.Query as QueryStarrer).Login;
                 try
                 {
-                    var getStarrer = _gitHubClient.User.Get(starrer);
+                    var getStarrer = _gitHubClient.Activity.Starring.GetAllForUser(starrer);
 
                     //ewww
                     getStarrer.Wait();
-                    var stars = getStarrer.Result;
-                    Sender.Tell(stars);
+                    var starredRepos = getStarrer.Result;
+                    Sender.Tell(new StarredReposForUser(starrer, starredRepos));
                 }
                 catch (Exception ex)
                 {

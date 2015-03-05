@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Collections.Generic;
+using System.Windows.Forms;
 using Akka.Actor;
 using Octokit;
 
@@ -37,6 +38,7 @@ namespace GithubActors.Actors
                     _progressBar.Maximum = stats.ExpectedUsers;
                     _progressBar.Value = stats.UsersThusFar;
                     _progressBar.Visible = true;
+                    _statusLabel.Visible = true;
                 }
 
                 _statusLabel.Text = string.Format("{0} out of {1} users ({2} failures) [{3} elapsed]",
@@ -45,17 +47,20 @@ namespace GithubActors.Actors
             });
 
             //user update
-            Receive<User[]>(users =>
+            Receive<IEnumerable<SimilarRepo>>(repos =>
             {
-                foreach (var user in users)
+                foreach (var similarRepo in repos)
                 {
+                    var repo = similarRepo.Repo;
                     var row = new DataGridViewRow();
                     row.CreateCells(_userDg);
-                    row.Cells[0].Value = user.Login;
-                    row.Cells[1].Value = user.HtmlUrl;
-                    row.Cells[2].Value = user.PublicRepos;
-                    row.Cells[3].Value = user.Followers;
-                    row.Cells[4].Value = user.Following;
+                    row.Cells[0].Value = repo.Owner.Login;
+                    row.Cells[1].Value = repo.Name;
+                    row.Cells[2].Value = repo.HtmlUrl;
+                    row.Cells[3].Value = similarRepo.SharedStarrers;
+                    row.Cells[4].Value = repo.SubscribersCount;
+                    row.Cells[5].Value = repo.StargazersCount;
+                    row.Cells[6].Value = repo.ForksCount;
                     _userDg.Rows.Add(row);
                 }
             });

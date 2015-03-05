@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using Akka.Actor;
 using Octokit;
-using Application = System.Windows.Forms.Application;
 using Label = System.Windows.Forms.Label;
 
 namespace GithubActors.Actors
