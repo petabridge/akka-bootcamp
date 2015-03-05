@@ -5,11 +5,11 @@ using GithubActors.Actors;
 
 namespace GithubActors
 {
-    public partial class MainForm : Form
+    public partial class LauncherForm : Form
     {
         private ActorRef _mainFormActor;
 
-        public MainForm()
+        public LauncherForm()
         {
             InitializeComponent();
         }
