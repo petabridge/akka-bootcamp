@@ -95,6 +95,7 @@ namespace GithubActors.Actors
 
         private void BecomeWorking(RepoKey repo)
         {
+            _receivedInitialUsers = false;
             _currentRepo = repo;
             _subscribers = new HashSet<ActorRef>();
             _similarRepos = new Dictionary<string, SimilarRepo>();
@@ -182,6 +183,7 @@ namespace GithubActors.Actors
             //query failed, can't be retried, and it's a QueryStarrers operation - means the entire job failed
             Receive<RetryableQuery>(query => !query.CanRetry && query.Query is GithubWorkerActor.QueryStarrers, query =>
             {
+                _receivedInitialUsers = true;
                 foreach (var subscriber in _subscribers)
                 {
                     subscriber.Tell(new JobFailed(_currentRepo));
