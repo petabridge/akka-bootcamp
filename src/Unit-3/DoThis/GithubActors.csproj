@@ -57,9 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActorPaths.cs" />
+    <Compile Include="Actors\GithubCommanderActor.cs" />
+    <Compile Include="Actors\GithubCoordinatorActor.cs" />
+    <Compile Include="GithubProgressStats.cs" />
     <Compile Include="Actors\GithubValidatorActor.cs" />
+    <Compile Include="Actors\GithubWorkerActor.cs" />
     <Compile Include="Actors\MainFormActor.cs" />
-    <Compile Include="Actors\Messages.cs" />
+    <Compile Include="Messages.cs" />
     <Compile Include="GithubClientFactory.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

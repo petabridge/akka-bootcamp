@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Akka.Actor;
-using Akka.Util.Internal;
 using Octokit;
 
 namespace GithubActors.Actors
@@ -82,7 +81,7 @@ namespace GithubActors.Actors
                     //Rule #1 of async in Akka.NET - turn exceptions into messages your actor understands
                     if (t.IsCanceled)
                     {
-                        return new InvalidRepo(repo.RepoUri, "Repo lookup timedout");
+                        return new InvalidRepo(repo.RepoUri, "Repo lookup timed out");
                     }
                     if (t.IsFaulted)
                     {
