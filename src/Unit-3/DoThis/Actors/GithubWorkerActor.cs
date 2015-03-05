@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Akka.Actor;
 using Octokit;
 
@@ -36,12 +37,18 @@ namespace GithubActors.Actors
 
         #endregion
 
-        private readonly IGitHubClient _gitHubClient;
+        private IGitHubClient _gitHubClient;
+        private readonly Func<IGitHubClient> _gitHubClientFactory;
 
-        public GithubWorkerActor(IGitHubClient gitHubClient)
+        public GithubWorkerActor(Func<IGitHubClient> gitHubClientFactory)
         {
-            _gitHubClient = gitHubClient;
+            _gitHubClientFactory = gitHubClientFactory;
             InitialReceives();
+        }
+
+        protected override void PreStart()
+        {
+            _gitHubClient = _gitHubClientFactory();
         }
 
         private void InitialReceives()
@@ -79,7 +86,7 @@ namespace GithubActors.Actors
                     //ewww
                     getStars.Wait();
                     var stars = getStars.Result;
-                    Sender.Tell(stars);
+                    Sender.Tell(stars.ToArray());
                 }
                 catch (Exception ex)
                 {

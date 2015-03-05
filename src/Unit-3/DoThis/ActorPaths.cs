@@ -10,6 +10,8 @@ namespace GithubActors
     {
         public static readonly ActorMetaData MainFormActor = new ActorMetaData("mainform", "/user/mainform");
         public static readonly ActorMetaData GithubValidatorActor = new ActorMetaData("validator", "/user/validator");
+        public static readonly ActorMetaData GithubCommanderActor = new ActorMetaData("commander", "/user/commander");
+        public static readonly ActorMetaData GithubCoordinatorActor = new ActorMetaData("coordinator", "/user/commander/coordinator");
     }
 
     /// <summary>

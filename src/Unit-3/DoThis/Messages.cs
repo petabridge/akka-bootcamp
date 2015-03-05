@@ -15,9 +15,9 @@
 
     public class RepoKey
     {
-        public RepoKey(string owner, string Repo)
+        public RepoKey(string owner, string repo)
         {
-            this.Repo = Repo;
+            Repo = repo;
             Owner = owner;
         }
 

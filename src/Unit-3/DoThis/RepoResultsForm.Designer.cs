@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dgUsers = new System.Windows.Forms.DataGridView();
             this.Login = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.URL = new System.Windows.Forms.DataGridViewLinkColumn();
             this.Repos = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -37,25 +37,25 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgUsers)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // dataGridView1
+            // dgUsers
             // 
-            this.dataGridView1.AllowUserToOrderColumns = true;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgUsers.AllowUserToOrderColumns = true;
+            this.dgUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Login,
             this.URL,
             this.Repos,
             this.Followers,
             this.Following});
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(739, 322);
-            this.dataGridView1.TabIndex = 0;
+            this.dgUsers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgUsers.Location = new System.Drawing.Point(0, 0);
+            this.dgUsers.Name = "dgUsers";
+            this.dgUsers.Size = new System.Drawing.Size(739, 322);
+            this.dgUsers.TabIndex = 0;
             // 
             // Login
             // 
@@ -98,12 +98,14 @@
             // 
             this.tsProgress.Name = "tsProgress";
             this.tsProgress.Size = new System.Drawing.Size(100, 16);
+            this.tsProgress.Visible = false;
             // 
             // tsStatus
             // 
             this.tsStatus.Name = "tsStatus";
             this.tsStatus.Size = new System.Drawing.Size(73, 17);
             this.tsStatus.Text = "Processing...";
+            this.tsStatus.Visible = false;
             // 
             // RepoResultsForm
             // 
@@ -111,10 +113,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(739, 322);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.dgUsers);
             this.Name = "RepoResultsForm";
             this.Text = "Starrers for {RepoName}";
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RepoResultsForm_FormClosing);
+            this.Load += new System.EventHandler(this.RepoResultsForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.dgUsers)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -124,7 +128,7 @@
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dgUsers;
         private System.Windows.Forms.DataGridViewTextBoxColumn Login;
         private System.Windows.Forms.DataGridViewLinkColumn URL;
         private System.Windows.Forms.DataGridViewTextBoxColumn Repos;
