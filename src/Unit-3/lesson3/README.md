@@ -90,10 +90,7 @@ Bonus concept! We're also going to teach you to use `Ask` in addition to HOCON.
 #### When do I use `Ask`?
 Whenever you want one actor to retrieve information from another and wait for a response. It isn't used that often—certainly not compared to `Tell()`—but there are places where it is ***exactly*** what you need.
 
-#### `Ask` and `await`
-
-
-
+Great! Let's put `Ask` and HOCON to work with our routers!
 
 ## Exercise
 
