@@ -74,7 +74,7 @@ var someMessage = new FetchFeed() {Url = ...};
 system
    .Scheduler
    .Schedule(TimeSpan.FromMinutes(30), // initial delay of 30 min
-			 TimeSpan.FromMinutes(30) // recur every 30 minutes
+             TimeSpan.FromMinutes(30), // recur every 30 minutes
              someActor, someMessage);
 ```
 
