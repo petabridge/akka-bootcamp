@@ -851,10 +851,10 @@ private void HandleAddSeries(AddSeries series)
 
 private void HandleRemoveSeries(RemoveSeries series)
 {
-    if (!string.IsNullOrEmpty(series.SeriesName) && _seriesIndex.ContainsKey(series.SeriesName))
+    if (!string.IsNullOrEmpty(series.Series.Name) && _seriesIndex.ContainsKey(series.Series.Name))
     {
-        var seriesToRemove = _seriesIndex[series.SeriesName];
-        _seriesIndex.Remove(series.SeriesName);
+        var seriesToRemove = _seriesIndex[series.Series.Name];
+        _seriesIndex.Remove(series.Series.Name);
         _chart.Series.Remove(seriesToRemove);
         SetChartBoundaries();
     }
