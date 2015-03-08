@@ -197,3 +197,11 @@ Phew! That was a LOT of new information. Now let's put it to use and make someth
 ### Once you're done
 
 ## Great job!
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

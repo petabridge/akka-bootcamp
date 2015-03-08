@@ -57,7 +57,7 @@ Here are all of the Akka.NET classes that you can use with `ICanTell`:
 * `ActorRef` - a reference to an actor instance.
 * `ActorSelection` - a selection of actors at a specified address. This is what gets returned whenever you look up an actor based on its path.
 
-Most of the time, you're going to want to have your actors pipe the results of a task back to themselves. Here's an example of a real-world use case for `PipeTo`, from our **[official Akka.NET PipeTo code sample](https://github.com/petabridge/akkadotnet-code-samples/tree/master/PipeTo "Petabridge Akka.NET PipeTo code sample")**.
+Most of the time, you're going to want to have your actors pipe the results of a task back to themselves. Here's an example of a real-world use case for `PipeTo`, drawn from our **[official Akka.NET PipeTo code sample](https://github.com/petabridge/akkadotnet-code-samples/tree/master/PipeTo "Petabridge Akka.NET PipeTo code sample")**.
 
 ```csharp
 // time to kick off the feed parsing process, and send the results to ourselves
@@ -120,32 +120,28 @@ So in this case, we're downloading an image via a [HttpClient](https://msdn.micr
 So we do the HTTP code handling inside a `ContinueWith` block and use that to return an `ImageDownloadResult` message that will be piped to the actor using the `PipeTo` block. Pretty easy!
 
 ### Why is `await` an antipattern inside actors?
-#### `await` breaks the core message processing guarantees
-As we discussed in "[Akka.NET: What is an Actor?](http://petabridge.com/blog/akkadotnet-what-is-an-actor/ "Akka.NET: What is an Actor?")" - the mailbox pushes messages into your actor's `OnReceive` method as soon as the previous iteration of the `OnReceive` function exits. So whenever you `await` an `async` operation inside the `OnReceive` method, *you prematurely exit* the `OnReceive` method and the mailbox will push a new message into it.
 
-`await` breaks the "actors process one message at a time" guarantee, and suddenly your actor's context might be different. Variables such as the `Sender` of the previous message may be different, or the actor might even be shutting down when the `await` call returns to the previous context.
+#### `await` is not magic, and breaks the core message processing guarantees
+While `await` is a powerful and convenient construct, it isn't magic. It's just syntactic sugar for TPL continuation. If this is confusing or unfamiliar, we highly recommend reviewing [Stephen Cleary's excellent Async/Await primer](http://blog.stephencleary.com/2012/02/async-and-await.html).
 
-#### `await` is not magic
-link to scott's blog post
-this makes it more explicit what is happening, and where it's happening
+`Await` does two key things which break the core messaging processing guarantees of Akka.NET:
 
-*So just don't do it.* `Await` is evil inside an actor. `Await` is just syntactic sugar anyway. Use `ContinueWith` and `PipeTo` instead. Turn the results of `async` operations into messages that get delivered into your actor's mailbox and you can take advantage of `Task` and TPL methods just like you did before.
+1. Exits the containing `async` function, while
+2. Setting a continuation point in the containing method where the asynchronous `Task` (the `awaitable`) will return to and continue executing once it is done with its async work.
 
-### Actors + Async FAQ
-Re-posted from the [Questions section of our Akka.NET `PipeTo` sample](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/README.md#questions).
+These actions by `await` have two negative effects:
 
-**What are those `TaskContinuationOptions.AttachedToParent & TaskContinuationOptions.ExecuteSynchronously` flags you keep using on `ContinueWith` inside an actor?**
+First, `await` makes it harder to reason about exactly what is happening and on which thread. `ContinueWith` (which `await` is just syntactic sugar for anyway) makes it explicit and clear what is happening, and on which thread it's happening.
 
-Those are a set of bitmasked options specific to the `Task` class, and in this case we're telling the TPL to make sure that the `ContinueWith`, known as a "task continuation," gets executed immediately after the parent task returns its asynchronous result and executes using the same thread as its parent.
+As we've discussed, an actor's mailbox pushes messages into the actor's `OnReceive` method as soon as the previous iteration of the `OnReceive` function exits. Whenever you `await` an `async` operation inside the `OnReceive` method, *you prematurely exit* the `OnReceive` method and the mailbox will push a new message into it, which is generally not what is intended.
 
-Sometimes your continuations can be executed on a totally different thread or scheduled to run at a different time and this can cause unpredictable behavior inside actors - because *the actors themselves might be running on a different thread* than they were when they started the asynchronous `Task`.
+Second, `await` breaks the "actors process one message at a time" guarantee. By the time the `await`ed `Task` returns and starts referencing things in the `ActorContext`, that context will have changed because the actor has moved on from the original message that `await`ed. Variables such as the `Sender` of the previous message may be different, or the actor might even be shutting down when the `await` call returns to the previous context.
 
-> The `ContinueWith` will still run on a different thread than the actor, but it makes sure it's the *same* thread as the original `Task<T>`.
+*So just don't use `await` inside your actors.* `Await` is evil inside an actor. `Await` is just syntactic sugar anyway—use `ContinueWith` instead, and pair it with `PipeTo`.
 
-It's best to include these flags whenever you're doing a `ContinueWith` inside an Actor. This makes the behavior of continuations and `PipeTo` very predictable and reliable.
+This will turn the results of `async` operations into messages that get delivered to your actor's mailbox and you can take advantage of `Task` and other TPL methods just as you did before, and you'll enjoy nicely parallel processing!
 
-**Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?**
-
+### Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?**
 **Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls.
 
 So for instance, the `Sender` property of your actor will almost definitely change between messages. You'll need to [use a C# closure](http://www.codethinked.com/c-closures-explained) for this property in order to guarantee that any asynchronous methods that depend on this property get the right value.
@@ -175,3 +171,13 @@ Now, let's get to work and use this powerful parallelism technique inside our ac
 
 ## Great job!
 
+## Further reading
+See our [full Akka.NET `PipeTo` sample](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/).
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
