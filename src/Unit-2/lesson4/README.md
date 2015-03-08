@@ -390,7 +390,13 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 ## Great job!
 YEAAAAAAAAAAAAAH! We have a live updating chart that we can pause over time!
 
-But wait a minute, what happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
+Here is a high-level overview of our working system at this point:
+
+![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_4.png)
+
+***But wait a minute!***
+
+What happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
 
 ![Lesson 4 Output Bugs](images/dothis-fail4.gif)
 
