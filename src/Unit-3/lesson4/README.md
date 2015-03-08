@@ -4,7 +4,7 @@ One of the first questions developers ask once they learn [how Akka.NET actors w
 
 > If actors can only process one message at a time, can I still use `async` methods or `Task<T>` objects inside my actors?
 
-*Yes!* You can still use asynchronous methods and `Task<T>` objects inside your actors - using the `PipeTo` pattern!
+*Yes!* You can still use asynchronous methods and `Task<T>` objects inside your actors - using the `PipeTo` pattern (instead of using `await`)!
 
 This lesson will show you how.
 
