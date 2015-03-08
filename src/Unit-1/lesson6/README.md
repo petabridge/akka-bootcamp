@@ -28,7 +28,7 @@ The actor is now available to process messages. Its `Mailbox` (more on that late
 #### `Stopping`
 During this phase, the actor is cleaning up its state. What happens during this phase depends on whether the actor is being terminated, or restarted.
 
-If the actor is being restarted, it's common to save state or messages during this phase to be processed once the actor is back in its Receiving state after the restart. 
+If the actor is being restarted, it's common to save state or messages during this phase to be processed once the actor is back in its Receiving state after the restart.
 
 If the actor is being terminated, all the messages in its `Mailbox` will be sent to the `DeadLetters` mailbox of the `ActorSystem`. `DeadLetters` is a store of undeliverable messages, usually undeliverable because an actor is dead.
 
@@ -36,7 +36,7 @@ If the actor is being terminated, all the messages in its `Mailbox` will be sent
 The actor is dead. Any messages sent to its former `ActorRef` will now go to `DeadLetters` instead. The actor cannot be restarted, but a new actor can be created at its former address (which will have a new `ActorRef` but an identical `ActorPath`).
 
 #### `Restarting`
-The actor is about to restart and go back into a `Starting` state. 
+The actor is about to restart and go back into a `Starting` state.
 
 ### Life cycle hook methods
 So, how can you link into the actor life cycle? Here are the 4 places you can hook in.
@@ -47,8 +47,8 @@ So, how can you link into the actor life cycle? Here are the 4 places you can ho
 #### `PreRestart`
 If your actor accidentally fails (i.e. throws an unhandled Exception) the actor's parent will restart the actor. `PreRestart` is where you can hook in to do cleanup before the actor restarts, or to save the current message for reprocessing later.
 
-#### `PostStop` 
-`PostStop` is called once the actor has stopped and is no longer receiving messages. This is a good place to include clean-up logic. PostStop does not get called during actor restarts - only when an actor is being terminated. 
+#### `PostStop`
+`PostStop` is called once the actor has stopped and is no longer receiving messages. This is a good place to include clean-up logic. PostStop does not get called during actor restarts - only when an actor is being terminated.
 
 `DeathWatch` is also when an actor notifies any other actors that have subscribed to be alerted when it terminates. `DeathWatch` is just a pub/sub system built into framework for any actor to be alerted to the termination of any other actor.
 
@@ -83,12 +83,12 @@ The second most common place to hook into the life cycle is in `PostStop`, to do
 `PreRestart` is in a distant third to the above methods, but you will occasionally use it. What you use it for is highly dependent on what the actor does, but one common case is to stash a message or otherwise take steps to get it back for reprocessing once the actor restarts.
 
 ### How does this relate to supervision?
-In the event that an actor accidentally crashes (i.e. throws an unhandled Exception,) the actor's supervisor will automatically restart the actor's lifecycle from scratch - without losing any of the remaining messages still in the actor's mailbox. 
+In the event that an actor accidentally crashes (i.e. throws an unhandled Exception,) the actor's supervisor will automatically restart the actor's lifecycle from scratch - without losing any of the remaining messages still in the actor's mailbox.
 
 As we covered in lesson 4 on the actor hierarchy/supervision, what occurs in the case of an unhandled error is determined by the `SupervisionDirective` of the parent. That parent can instruct the child to terminate, restart, or ignore the error and pick up where it left off. The default is to restart, so that any bad state is blown away and the actor starts clean. Restarts are cheap.
 
 ## Exercise
-This final exercise is very short, as our system is already complete. We're just going to use it to optimize the initialization and shutdown of `TailActor`.  
+This final exercise is very short, as our system is already complete. We're just going to use it to optimize the initialization and shutdown of `TailActor`.
 
 ### Move initialization logic from `TailActor` constructor to `PreStart()`
 See all this in the constructor of `TailActor`?
@@ -186,8 +186,9 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 **Ready for more? [Start Unit 2 now](../../Unit-2 "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
-[Create an issue](/issues) and let us know. We'll get right on it, and it will benefit other people going through Bootcamp.
+**Don't be afraid to ask questions** :).
 
-You can also email us any questions at bootcamp (at) petabridge dot com and we'll get right back to you. 
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
-We'll update Bootcamp files to handle any common questions.
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
