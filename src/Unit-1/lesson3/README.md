@@ -412,3 +412,11 @@ Okay, so what was the point of that? Contrived as that example was, it should sh
 Awesome work! Well done on completing your this lesson. It was a big one.
 
 **Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

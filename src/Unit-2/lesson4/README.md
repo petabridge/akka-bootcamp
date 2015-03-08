@@ -405,3 +405,11 @@ What happens if I toggle a chart on or off when the `ChartingActor` is in a paus
 *This is exactly the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
 
 **Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

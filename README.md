@@ -12,8 +12,8 @@ We will start with some basic actors and have you incrementally work your way up
 
 The course is self-directed learning - you can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself.
 
-> NOTE: Currently this bootcamp only supports C# - we intend to add F# in the future. 
-> 
+> NOTE: Currently this bootcamp only supports C# - we intend to add F# in the future.
+>
 > (We will also accept F# pull requests.)
 
 ## What will you learn?
@@ -72,12 +72,12 @@ Here's how Akka.NET bootcamp works!
 
 ### Use Github to Make Life Easy
 
-This Github repository contains Visual Studio solution files and other assets you will need to complete the bootcamp. 
+This Github repository contains Visual Studio solution files and other assets you will need to complete the bootcamp.
 
 Thus, if you want to follow the bootcamp we recommend doing the following:
 
 1. Sign up for [Github](https://github.com/), if you haven't already.
-2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine. 
+2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine.
 3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMes](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
 
 ### Bootcamp Layout
@@ -113,9 +113,9 @@ Each Akka.NET Bootcamp lesson contains a README which explains the following:
 
 A few things to bear in mind when you're following the step-by-step instructions:
 
-1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) for the win.
+1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) FTW!
 2. **You might be required to fill in some blanks during individual lessons.** Part of helping you learn Akka.NET involves leaving some parts of the exercise up to you - if you ever feel lost, always check the contents of the `/Completed` folder for that lesson.
-3. **Don't be afraid to ask questions**. You can [reach the Petabridge team in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) here.
+3. **Don't be afraid to ask questions**. You can [reach the Petabridge and Akka.NET teams in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp) here.
 
 
 ## Docs
@@ -134,7 +134,6 @@ This course expects the following:
 [Let's begin!](src/Unit-1/lesson1)
 
 ## About Petabridge
-
 ![Petabridge logo](images/petabridge_logo.png)
 
 [Petabridge](http://petabridge.com/) is a company dedicated to making it easier for .NET developers to build distributed applications.

@@ -720,7 +720,7 @@ Here is a high-level overview of our working system!
 
 **Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5).**
 
-*****
+---
 ## Supervision FAQ
 ### How long do child actors have to wait for their supervisor?
 This is a common question we get: What if there are a bunch of messages already in the supervisor's mailbox waiting to be processed when a child reports an error? Won't the crashing child actor have to wait until those are processed until it gets a response?
@@ -733,3 +733,12 @@ Parents come with a default SupervisorStrategy object (or you can provide a cust
 
 ### But what happens to the current message when an actor fails?
 The current message being processed by an actor when it is halted (regardless of whether the failure happened to it or its parent) can be saved and re-processed after restarting. There are several ways to do this. The most common approach used is during `preRestart()`, the actor can stash the message (if it has a stash) or it can send the message to another actor that will send it back once restarted. (Note: If the actor has a stash, it will automatically unstash the message once it successfully restarts.)
+
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
