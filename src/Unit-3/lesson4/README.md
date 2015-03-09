@@ -142,26 +142,30 @@ Second, `await` breaks the "actors process one message at a time" guarantee. By 
 This will turn the results of `async` operations into messages that get delivered to your actor's mailbox and you can take advantage of `Task` and other TPL methods just as you did before, and you'll enjoy nicely parallel processing!
 
 ### Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?**
-**Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls.
+**Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls. 
 
-So for instance, the `Sender` property of your actor will almost definitely change between messages. You'll need to [use a C# closure](http://www.codethinked.com/c-closures-explained) for this property in order to guarantee that any asynchronous methods that depend on this property get the right value.
+This usually means closing over the `Sender` property and any private state you've defined that is likely to change between messages.
 
-Here's an example:
+For instance, the `Sender` property of your actor will definitely change between messages. You'll need to [use a C# closure](http://www.codethinked.com/c-closures-explained) for this property in order to guarantee that any asynchronous methods that depend on this property get the right value.
+
+Doing a closure is as simple as stuffing the property into an instance variable (`var`) and using that instance variable in your `PipeTo` call, instead of the field or property defined on your actor.
+
+Here's an example of closing over the `Sender` propery:
 
 ```csharp
-// time to kick off the feed parsing process, and send the results to ourselves
 Receive<BeginProcessFeed>(feed =>
 {
     // instance variable for closure
+    // close over the current value of Sender, since it changes between
+    // messages and accessing by property later would give different value
     var senderClosure = Sender;
     SendMessage(string.Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
 
-    // reply back to the sender
+    // send result of this async task back to the sender of the current message
     _feedFactory.CreateFeedAsync(feed.FeedUri).PipeTo(senderClosure);
 });
 ```
-
-Doing a closure is as simple as stuffing the property into an instance variable (`var`) and using that instance variable in your call instead of the field or property defined on your actor.
+> NOTE: Assuming you're piping the result of the `Task` back to the same actor, you don't need to close over `Self` or `Parent`. Those `ActorRef`s will be the same when the `Task` returns. You just need to close over the state that is going to change by the time the `Task` completes and executes its continuation delegate.
 
 Now, let's get to work and use this powerful parallelism technique inside our actors!
 
