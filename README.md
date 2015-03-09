@@ -64,7 +64,7 @@ In Unit 3 you will learn:
 5. How to use `Pool` routers to automatically create and manage pools of actors; and
 6. How to use HOCON to configure your routers.
 
-> NOTE: Unit 3 is not yet available.
+**[Begin Unit 3](src/Unit-3)**.
 
 ## How to get started
 
