@@ -1,9 +1,9 @@
 # Lesson 3.5: How to prevent deadlocks with `ReceiveTimeout`
 Wow, look at you! Here we are on our last lesson of Bootcamp together. We want to say thank you for coming on this journey with us, and to give yourself a big pat on the back for your dedication to your craft.
 
-In this lesson, we'll be going over how to handle timeouts within actors.
+In this lesson, we'll be going over how to handle timeouts within actors and prevent deadlocks, where one actor is waiting for another indefinitely.
 
-This lesson will
+This lesson will show you how to prevent deadlocks by using a `RecieveTimeout`.
 
 ## Key Concepts / Background
 ### What is `ReceiveTimeout`?
@@ -12,7 +12,13 @@ This lesson will
 Once set up, the `ReceiveTimeout` stays in effect and will continue firing repeatedly every time the specified interval passes without the actor receiving a message.
 
 ### When do I use `ReceiveTimeout`?
-You can use `ReceiveTimeout` whenever you want to take some action after a period of inactivity. For example, you may want to shut an actor down after it goes a certain amount of time without receiving a message. Or perhaps your actor is handling a large task and schedules work via other actors—if those other actors don't acknowledge they've started work in a certain period of time the actor may decide the job cannot be processed and cancel it (as we'll see in the exercise section of this lesson).
+You can use `ReceiveTimeout` whenever you want to take some action after a period of inactivity.
+
+Here are some common cases where you may want to use a `ReceiveTimeout`:
+
+- To shut an actor down after it goes a certain amount of time without receiving a message
+- To confirm that other actors are doing work and sending in their status messages
+- To prevent deadlocks where one actor thinks another is doing work
 
 ### How do I set up a `ReceiveTimeout`?
 You call `Context.SetReceiveTimeout()` and pass it a `TimeSpan`. If that amount of time passes and the actor hasn't received a message, the actor will send itself the `ReceiveTimeout` singleton as a message, e.g.

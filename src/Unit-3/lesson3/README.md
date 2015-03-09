@@ -24,7 +24,7 @@ But most importantly, ***using HOCON means that you can change the behavior of a
 #### What configuration flags usually specified?
 What specific flags you need to specify will depend on the type of router you're using (e.g. you will need a `duration` with a `ScatterGatherFirstCompletedRouter`), but here are the things you'll be configuring the most.
 
-##### What type of router is this?
+##### Type of `Router`
 The most common thing you'll specify is what the type of router is.
 
 Here are the mappings between ´deployment.router' short names to fully qualified class names. You'll use these short names in `App.config`:
@@ -53,7 +53,7 @@ The second most common flag you'll specify in HOCON is the number of routee inst
 You do this with the `nr-of-instances` flag, like so:
 
 ```xml
-// add example here
+// AARON ADD EXAMPLE HERE
 ```
 
 ##### Resizer
@@ -62,7 +62,7 @@ To use a `ResizablePoolRouter` ("auto scaling router"), a `Resizer` component is
 Out of the box, there is only the default `Resizer`. You can configure your own if you want, but be forewarned, it's complicated. Which `Resizer` to use is commonly specified in HOCON, like so:
 
 ```xml
-// add example here
+// AARON ADD EXAMPLE HERE
 ```
 
 #### What should I specify procedurally vs with HOCON?
@@ -79,13 +79,17 @@ HOCON wins. This is true for all actors, not just routers.
 
 For example, if you procedurally specify config for a router and also configure the router in `App.config`, then the values specified in HOCON win.
 
-// add example
+```xml
+// AARON ADD EXAMPLE HERE
+```
 
 ### `Ask`
 Bonus concept! We're also going to teach you to use `Ask` in addition to HOCON.
 
 #### What is `Ask`?
-`Ask` is how one actor can ask another actor for some information and wait for a reply. `Ask` is a blocking, synchronous operation.
+`Ask` is how one actor can ask another actor for some information and wait for a reply.
+
+***NOTE: `Ask` is a blocking, synchronous operation.***
 
 #### When do I use `Ask`?
 Whenever you want one actor to retrieve information from another and wait for a response. It isn't used that often—certainly not compared to `Tell()`—but there are places where it is ***exactly*** what you need.

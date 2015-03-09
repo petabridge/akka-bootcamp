@@ -28,14 +28,14 @@ Frankly, we haven't come across many good use cases that call for a group router
 ***Our advice: stick with pool routers unless you have a very good reason to use a group router.***
 
 ### `RoutingStrategy`s
-A pool router can use all of the routing strategies that a group router can use. We covered in lesson 1.
+A pool router can use all of the routing strategies that a group router can use.
 
-But there are two `RoutingStrategy`s that **only** work with pool routers. The reason is that each of these strategies needs the level of routee control and information that only the pool router can offer, since it creates and supervises its routees.
+However, there are two `RoutingStrategy`s that **only** work with pool routers. The reason is that each of these strategies needs the level of routee control and information that only the pool router can offer, since it creates and supervises its routees.
 
 Let's go through them.
 
 #### `SmallestMailbox`
-A `SmallestMailboxPoolRouter` will try to send the message to the non-suspended routee with fewest messages in its mailbox.
+A `SmallestMailboxPoolRouter` will try to send the message to the routee with fewest messages in its mailbox.
 
 The selection is done in this order:
 
@@ -51,7 +51,7 @@ Here's what the `SmallestMailbox` looks like:
 ![SmallestMailbox RoutingStrategy](../lesson1/images/SmallestMailbox.png)
 
 #### `ResizableRouter`
-*You can think of this as the "auto-scaling router".*
+We like to think of this as the "auto-scaling router".
 
 A `ResizablePoolRouter` detects pressure on routee mailboxes and figures out if it needs to expand or contract the size of the routee pool.
 

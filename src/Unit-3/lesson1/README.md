@@ -116,7 +116,7 @@ Here's what the `RoundRobin` `RoutingStrategy` looks like:
 
 ***In practice, a `RoundRobin` strategy is going to be fine for most situations and should be your go-to load balancing `RoutingStrategy`***.
 
-However, if you find yourself with a router under *massive* load (e.g. 10s of millions of messages per second) then you may want to look at the more esoteric load balancing strategies that follow.
+However, if you find yourself with a router under *massive* load (e.g. 10s of millions of messages per second) or needing a unique pattern, then you may want to look at the more esoteric load balancing strategies that follow.
 
 #### `TailChopping`
 The TailChoppingRouter will first send the message to one, randomly picked, routee and then after a small delay to to a second routee (picked randomly from the remaining routees) and so on. It waits for first reply it gets back and forwards it back to original sender. Other replies are discarded.
@@ -139,7 +139,7 @@ This `RoutingStrategy` only works with Pool routers, so we'll cover it in the ne
 This `RoutingStrategy` only works with Pool routers, so we'll cover it in the next lesson.
 
 ### Special `Router` messages
-Regardless of its `RoutingStrategy`, there are two special types of messages that you can send to a `Router` to cause special behavior.
+Regardless of its `RoutingStrategy`, there are a few special messages that you can send to a `Router` to cause certain behaviors.
 
 #### `Broadcast`
 Sending a `Broadcast` message to a non-`Broadcast` router makes the router act like a `BroadcastRouter` for that single message. After the message is processed, the router will return to its normal `RoutingStrategy`.

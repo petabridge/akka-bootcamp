@@ -2,7 +2,7 @@
 
 One of the first questions developers ask once they learn [how Akka.NET actors work](http://petabridge.com/blog/akkadotnet-what-is-an-actor/) is&hellip;
 
-> If actors can only process one message at a time, can I still use `async` methods or `Task<T>` objects inside my actors?
+> "If actors can only process one message at a time, can I still use `async` methods or `Task<T>` objects inside my actors?"
 
 *Yes!* You can still use asynchronous methods and `Task<T>` objects inside your actors - using the `PipeTo` pattern (instead of using `await`)!
 
@@ -17,9 +17,9 @@ But what if you want to do some asynchronous work from within an actor itself, s
 
 Most developers would default to using `await`, which has achieved demigod status since its release in 2012.
 
-And they would be making the wrong choice.
+*And they would be making the wrong choice.*
 
-Why? First, let's review how actors process messages.
+Why? To answer that, we need to review how actors process messages.
 
 ### Actors process messages one at a time
 Actors process the contents of their mailbox one message at a time. It looks like this:
@@ -30,25 +30,25 @@ Why is maintaining this behavior critical?
 
 Recall that immutable messages themselves are inherently thread-safe, since a different thread can't modify something that is immutable.
 
-***BUT: while the messages are inherently thread-safe, message-processing code has no such guarantee!***
+***BUT: while the messages are inherently thread-safe, the message-processing code has no such guarantee!***
 
 Processing one message at a time is critical because making sure an actor's message processing code (`OnReceive`) can only be run *one invocation at a time* is how Akka.NET enforces thread-safety for all of the code that executes inside an actor.
 
-An immutable message is pushed from the mailbox into `OnReceive()`. Once the call to `OnReceive` exits, the actor's mailbox pushes a new message into the actor's `OnReceive` method.
+An immutable message is pushed from the mailbox into `OnReceive`. Once the call to `OnReceive` exits, the actor's mailbox pushes a new message into the actor's `OnReceive` method.
 
 That being said, it's still possible to take advantage of `async` methods and methods that return `Task<T>` objects inside the `OnReceive` method - you just have to use the `PipeTo` extension method!
 
 ### Async message processing using `PipeTo`
-The [`PipeTo` pattern](https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Actor/PipeToSupport.cs) is a simple [extension method](https://msdn.microsoft.com/en-us/library/bb383977.aspx) built into Akka.NET that you can tack onto at the end of any `Task<T>` object.
+The [`PipeTo` pattern](https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Actor/PipeToSupport.cs) is a simple [extension method](https://msdn.microsoft.com/en-us/library/bb383977.aspx) built into Akka.NET that you can append to any `Task<T>` object.
 
 ```csharp
 public static Task PipeTo<T>(this Task<T> taskToPipe, ICanTell recipient, ActorRef sender = null)
 ```
 
 ### `Task`s are just another source of messages
-**The goal behind `PipeTo` is to *treat every async operation just like any other method that can produce a message for an actor's mailbox*.** THAT is the right way to think about actors and concurrent `Task<T>`s in Akka.NET.
+The goal behind `PipeTo` is to ***treat every async operation just like any other method that can produce a message for an actor's mailbox***.
 
-A `Task<T>` is not something you `await` on in Akka.NET. It's *just something else that produces a message* for an actor to process through its mailbox.
+THAT is the right way to think about actors and concurrent `Task<T>`s in Akka.NET. A `Task<T>` is not something you `await` on in Akka.NET. It's *just something else that produces a message* for an actor to process through its mailbox.
 
 The `PipeTo` method takes an `ICanTell` object as a required argument, which tells the method where to pipe the results of an asynchronous `Task<T>`.
 
@@ -60,7 +60,7 @@ Here are all of the Akka.NET classes that you can use with `ICanTell`:
 Most of the time, you're going to want to have your actors pipe the results of a task back to themselves. Here's an example of a real-world use case for `PipeTo`, drawn from our **[official Akka.NET PipeTo code sample](https://github.com/petabridge/akkadotnet-code-samples/tree/master/PipeTo "Petabridge Akka.NET PipeTo code sample")**.
 
 ```csharp
-// time to kick off the feed parsing process, and send the results to ourselves
+// time to kick off the feed parsing process, and send the results to this same actor
 Receive<BeginProcessFeed>(feed =>
 {
     SendMessage(string.Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
@@ -76,7 +76,7 @@ Whenever you kick off a `Task<T>` and use `PipeTo` to deliver the results to som
 
 In this case we're using `PipeTo` to send the results back to itself, but you can just as easily send these results to different actor.
 
-***The important thing to notice in this animation is that the actor continus processing other messages while the asynchronous operation is happening***.
+***The important thing to notice in this animation is that the actor continues processing other messages while the asynchronous operation is happening***.
 
 That's why `PipeTo` is great for allowing your actors to parallelize long-running tasks, like HTTP requests.
 
@@ -119,7 +119,7 @@ So in this case, we're downloading an image via a [HttpClient](https://msdn.micr
 
 So we do the HTTP code handling inside a `ContinueWith` block and use that to return an `ImageDownloadResult` message that will be piped to the actor using the `PipeTo` block. Pretty easy!
 
-### Why is `await` an antipattern inside actors?
+### Why is `await` an Anti-pattern inside actors?
 
 #### `await` is not magic, and breaks the core message processing guarantees
 While `await` is a powerful and convenient construct, it isn't magic. It's just syntactic sugar for TPL continuation. If this is confusing or unfamiliar, we highly recommend reviewing [Stephen Cleary's excellent Async/Await primer](http://blog.stephencleary.com/2012/02/async-and-await.html).
@@ -127,7 +127,7 @@ While `await` is a powerful and convenient construct, it isn't magic. It's just 
 `Await` does two key things which break the core messaging processing guarantees of Akka.NET:
 
 1. Exits the containing `async` function, while
-2. Setting a continuation point in the containing method where the asynchronous `Task` (the `awaitable`) will return to and continue executing once it is done with its async work.
+2. Sets a continuation point in the containing method where the asynchronous `Task` (the `awaitable`) will return to and continue executing once it is done with its async work.
 
 These actions by `await` have two negative effects:
 
@@ -137,12 +137,12 @@ As we've discussed, an actor's mailbox pushes messages into the actor's `OnRecei
 
 Second, `await` breaks the "actors process one message at a time" guarantee. By the time the `await`ed `Task` returns and starts referencing things in the `ActorContext`, that context will have changed because the actor has moved on from the original message that `await`ed. Variables such as the `Sender` of the previous message may be different, or the actor might even be shutting down when the `await` call returns to the previous context.
 
-*So just don't use `await` inside your actors.* `Await` is evil inside an actor. `Await` is just syntactic sugar anyway—use `ContinueWith` instead, and pair it with `PipeTo`.
+***So don't use `await` inside your actors.*** `Await` is evil inside an actor. `Await` is just syntactic sugar anyway. Use `ContinueWith` instead, and pair it with `PipeTo`.
 
 This will turn the results of `async` operations into messages that get delivered to your actor's mailbox and you can take advantage of `Task` and other TPL methods just as you did before, and you'll enjoy nicely parallel processing!
 
-### Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?**
-**Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls. 
+### Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?
+**Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls.
 
 This usually means closing over the `Sender` property and any private state you've defined that is likely to change between messages.
 
@@ -150,7 +150,7 @@ For instance, the `Sender` property of your actor will definitely change between
 
 Doing a closure is as simple as stuffing the property into an instance variable (`var`) and using that instance variable in your `PipeTo` call, instead of the field or property defined on your actor.
 
-Here's an example of closing over the `Sender` propery:
+Here's an example of closing over the `Sender` property:
 
 ```csharp
 Receive<BeginProcessFeed>(feed =>
