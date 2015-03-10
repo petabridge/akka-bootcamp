@@ -120,7 +120,7 @@ These are the various API calls you can make to schedule recurring messages.
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action);
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action, CancellationToken cancellationToken);
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message);
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken cancellationToken);
 ```
 
 #### Overloads of `ScheduleOnce`
