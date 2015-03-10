@@ -76,8 +76,7 @@ namespace GithubActors.Actors
             Receive<ValidateRepo>(repo =>
             {
                 var userOwner = SplitIntoOwnerAndRepo(repo.RepoUri);
-
-                //always close over Sender in an instance variable
+                //close over the sender in an instance variable
                 var sender = Sender;
                 _gitHubClient.Repository.Get(userOwner.Item1, userOwner.Item2).ContinueWith<object>(t =>
                 {

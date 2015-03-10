@@ -76,6 +76,8 @@ namespace GithubActors.Actors
             Receive<ValidateRepo>(repo =>
             {
                 var userOwner = SplitIntoOwnerAndRepo(repo.RepoUri);
+                //close over the sender in an instance variable
+                var sender = Sender;
                 _gitHubClient.Repository.Get(userOwner.Item1, userOwner.Item2).ContinueWith<object>(t =>
                 {
                     //Rule #1 of async in Akka.NET - turn exceptions into messages your actor understands
@@ -89,7 +91,7 @@ namespace GithubActors.Actors
                     }
 
                     return t.Result;
-                }).PipeTo(Self, Sender);
+                }).PipeTo(Self, sender);
             });
 
             // something went wrong while querying github, sent to ourselves via PipeTo
