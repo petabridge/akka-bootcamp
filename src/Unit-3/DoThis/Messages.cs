@@ -52,7 +52,7 @@
 
         public RetryableQuery NextTry()
         {
-            return new RetryableQuery(Query, AllowableTries);
+            return new RetryableQuery(Query, AllowableTries, CurrentAttempt+1);
         }
     }
 }

@@ -158,7 +158,7 @@ Build and run `GithubActors.sln`, and you should see the following output if you
 
 ![Lesson 5 live run](images/lesson5-live-run.gif)
 
-And here's what the final output looks like - sadly, for a different repo - hit the Github API rate limit with Akka.NET :(
+And here's what the final output looks like - sadly, for a different repo since hit the Github API rate limit with Akka.NET :(
 
 ![Lesson 5 final output](images/lesson5-completed-output.png)
 
