@@ -91,9 +91,51 @@ The current state of our actor hierarchy looks like this:
 
 In this exercise we're going to use a `RoundRobinPool` to throw additional `GithubWorkerActor` instances at our workloads, so we can increase the total throughput of the `GithubActors.sln` application.
 
+This is how fast `GithubActors.sln` runs before we add our `Pool` router - take note:
 
+![GithubActors without parallelism](../lesson1/images/lesson1-after.gif)
+
+### Phase 1 - Modify `GithubCoordinatorActor.PreStart` to create `_githubWorker` as a router
+
+This exercise consists of adding two lines of code.
+
+First, open `Actors/GithubCoordinatorActor.cs` and add the following namespace import:
+
+```csharp
+// add to the top of Actors/GithubCoordinatorActor.cs
+using Akka.Routing;
+```
+
+And then change the `GithubCoorindatorActor.PreStart` method from this:
+
+```csharp
+// original GithubCoordinatorActor.PreStart method from the start of the lesson
+ protected override void PreStart()
+{
+    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
+}
+```
+
+To this
+
+```csharp
+// CHANGE GithubCoordinatorActor.PreStart to use this code instead
+protected override void PreStart()
+{
+    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient))
+        .WithRouter(new RoundRobinPool(10)));
+}
+```
+
+That's it!
 
 ### Once you're done
+
+Build and run `GithubActors.sln`, and let's compare the performance of the app now that we're using 10 `GithubWorkerActor` instances per `GithubCoordinatorActor` instead of 1:
+
+![GtihubActors at the end of lesson 2](images/lesson2-after.gif)
+
+At the start of the lesson, it took us 
 
 ## Great job!
 
