@@ -27,7 +27,7 @@ In Unit 3 you will learn:
 ### Teaming up with Octokit, the official Github SDK for .NET
 In this lesson we'll also be introducing you to [Octokit, the official Github SDK for .NET](http://octokit.github.io/) (and other languages!)
 
-![Octokit .NET Logo](../../images/gundam-dotnet.svg)
+![Octokit .NET Logo](../../images/gundam-dotnet.png)
 
 If you have any questions about Octokit or want to learn more about it, make sure you check out [Octokit.NET on Github](https://github.com/octokit/octokit.net)!
 
