@@ -70,13 +70,11 @@ It is not *guaranteed* that upon reception of the `ReceiveTimeout` that there mu
 This is an edge case, but there are ways to code around it.
 
 ## Exercise
-
 We're going to use `ReceiveTimeout` to eliminate a potential deadlock that might occur inside the `GithubCommanderActor` - if one of the `GithubCoordinatorActor` it routes to suddenly dies before it has a chance to reply to a `CanAcceptJob` message, the `GithubCommanderActor` will be permanently stuck in its `Asking` state.
 
 We can prevent this from happening using `ReceiveTimeout`!
 
 ### Phase 1 - Add a new private field to the `GithubCommanderActor`
-
 We're going to hang onto the current job we're inquiring about as an instance variable inside the `GithubCommanderActor`, so open up `Actors/GithubCommanderActor.cs` and make the following changes:
 
 ```csharp
@@ -100,7 +98,6 @@ private void Ready()
 ```
 
 ### Phase 2 - Wire up `ReceiveTimeout` inside `GithubCommanderActor`
-
 We need to set a few calls to `Context.ReceiveTimeout` in order to get it to work properly with our `GithubCommanderActor` when we're inside the `Asking` state.
 
 First, modify the `BecomeAsking` method on the `GithubCommanderActor` to look like this:
@@ -110,11 +107,11 @@ First, modify the `BecomeAsking` method on the `GithubCommanderActor` to look li
 private void BecomeAsking()
 {
     _canAcceptJobSender = Sender;
-    //block, but ask the router for the number of routees. Avoids magic numbers.
+    // block, but ask the router for the number of routees. Avoids magic numbers.
     pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees()).Result.Members.Count();
     Become(Asking);
 
-    //send ourselves a ReceiveTimeout message if no message within 3 seonds
+    // send ourselves a ReceiveTimeout message if no message within 3 seonds
     Context.SetReceiveTimeout(TimeSpan.FromSeconds(3));
 }
 ```
@@ -124,8 +121,8 @@ This means that once the `GithubCommanderActor` enters the `Asking` behavior, it
 Speaking of which, let's add a handler for the `ReceiveTimeout` message type inside the `Asking` method on `GithubCommanderActor`.
 
 ```
-//add this inside the GithubCommanderActor.Asking method
-//means at least one actor failed to respond
+// add this inside the GithubCommanderActor.Asking method
+// means at least one actor failed to respond
 Receive<ReceiveTimeout>(timeout =>
 {
     _canAcceptJobSender.Tell(new UnableToAcceptJob(_repoJob));
@@ -146,7 +143,7 @@ private void BecomeReady()
     Become(Ready);
     Stash.UnstashAll();
 
-    //cancel ReceiveTimeout
+    // cancel ReceiveTimeout
     Context.SetReceiveTimeout(null);
 }
 ```
@@ -154,11 +151,11 @@ private void BecomeReady()
 And that's it!
 
 ### Once you're done
-Build and run `GithubActors.sln`, and you should see the following output if you try querying the [Akka.NET Github Repository](https://github.com/akkadotnet/akka.net) (go give them a star while you're at it!)
+Build and run `GithubActors.sln`, and you should see the following output if you try querying the [Akka.NET GitHub Repository](https://github.com/akkadotnet/akka.net) (go give them a star while you're at it!)
 
 ![Lesson 5 live run](images/lesson5-live-run.gif)
 
-And here's what the final output looks like - sadly, for a different repo since hit the Github API rate limit with Akka.NET :(
+And here's what the final output looks like - sadly, for a different repo since hit the GitHub API rate limit with Akka.NET :(
 
 ![Lesson 5 final output](images/lesson5-completed-output.png)
 
@@ -167,7 +164,7 @@ Wow! You made it, awesome!
 
 We're really proud of you, and want to express our gratitude for sticking with us all the way through. Thank you, and kudos to you. Your dedication to your craft inspires us.
 
-## Sharing is caring: [click here to Tweet about Bootcamp!](http://ctt.ec/L_Xe0)
+## Sharing is caring: [click here to Tweet about Bootcamp!](http://ctt.ec/L_Xe0) (you can edit first)
 
 We want to help more people get this knowledge and learn to use Akka.NET. Direct them to the [Bootcamp information page](http://learnakka.net) or to this repo.
 

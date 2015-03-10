@@ -84,7 +84,6 @@ Here's what will happen, by default, if you haven't specified a `supervisorStrat
 The reason is to make the default behavior such that adding `withRouter` to a child actor definition does not change the supervision strategy applied to the child. Of course, you can change this by specifying the strategy when defining the parent router.
 
 ## Exercise
-
 The current state of our actor hierarchy looks like this:
 
 ![Final state of GithubActors hierarchy after lesson 1](../lesson1/images/unit3-lesson1-final-actor-hierarchy.png)
@@ -96,7 +95,6 @@ This is how fast `GithubActors.sln` runs before we add our `Pool` router - take 
 ![GithubActors without parallelism](../lesson1/images/lesson1-after.gif)
 
 ### Phase 1 - Modify `GithubCoordinatorActor.PreStart` to create `_githubWorker` as a router
-
 This exercise consists of adding two lines of code.
 
 First, open `Actors/GithubCoordinatorActor.cs` and add the following namespace import:
@@ -116,7 +114,7 @@ And then change the `GithubCoorindatorActor.PreStart` method from this:
 }
 ```
 
-To this
+To this:
 
 ```csharp
 // CHANGE GithubCoordinatorActor.PreStart to use this code instead
@@ -130,7 +128,6 @@ protected override void PreStart()
 That's it!
 
 ### Once you're done
-
 Build and run `GithubActors.sln`, and let's compare the performance of the app now that we're using 10 `GithubWorkerActor` instances per `GithubCoordinatorActor` instead of 1:
 
 ![GtihubActors at the end of lesson 2](images/lesson2-after.gif)
@@ -141,10 +138,9 @@ Our final actor hierarchy at the end of the lesson looks like this:
 
 ![GtihubActors actor hierarchy at end of lesson 2](images/unit3-lesson2-final-actor-hierarchy-small.png)
 
-Actors are cheap and easy to clone - use them liberally with routers!
+Actors are cheap and easy to clone. Use them liberally with routers!
 
 ## Great job!
-
 Now that we've seen how both `Group` and `Pool` routers work, it's easy for us to add them in areas where we can benefit from parallelism or need scale-out for additional jobs.
 
 **Let's move onto [How to use HOCON to configure your routers](../lesson3).**

@@ -40,7 +40,7 @@ system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
 				              someMessage);
 
 // but inside an actor, we access the ActorSystem via the ActorContext
-Context.System.system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+Context.System.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
 								             someActor,
 								             someMessage);
 ```
@@ -107,7 +107,7 @@ cancellation.Cancel();
 
 That said, there are two situations of imprecision that we're aware of:
 
-1. Scheduled messages become are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
+1. Scheduled messages are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
 2. If your scheduling requirements demand precision below 15 milliseconds then the `Scheduler` is not precise enough for you. Nor is any typical operating system such as Windows, OSX, or Linux. This is because ~15ms is the interval in which Windows and other general OSes update their system clock ("clock resolution"), so these OSs can't support any timing more precise than their own system clocks.
 
 ### What are the various overloads of `Schedule` and `ScheduleOnce`?

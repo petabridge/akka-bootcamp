@@ -277,7 +277,7 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 
 ### Wohoo! You did it! Unit 2 is complete! Now go enjoy a well-deserved break, and gear up for Unit 3!
 
-[Sign up here for email updates for when Unit 3 is ready](http://learnakka.net/)!
+**Ready for more? [Start Unit 3 now](../../Unit-3 "Akka.NET Bootcamp Unit 3").**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
