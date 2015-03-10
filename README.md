@@ -52,8 +52,8 @@ In Unit 2 you will learn:
 
 **[Begin Unit 2](src/Unit-2)**.
 
-### Unit 3 (TBA)
-In Unit 3, we will learn to make our system more scalable and resilient.
+### Unit 3 
+In Unit 3, we will learn to make use actors for parallelism and scale-out using [Octokit](http://octokit.github.io/) and data from Github!.
 
 In Unit 3 you will learn:
 
@@ -64,7 +64,7 @@ In Unit 3 you will learn:
 5. How to use `Pool` routers to automatically create and manage pools of actors; and
 6. How to use HOCON to configure your routers.
 
-> NOTE: Unit 3 is not yet available.
+**[Begin Unit 3](src/Unit-3)**.
 
 ## How to get started
 
