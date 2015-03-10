@@ -85,6 +85,14 @@ The reason is to make the default behavior such that adding `withRouter` to a ch
 
 ## Exercise
 
+The current state of our actor hierarchy looks like this:
+
+![Final state of GithubActors hierarchy after lesson 1](../lesson1/images/unit3-lesson1-final-actor-hierarchy.png)
+
+In this exercise we're going to use a `RoundRobinPool` to throw additional `GithubWorkerActor` instances at our workloads, so we can increase the total throughput of the `GithubActors.sln` application.
+
+
+
 ### Once you're done
 
 ## Great job!

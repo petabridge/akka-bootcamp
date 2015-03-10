@@ -198,6 +198,11 @@ If you build and run `GithubActors.sln`, you'll notice that we can only process 
 
 ![GithubActors without parallelism](images/lesson1-before.gif)
 
+
+The current state of our actor hierarchy for processing Github repositories currently looks like this:
+
+![Initial state of GithubActors hierarchy](images/unit3-lesson1-initial-actor-hierarchy.png)
+
 We're going to modify the `GithubCommanderActor` to use a `BroadcastGroup` router so we can run multiple jobs in parallel by the end of this lesson!
 
 ### Phase 1 - Add `WithUnboundedStash` to the `GithubCommanderActor`
@@ -315,6 +320,12 @@ And with that, you're all set!
 You should be able to run `GithubActors.sln` now and see that you can launch up to three jobs in parallel - a big improvement that didn't take very much code!
 
 ![GithubActors without parallelism](images/lesson1-after.gif)
+
+As a result of the changes you made, the actor heirarchy for GithubActors now looks like this:
+
+![Final state of GithubActors hierarchy after lesson 1](images/unit3-lesson1-final-actor-hierarchy.png)
+
+Now we have 3 separate `GithubCoordinatorActor` instances who are all available for Github repository analysis jobs.
 
 ## Great job!
 
