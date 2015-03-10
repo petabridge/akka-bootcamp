@@ -104,7 +104,7 @@ Go to `Program.cs` and add this to create your first actor system:
 ```csharp
 MyActorSystem = ActorSystem.Create("MyActorSystem");
 ```
-> 
+>
 > **NOTE:** When creating `Props`, `ActorSystem`, or `ActorRef` you will very rarely see the `new` keyword. These objects must be created through the factory methods built into Akka.NET. If you're using `new` you might be making a mistake.
 
 ### Make ConsoleReaderActor & ConsoleWriterActor
@@ -158,3 +158,11 @@ Compare your code to the code in the [Completed](Completed/) folder to see what 
 Awesome work! Well done on completing your first lesson.
 
 **Let's move onto [Lesson 2 - Defining and Handling Different Types of Messages](../lesson2).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
