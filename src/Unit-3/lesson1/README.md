@@ -194,12 +194,12 @@ Phew! That was a LOT of new information. Now let's put it to use and make someth
 
 ## Exercise
 
-If you build and run `GithubActors.sln`, you'll notice that we can only process one Github repository at a time right now:
+If you build and run `GithubActors.sln`, you'll notice that we can only process one GitHub repository at a time right now:
 
 ![GithubActors without parallelism](images/lesson1-before.gif)
 
 
-The current state of our actor hierarchy for processing Github repositories currently looks like this:
+The current state of our actor hierarchy for processing GitHub repositories currently looks like this:
 
 ![Initial state of GithubActors hierarchy](images/unit3-lesson1-initial-actor-hierarchy.png)
 
@@ -211,7 +211,7 @@ Open `Actors\GithubCommanderActor.cs` and make the following changes to the acto
 ```csharp
 // Actors\GithubCommanderActor.cs
 public class GithubCommanderActor : ReceiveActor, WithUnboundedStash
-``` 
+```
 
 And then add the `Stash` property to `GithubCommanderActor` somewhere
 
@@ -221,7 +221,6 @@ public IStash Stash { get; set; }
 ```
 
 ### Phase 2 - Add switchable behaviors to the `GithubCommanderActor`
-
 Replace the `GithubCommanderActor`'s constructor and current `Receive<T>` handlers with the following:
 
 ```csharp
@@ -254,7 +253,7 @@ private void BecomeAsking()
 
 private void Asking()
 {
-    //stash any subsequent requests
+    // stash any subsequent requests
     Receive<CanAcceptJob>(job => Stash.Stash());
 
     Receive<UnableToAcceptJob>(job =>
@@ -271,10 +270,10 @@ private void Asking()
     {
         _canAcceptJobSender.Tell(job);
 
-        //start processing messages
+        // start processing messages
         Sender.Tell(new GithubCoordinatorActor.BeginJob(job.Repo));
 
-        //launch the new window to view results of the processing
+        // launch the new window to view results of the processing
         Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(
 			new MainFormActor.LaunchRepoResultsWindow(job.Repo, Sender));
 
@@ -290,8 +289,7 @@ private void BecomeReady()
 ```
 
 ### Phase 3 - Modify `GithubCommanderActor.PreStart` to use a group router for `_coordinator`
-
-The `GithubCommanderActor` is responsible for creating one `GithubCoordinatorActor`, who manages and coordinates all of the actors responsible for downloading data from Github via [Octokit](http://octokit.github.io/).
+The `GithubCommanderActor` is responsible for creating one `GithubCoordinatorActor`, who manages and coordinates all of the actors responsible for downloading data from GitHub via [Octokit](http://octokit.github.io/).
 
 We're going to change the `GithubCommanderActor` to actually create 3 different `GithubCoordinatorActor` instances, and we're going to use a `BroadcastGroup` to communicate with them!
 
@@ -300,12 +298,12 @@ Replace the `GithubCommanderActor.PreStart` method with the following:
 ```csharp
 protected override void PreStart()
 {
-    //create three GithubCoordinatorActor instances
+    // create three GithubCoordinatorActor instances
     var c1 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "1");
     var c2 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "2");
     var c3 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "3");
 
-    //create a broadcast router who will ask all if them if they're available for work
+    // create a broadcast router who will ask all if them if they're available for work
     _coordinator =
         Context.ActorOf(Props.Empty.WithRouter(new BroadcastGroup(ActorPaths.GithubCoordinatorActor.Path + "1",
             ActorPaths.GithubCoordinatorActor.Path + "2", ActorPaths.GithubCoordinatorActor.Path + "3")));
@@ -321,15 +319,15 @@ You should be able to run `GithubActors.sln` now and see that you can launch up 
 
 ![GithubActors without parallelism](images/lesson1-after.gif)
 
-As a result of the changes you made, the actor heirarchy for GithubActors now looks like this:
+As a result of the changes you made, the actor hierarchy for GithubActors now looks like this:
 
 ![Final state of GithubActors hierarchy after lesson 1](images/unit3-lesson1-final-actor-hierarchy.png)
 
-Now we have 3 separate `GithubCoordinatorActor` instances who are all available for Github repository analysis jobs.
+Now we have 3 separate `GithubCoordinatorActor` instances who are all available for GitHub repository analysis jobs.
 
 ## Great job!
 
-Awesome job! You've successfully used Akka.NET routers to achieve the first layer of parallelism we're going to add to our Github scraper!
+Awesome job! You've successfully used Akka.NET routers to achieve the first layer of parallelism we're going to add to our GitHub scraper!
 
 **Let's move onto [Lesson 2 - Using `Pool` routers to automatically create and manage pools of actors](../lesson2).**
 

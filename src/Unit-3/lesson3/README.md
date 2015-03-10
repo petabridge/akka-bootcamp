@@ -118,7 +118,7 @@ You'd still get a `ConsistentHashingPool` with 3 instances of `FooActor` instead
 #### Forcing Akka.NET to load router definitions from configuration using `FromConfig`
 Akka.NET won't create an actor with a router unless you explicitly call `WithRouter` during the time you create an actor who needs to be a router.
 
-So if we want to rely on the router definition we've supplied via configuration, we can use the `FromConfig` class to tell Akka.NET "hey, look inside our configuration for a router specification for this actor."
+So, if we want to rely on the router definition we've supplied via configuration, we can use the `FromConfig` class to tell Akka.NET "hey, look inside our configuration for a router specification for this actor."
 
 Here's an example:
 
@@ -136,7 +136,7 @@ And if we make the following call to `ActorOf`:
 var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()).WithRouter(FromConfig.Instance), "router1");
 ```
 
-Then we'll get a `ConsistentHashingPool` router. 
+Then we'll get a `ConsistentHashingPool` router.
 
 Otherwise, if we just called this:
 
@@ -144,8 +144,7 @@ Otherwise, if we just called this:
 var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()), "router1");
 ```
 
-Then we'd only get a single instance of `FooActor` in return. So use `FromConfig` whenever you need to use a router defined in configuration!
-
+Then we'd only get a single instance of `FooActor` in return. Use `FromConfig` whenever you need to use a router defined in configuration.
 
 ### `Ask`
 Bonus concept! We're also going to teach you to use `Ask` in addition to HOCON.
@@ -161,11 +160,9 @@ Whenever you want one actor to retrieve information from another and wait for a 
 Great! Let's put `Ask` and HOCON to work with our routers!
 
 ## Exercise
-
 We're not going to change the actor hierarchy much in this lesson, but we are going to replace the programmaticly defined `BroadcastGroup` router we created in lesson 1 with a `BroadcastPool` defined via HOCON configuration in `App.config`.
 
 ### Phase 1 - Add new deployment to `App.config`
-
 We'll add our configuration section first, before we modify the code inside `GithubCommanderActor`.
 
 Open `App.config` and add the following inside the `akka.actor.deployment` section:
@@ -180,7 +177,6 @@ Open `App.config` and add the following inside the `akka.actor.deployment` secti
 ```
 
 ### Phase 2 - Modify `GithubCommanderActor` to use this new configuration setting
-
 Open up `Actors/GithubCommanderActor.cs` and do the following:
 
 Add the following import to the top of the file:
@@ -196,7 +192,7 @@ Replace the `GithubCommanderActor`'s `BecomeAsking method to look like this:
 private void BecomeAsking()
 {
     _canAcceptJobSender = Sender;
-    //block, but ask the router for the number of routees. Avoids magic numbers.
+    // block, but ask the router for the number of routees. Avoids magic numbers.
     pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees()).Result.Members.Count();
     Become(Asking);
 }
@@ -206,7 +202,7 @@ Since the number of routees underneath `_coordinator` is now defined via configu
 
 This is an asynchronous operation, but we're going to block and wait for the result - because the `GithubCommander`can't execute its next behavior until it knows how many parallel jobs can be run at once, which is determined by the number of routees.
 
-> **NOTE: Blocking is not evil**. In the wake of `async` / `await` many .NET developers have come to the conclusion that blocking is an anti-pattern or generally evil. This is ludicrous. Blocking is absolutely the right thing to do if your application can't proceed until the operation you're waiting on finishes, and that's the case here. 
+> **NOTE: Blocking is not evil**. In the wake of `async` / `await`, many .NET developers have come to the conclusion that blocking is an anti-pattern or generally evil. This is ludicrous. It depends entirely on the context. Blocking is absolutely the right thing to do if your application can't proceed until the operation you're waiting on finishes, and that's the case here.
 
 Finally, replace the `GithubCommanderActor`'s `PreStart` method with the following:
 
@@ -214,9 +210,9 @@ Finally, replace the `GithubCommanderActor`'s `PreStart` method with the followi
 // replace GithubCommanderActor's PreStart method with this
 protected override void PreStart()
 {
-    //create a broadcast router who will ask all if them if they're available for work
+    // create a broadcast router who will ask all if them if they're available for work
     _coordinator =
-        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()).WithRouter(FromConfig.Instance), 
+        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()).WithRouter(FromConfig.Instance),
         ActorPaths.GithubCoordinatorActor.Name);
     base.PreStart();
 }

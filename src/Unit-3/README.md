@@ -9,7 +9,7 @@ In **[Unit 2](../Unit-2)** we learned some of the more sophisticated concepts be
 In Unit 3, we're going to learn how to leverage the [Task Parallelism Library (TPL)](https://msdn.microsoft.com/en-us/library/dd537609.aspx) and Akka.NET routers to scale out actor systems for massive performance boosts via parallelism.
 
 ## Concepts you'll learn
-Over the course of Unit 3, you're going to build a sophisticated GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once. 
+Over the course of Unit 3, you're going to build a sophisticated GitHub scraper that can simultaneously retrieve data from multiple GitHub repos at once.
 
 ![Unit 3 GithubScraper App Live Run](lesson5/images/lesson5-live-run.gif)
 
@@ -24,12 +24,12 @@ In Unit 3 you will learn:
 5. How to perform work asynchronously inside your actors using `PipeTo`
 6. Stateful vs Stateless Routing
 
-### Teaming up with Octokit, the official Github SDK for .NET
-In this lesson we'll also be introducing you to [Octokit, the official Github SDK for .NET](http://octokit.github.io/) (and other languages!)
+### Teaming up with Octokit, the official GitHub SDK for .NET
+In this lesson we'll also be introducing you to [Octokit, the official GitHub SDK for .NET](http://octokit.github.io/) (and other languages!)
 
 ![Octokit .NET Logo](../../images/gundam-dotnet.png)
 
-If you have any questions about Octokit or want to learn more about it, make sure you check out [Octokit.NET on Github](https://github.com/octokit/octokit.net)!
+If you have any questions about Octokit or want to learn more about it, make sure you check out [Octokit.NET on GitHub](https://github.com/octokit/octokit.net)!
 
 ## Table of Contents
 
