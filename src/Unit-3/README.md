@@ -24,14 +24,20 @@ In Unit 3 you will learn:
 5. How to perform work asynchronously inside your actors using `PipeTo`
 6. Stateful vs Stateless Routing
 
+### Teaming up with Octokit, the official Github SDK for .NET
+In this lesson we'll also be introducing you to [Octokit, the official Github SDK for .NET](http://octokit.github.io/) (and other languages!)
+
+![Octokit .NET Logo](../../images/gundam-dotnet.svg)
+
+If you have any questions about Octokit or want to learn more about it, make sure you check out [Octokit.NET on Github](https://github.com/octokit/octokit.net)!
 
 ## Table of Contents
 
 1. **[Lesson 1:  Using `Group` routers to divide work among your actors](lesson1/)**
 2. **[Lesson 2: Using `Pool` routers to automatically create and manage pools of actors](lesson2/)**
 3. **[Lesson 3: How to use HOCON to configure your routers](lesson3/)**
-4. **[Lesson 4: How to use `Ask` to wait inline for actors to respond to your messages](lesson4/)**
-5. **[Lesson 5: How to perform work asynchronously inside your actors using `PipeTo`](lesson5/)**
+4. **[Lesson 4: How to perform work asynchronously inside your actors using `PipeTo`](lesson4/)**
+5. **[Lesson 5: How to prevent deadlocks with `ReceiveTimeout`](lesson5/)**
 
 ## Things you'll need
 **You will need to make a GitHub OAuth access token for the API**.

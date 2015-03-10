@@ -171,9 +171,90 @@ Now, let's get to work and use this powerful parallelism technique inside our ac
 
 ## Exercise
 
+Currently our `GithubWorkerActor` instances all block when they're waiting for responses back from the Github API, using the following code:
+
+```csharp
+ var getStarrer = _gitHubClient.Activity.Starring.GetAllForUser(starrer);
+
+//ewww
+getStarrer.Wait();
+var starredRepos = getStarrer.Result;
+Sender.Tell(new StarredReposForUser(starrer, starredRepos));
+```
+
+We're going to leverage the full power of the TPL and allow each of our `GithubWorkerActor` instances kick off multiple parallel Octokit queries at once, and then use `PipeTo` to asynchronously deliverthe completed results back to our `GithubCoordinatorActor`.
+
+Take note - this the current speed of our Github scraper at the end of lesson 2:
+
+![GtihubActors at the end of lesson 2](../lesson2/images/lesson2-after.gif)
+
+### Phase 1 - Replace `GithubWorkerActor.InitialReceives`
+
+Open up `Actors/GithubWorkerActor.cs`and replace the `InitialRecieves` method with the following code:
+
+```csharp
+private void InitialReceives()
+{
+    //query an individual starrer
+    Receive<RetryableQuery>(query => query.Query is QueryStarrer, query =>
+    {
+        // ReSharper disable once PossibleNullReferenceException
+		// (we know from the previous IS statement that this is not null)
+        var starrer = (query.Query as QueryStarrer).Login;
+
+        //close over the Sender in an instance variable
+        var sender = Sender;
+        _gitHubClient.Activity.Starring.GetAllForUser(starrer).ContinueWith<object>(tr =>
+        {
+            //query faulted
+            if (tr.IsFaulted || tr.IsCanceled)
+                return query.NextTry();
+            //query succeeded
+            return new StarredReposForUser(starrer, tr.Result);
+        }).PipeTo(sender);
+
+    });
+
+    //query all starrers for a repository
+    Receive<RetryableQuery>(query => query.Query is QueryStarrers, query =>
+    {
+        // ReSharper disable once PossibleNullReferenceException
+		// (we know from the previous IS statement that this is not null)
+        var starrers = (query.Query as QueryStarrers).Key;
+
+
+        //close over the Sender in an instance variable
+        var sender = Sender;
+        _gitHubClient.Activity.Starring.GetAllStargazers(starrers.Owner, starrers.Repo)
+            .ContinueWith<object>(tr =>
+            {
+                //query faulted
+                if (tr.IsFaulted || tr.IsCanceled)
+                    return query.NextTry();
+                return tr.Result.ToArray();
+            }).PipeTo(sender);
+
+    });
+}
+```
+
+That's it!
+
 ### Once you're done
 
+Build and run `GithubActors.sln` - the performance should be *really fast* now.
+
+![GithubActors performance after lesson 4](images/lesson4-after.gif)
+
+**At the start of the lesson, it took us 4 seconds to download our first 4 users** for https://github.com/petabridge/akka-bootcamp. **At the end of the lesson we downloaded 22 users in 4 seconds**. All of this without addin any new actors or doing anything other than just letting the TPL work in concert via `PipeTo`.
+
+> **NOTE:** The Github API appears to be *really* slow for a handful of users on every repository we've tested. We have no idea why. 
+
 ## Great job!
+
+Awesome - now you can use `Task<T>` instances in combination with your actors for maximum concurrency! Horay!
+
+**Now it's time to move onto the final lesson: [Lesson 5 - How to prevent deadlocks with `ReceiveTimeout`](../lesson5).**
 
 ## Further reading
 See our [full Akka.NET `PipeTo` sample](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/).

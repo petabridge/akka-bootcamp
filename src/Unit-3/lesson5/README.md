@@ -71,7 +71,96 @@ This is an edge case, but there are ways to code around it.
 
 ## Exercise
 
+We're going to use `ReceiveTimeout` to eliminate a potential deadlock that might occur inside the `GithubCommanderActor` - if one of the `GithubCoordinatorActor` it routes to suddenly dies before it has a chance to reply to a `CanAcceptJob` message, the `GithubCommanderActor` will be permanently stuck in its `Asking` state.
+
+We can prevent this from happening using `ReceiveTimeout`!
+
+### Phase 1 - Add a new private field to the `GithubCommanderActor`
+
+We're going to hang onto the current job we're inquiring about as an instance variable inside the `GithubCommanderActor`, so open up `Actors/GithubCommanderActor.cs` and make the following changes:
+
+```csharp
+// add this field anywhere inside the GithubCommanderActor
+private RepoKey _repoJob;
+```
+
+And modify the `GithubCommanderActor.Ready` method to look like this:
+
+```csharp
+// modify the GithubCommanderActor.Ready method to look like this
+private void Ready()
+{
+    Receive<CanAcceptJob>(job =>
+    {
+        _coordinator.Tell(job);
+        _repoJob = job.Repo;
+        BecomeAsking();
+    });
+}
+```
+
+### Phase 2 - Wire up `ReceiveTimeout` inside `GithubCommanderActor`
+
+We need to set a few calls to `Context.ReceiveTimeout` in order to get it to work properly with our `GithubCommanderActor` when we're inside the `Asking` state.
+
+First, modify the `BecomeAsking` method on the `GithubCommanderActor` to look like this:
+
+```csharp
+// modify the `BecomeAsking` method on the `GithubCommanderActor` to look like this
+private void BecomeAsking()
+{
+    _canAcceptJobSender = Sender;
+    //block, but ask the router for the number of routees. Avoids magic numbers.
+    pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees()).Result.Members.Count();
+    Become(Asking);
+
+    //send ourselves a ReceiveTimeout message if no message within 3 seonds
+    Context.SetReceiveTimeout(TimeSpan.FromSeconds(3));
+}
+```
+
+This means that once the `GithubCommanderActor` enters the `Asking` behavior, it will automatically send itself a `ReceiveTimeout` message if it hasn't received any other message for longer than three seconds.
+
+Speaking of which, let's add a handler for the `ReceiveTimeout` message type inside the `Asking` method on `GithubCommanderActor`.
+
+```
+//add this inside the GithubCommanderActor.Asking method
+//means at least one actor failed to respond
+Receive<ReceiveTimeout>(timeout =>
+{
+    _canAcceptJobSender.Tell(new UnableToAcceptJob(_repoJob));
+    BecomeReady();
+});
+```
+
+We're going to treat every `ReceiveTimeout` as a "busy" signal from one of the `GithubCoordinatorActor` instances, so we'll send ourselves a `UnableToAcceptJob` message every time we receive a `ReceiveTimeout`.
+
+Once the `GithubCommanderActor` has received all of the replies its expecting and it switches back to its `Ready` state, we need to cancel the `ReceiveTimeout`.
+
+Modify the `GithubCommanderActor`'s `BecomeReady` method to look like the following:
+
+```csharp
+// modify the GithubCommanderActor.BecomeReady method to read like the following:
+private void BecomeReady()
+{
+    Become(Ready);
+    Stash.UnstashAll();
+
+    //cancel ReceiveTimeout
+    Context.SetReceiveTimeout(null);
+}
+```
+
+And that's it!
+
 ### Once you're done
+Build and run `GithubActors.sln`, and you should see the following output if you try querying the [Akka.NET Github Repository](https://github.com/akkadotnet/akka.net) (go give them a star while you're at it!)
+
+![Lesson 5 live run](images/lesson5-live-run.gif)
+
+And here's what the final output looks like:
+
+![Lesson 5 final output](images/lesson5-completed-output.png)
 
 ## Great job!
 Wow! You made it, awesome!
