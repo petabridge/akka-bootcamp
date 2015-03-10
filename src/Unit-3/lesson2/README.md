@@ -135,9 +135,19 @@ Build and run `GithubActors.sln`, and let's compare the performance of the app n
 
 ![GtihubActors at the end of lesson 2](images/lesson2-after.gif)
 
-At the start of the lesson, it took us 
+**At the start of the lesson, it took us 16 seconds to download our first 4 users** for https://github.com/petabridge/akka-bootcamp. **At the end of the lesson it took us less than 4 seconds**. And it only took two lines of code to do it - that's how easy it is to parallelize work using actors.
+
+Our final actor hierarchy at the end of the lesson looks like this:
+
+![GtihubActors actor hierarchy at end of lesson 2](images/unit3-lesson2-final-actor-hierarchy-small.png)
+
+Actors are cheap and easy to clone - use them liberally with routers!
 
 ## Great job!
+
+Now that we've seen how both `Group` and `Pool` routers work, it's easy for us to add them in areas where we can benefit from parallelism or need scale-out for additional jobs.
+
+**Let's move onto [How to use HOCON to configure your routers](../lesson3).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
