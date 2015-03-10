@@ -27,7 +27,7 @@ Since a `Router` does not need to actually process messages and take any signifi
 
 On the surface, `Router`s look like normal actors, but they are actually implemented differently. Routers are designed to be extremely efficient at one thing: receiving messages and quickly passing them on to routees.
 
-A normal actor *can* be used for routing messages, but a normal actor's single-threaded processing can become a bottleneck. Routers achieve much higher throughput by changing the usual message-processing pipeline to allow concurrent message routing. This is achieved by embedding the routing logic of a `Router` directly in their `ActorRef` itself, rather than in the receive loop / message-handling code of the router actor. This way, messages sent to a router's `ActorRef` are immediately routed to the routee, bypassing the single-threaded message-handling code of the router's actor entirely.
+A normal actor *can* be used for routing messages, but a normal actor's single-threaded processing can become a bottleneck. Routers achieve much higher throughput by changing the usual message-processing pipeline to allow concurrent message routing. This is achieved by embedding the routing logic of a `Router` directly in their `ActorCell` itself (the mesh between the actor's mailbox and the actor,) rather than in the receive loop / message-handling code of the router actor. This way, messages sent to a router's `ActorRef` are immediately routed to the routee, bypassing the single-threaded message-handling code of the router's actor entirely.
 
 Fortunately, *all of this complexity is invisible to consumers of the routing API*.
 
@@ -37,7 +37,7 @@ There are two types of routers: Pool routers, and Group routers.
 ##### Pool Routers
 A "Pool" router is a `Router` that creates and manages its worker actors ("routees"). You provide a `NrOfInstances` to the router and the router will handle routee creation (and supervision) by itself.
 
-We'll cover Pool routers in depth in the next lesson.
+> **We cover Pool routers in depth in lesson 2**.
 
 ##### Group Routers
 A group router is a router that does not create/manage its routees. It only forwards them messages. You specify the routees when creating the group router by passing the router the `ActorPath`s for each routee.
@@ -194,9 +194,133 @@ Phew! That was a LOT of new information. Now let's put it to use and make someth
 
 ## Exercise
 
+If you build and run `GithubActors.sln`, you'll notice that we can only process one Github repository at a time right now:
+
+![GithubActors without parallelism](images/lesson1-before.gif)
+
+We're going to modify the `GithubCommanderActor` to use a `BroadcastGroup` router so we can run multiple jobs in parallel by the end of this lesson!
+
+### Phase 1 - Add `WithUnboundedStash` to the `GithubCommanderActor`
+Open `Actors\GithubCommanderActor.cs` and make the following changes to the actor declaration:
+
+```csharp
+// Actors\GithubCommanderActor.cs
+public class GithubCommanderActor : ReceiveActor, WithUnboundedStash
+``` 
+
+And then add the `Stash` property to `GithubCommanderActor` somewhere
+
+```csharp
+// inside GithubCommanderActor class definition
+public IStash Stash { get; set; }
+```
+
+### Phase 2 - Add switchable behaviors to the `GithubCommanderActor`
+
+Replace the `GithubCommanderActor`'s constructor and current `Receive<T>` handlers with the following:
+
+```csharp
+/* replace the current constructor and Receive<T> handlers
+ * in Actors/GithubCommanderActor.cs with the following
+ */
+private int pendingJobReplies;
+
+public GithubCommanderActor()
+{
+   Ready();
+}
+
+private void Ready()
+{
+    Receive<CanAcceptJob>(job =>
+    {
+        _coordinator.Tell(job);
+
+        BecomeAsking();
+    });
+}
+
+private void BecomeAsking()
+{
+    _canAcceptJobSender = Sender;
+    pendingJobReplies = 3; //the number of routees
+    Become(Asking);
+}
+
+private void Asking()
+{
+    //stash any subsequent requests
+    Receive<CanAcceptJob>(job => Stash.Stash());
+
+    Receive<UnableToAcceptJob>(job =>
+    {
+        pendingJobReplies--;
+        if (pendingJobReplies == 0)
+        {
+            _canAcceptJobSender.Tell(job);
+            BecomeReady();
+        }
+    });
+
+    Receive<AbleToAcceptJob>(job =>
+    {
+        _canAcceptJobSender.Tell(job);
+
+        //start processing messages
+        Sender.Tell(new GithubCoordinatorActor.BeginJob(job.Repo));
+
+        //launch the new window to view results of the processing
+        Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(
+			new MainFormActor.LaunchRepoResultsWindow(job.Repo, Sender));
+
+        BecomeReady();
+    });
+}
+
+private void BecomeReady()
+{
+    Become(Ready);
+    Stash.UnstashAll();
+}
+```
+
+### Phase 3 - Modify `GithubCommanderActor.PreStart` to use a group router for `_coordinator`
+
+The `GithubCommanderActor` is responsible for creating one `GithubCoordinatorActor`, who manages and coordinates all of the actors responsible for downloading data from Github via [Octokit](http://octokit.github.io/).
+
+We're going to change the `GithubCommanderActor` to actually create 3 different `GithubCoordinatorActor` instances, and we're going to use a `BroadcastGroup` to communicate with them!
+
+Replace the `GithubCommanderActor.PreStart` method with the following:
+
+```csharp
+protected override void PreStart()
+{
+    //create three GithubCoordinatorActor instances
+    var c1 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "1");
+    var c2 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "2");
+    var c3 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "3");
+
+    //create a broadcast router who will ask all if them if they're available for work
+    _coordinator =
+        Context.ActorOf(Props.Empty.WithRouter(new BroadcastGroup(ActorPaths.GithubCoordinatorActor.Path + "1",
+            ActorPaths.GithubCoordinatorActor.Path + "2", ActorPaths.GithubCoordinatorActor.Path + "3")));
+    base.PreStart();
+}
+```
+
+And with that, you're all set!
+
 ### Once you're done
 
+You should be able to run `GithubActors.sln` now and see that you can launch up to three jobs in parallel - a big improvement that didn't take very much code!
+
+![GithubActors without parallelism](images/lesson1-after.gif)
+
 ## Great job!
+
+Awesome job! You've successfully used Akka.NET routers to achieve the first layer of parallelism we're going to add to our Github scraper!
+
+**Let's move onto [Lesson 2 - Using `Pool` routers to automatically create and manage pools of actors](../lesson2).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
