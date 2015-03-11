@@ -22,6 +22,7 @@ We recommend using a pool router unless you have a unique situation that falls i
 
 1. You need your router to be able to send messages to a group of actors via wildcard `ActorSelection`.
 2. For some reason, you need to route messages to actors that the router cannot be responsible for. For example, there could be a situation where you need to front some actors with a router, but it just doesn't make sense to have those routees as children of the router. Perhaps if other critical components in your system depend on these actors living at a certain location.
+3. You need your router to be able to send messages to different types of actor routees. (Pool routers can only have one type of actor as their routees.)
 
 Frankly, we haven't come across many good use cases that call for a group router. You'll probably know it when you see it.
 
