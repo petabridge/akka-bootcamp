@@ -20,8 +20,8 @@ let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message =
         Console.WriteLine "Type 'exit' to quit this application at any time.\n"
 
     let getAndValidateInput () = 
-        let message = Console.ReadLine()
-        match message.ToLower () with
+        let line = Console.ReadLine()
+        match line.ToLower () with
         | EmptyCommand -> mailbox.Self <! InputError ("No input received.", ErrorType.Null)
         | ExitCommand -> mailbox.Context.System.Shutdown ()
         | ValidMessage _ -> 
@@ -36,7 +36,7 @@ let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message =
         | _ -> ()
     | :? InputResult as inputResult ->
         match inputResult with
-        | InputError(reason,_) -> consoleWriter <! reason
+        | InputError(_,_) as error -> consoleWriter <! error
         | _ -> ()
     | _ -> ()
     getAndValidateInput ()
@@ -49,7 +49,9 @@ let consoleWriterActor message =
         Console.WriteLine (message.ToString ())
         Console.ResetColor ()
 
-    match message with
-    | InputError (reason,_) -> printInColor ConsoleColor.Red reason
-    | InputSuccess reason -> printInColor ConsoleColor.Green reason
+    match box message with
+    | :? InputResult as inputResult ->
+        match inputResult with
+        | InputError (reason,_) -> printInColor ConsoleColor.Red reason
+        | InputSuccess reason -> printInColor ConsoleColor.Green reason
     | _ -> printInColor ConsoleColor.Black (message.ToString ())
