@@ -12,8 +12,7 @@ let chartingActor (chart: Chart) =
         seriesIndex := (!seriesIndex).Add (series.Name, series)
         chart.Series.Add series
     
-    (fun message -> 
-        match message with
+    function
         | InitializeChart series -> 
             chart.Series.Clear ()
             series |> Map.iter (fun k v -> 
@@ -22,4 +21,4 @@ let chartingActor (chart: Chart) =
         | AddSeries series when 
             not (String.IsNullOrEmpty series.Name) &&
             not (!seriesIndex |> Map.containsKey series.Name) -> addSeries series
-        | _ -> ())
+        | _ -> ()
