@@ -41,13 +41,13 @@ let chartingActor (chart: Chart) =
                                     v |> addSeries)
         | AddSeries series when not (String.IsNullOrEmpty series.Name) && not (!seriesIndex |> Map.containsKey series.Name) -> addSeries series
         | RemoveSeries seriesName when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
-                chart.Series.Remove (!seriesIndex).[seriesName] |> ignore
-                seriesIndex := (!seriesIndex).Remove seriesName
+            chart.Series.Remove (!seriesIndex).[seriesName] |> ignore
+            seriesIndex := (!seriesIndex).Remove seriesName
         | Metric(seriesName, counterValue) when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
-                xPosCounter := !xPosCounter + 1.
-                let series = (!seriesIndex).[seriesName]
-                series.Points.AddXY (!xPosCounter, counterValue) |> ignore
-                while (series.Points.Count > maxPoints) do series.Points.RemoveAt(0);
+            xPosCounter := !xPosCounter + 1.
+            let series = (!seriesIndex).[seriesName]
+            series.Points.AddXY (!xPosCounter, counterValue) |> ignore
+            while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
         | _ -> ()
         setChartBoundaries ())
 

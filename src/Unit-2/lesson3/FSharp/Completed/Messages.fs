@@ -25,5 +25,5 @@ type CoordinationMessage =
 | Watch of counter: CounterType
 | Unwatch of counter: CounterType
 
-type Toggle =
+type ButtonMessage =
 | Toggle
