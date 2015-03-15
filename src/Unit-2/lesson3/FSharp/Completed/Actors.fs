@@ -114,9 +114,9 @@ let buttonToggleActor coordinatorActor (myButton: Button) myCounterType isToggle
             isToggledOn := not (!isToggledOn)
             myButton.Text <- (sprintf "%s (%s)" ((myCounterType.ToString ()).ToUpperInvariant ()) (if !isToggledOn then "ON" else "OFF"))
 
-    (fun message ->
+    (fun (mailbox: Actor<_>) message ->
         match message with
         | Toggle when !isToggledOn -> coordinatorActor <! Unwatch(myCounterType)
         | Toggle when not !isToggledOn -> coordinatorActor <! Watch(myCounterType)
-        | _ -> ()
+        | m -> mailbox.Unhandled m 
         flipToggle ())

@@ -43,9 +43,9 @@ chartActor <! InitializeChart(Map.empty)
 
 let coordinatorActor = spawn chartActors "counters" (actorOf2 (Actors.performanceCounterCoordinatorActor chartActor))
 
-let toggleActors = Map.ofList [(CounterType.Cpu, spawnOpt chartActors "cpuCounter" (actorOf (Actors.buttonToggleActor coordinatorActor btnCpu CounterType.Cpu false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
-                               (CounterType.Memory, spawnOpt chartActors "memoryCounter" (actorOf (Actors.buttonToggleActor coordinatorActor btnMemory CounterType.Memory false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
-                               (CounterType.Disk, spawnOpt chartActors "diskCounter" (actorOf (Actors.buttonToggleActor coordinatorActor btnDisk CounterType.Disk false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])]
+let toggleActors = Map.ofList [(CounterType.Cpu, spawnOpt chartActors "cpuCounter" (actorOf2 (Actors.buttonToggleActor coordinatorActor btnCpu CounterType.Cpu false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
+                               (CounterType.Memory, spawnOpt chartActors "memoryCounter" (actorOf2 (Actors.buttonToggleActor coordinatorActor btnMemory CounterType.Memory false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
+                               (CounterType.Disk, spawnOpt chartActors "diskCounter" (actorOf2 (Actors.buttonToggleActor coordinatorActor btnDisk CounterType.Disk false)) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])]
 
 toggleActors.[CounterType.Cpu] <! Toggle
 
