@@ -17,10 +17,10 @@ let consoleReaderActor (validation: ActorRef) (mailbox: Actor<_>) message =
     let doPrintInstructions () = Console.WriteLine "Please provide the URI of a log file on disk.\n"
 
     let getAndValidateInput () = 
-        let message = Console.ReadLine ()
-        match message.ToLower () with
+        let line = Console.ReadLine ()
+        match line.ToLower () with
         | ExitCommand -> mailbox.Context.System.Shutdown ()
-        | _ -> validation <! message
+        | _ -> validation <! line
 
     match (message.ToString ()).ToLower () with
     | StartCommand _ -> doPrintInstructions ()

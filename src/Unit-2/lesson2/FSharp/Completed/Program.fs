@@ -12,7 +12,7 @@ open System.Configuration
 open Actors
 
 let section = ConfigurationManager.GetSection "akka" :?> AkkaConfigurationSection
-let chartActors = System.create "ChartActors" section.AkkaConfig
+let chartActors = System.create "ChartActors" section.AkkaConfig // TODO: use Configuration.load when this fix is released https://github.com/akkadotnet/akka.net/issues/671
 
 Application.EnableVisualStyles ()
 Application.SetCompatibleTextRenderingDefault false
