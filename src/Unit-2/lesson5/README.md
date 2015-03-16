@@ -187,7 +187,7 @@ The right way to deal these messages is to temporarily store them until the `Use
 This is what it looks like once we update the `Authenticating` behavior of our `UserActor` to delay processing messages until it knows whether or not the user is authenticated:
 
 ```csharp
-public class UserActor : ReceiveActor {
+public class UserActor : ReceiveActor, WithUnboundedStash {
 	// constructors, fields, etc...
 
 	private void Authenticating() {
