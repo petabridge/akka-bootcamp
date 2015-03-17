@@ -78,7 +78,7 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
                     runningHandler m
                     return! runningChartActor pendingMessages
             }
-        and pausedChartActor (pendingMessages: Envelope list) =
+        and pausedChartActor pendingMessages =
             actor {
                 let! message = mailbox.Receive ()
                 match message with

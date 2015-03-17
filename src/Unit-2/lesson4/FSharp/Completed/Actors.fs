@@ -30,7 +30,7 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
         else
             ()
 
-    let runningReceive message =
+    let runningHandler message =
         match message with  
         | InitializeChart series -> 
             chart.Series.Clear ()
@@ -51,7 +51,7 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
         | _ -> ()
         setChartBoundaries ()
 
-    let pausedReceive message =
+    let pausedHandler message =
         match message with  
         | Metric(seriesName, counterValue) when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
             xPosCounter := !xPosCounter + 1.
@@ -71,8 +71,9 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
                 | TogglePause -> 
                     setPauseButtonText true
                     return! pausedChartActor ()
-                | m -> runningReceive m
-                return! runningChartActor ()
+                | m -> 
+                    runningHandler m
+                    return! runningChartActor ()
             }
         and pausedChartActor () =
             actor {
@@ -81,8 +82,9 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
                 | TogglePause -> 
                     setPauseButtonText false
                     return! runningChartActor ()
-                | m -> pausedReceive m
-                return! pausedChartActor ()
+                | m -> 
+                    pausedHandler m
+                    return! pausedChartActor ()
             }
         runningChartActor ())
 
