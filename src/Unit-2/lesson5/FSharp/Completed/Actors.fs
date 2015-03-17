@@ -86,11 +86,12 @@ let chartingActor (chart: Chart) (pauseButton: Button) =
                     setPauseButtonText false
                     mailbox.EnqueueFirst <| List.rev pendingMessages
                     return! runningChartActor []
-                | m -> let pendings = m
-                                      |> pausedHandler mailbox
-                                      |> Option.map mailbox.GetEnvelope
-                                      |> Option.fold (fun es e -> e :: es) pendingMessages
-                       return! pausedChartActor pendings
+                | m -> 
+                    let ps = m
+                             |> pausedHandler mailbox
+                             |> Option.map mailbox.GetEnvelope
+                             |> Option.fold (fun es e -> e :: es) pendingMessages
+                    return! pausedChartActor ps
             }
         runningChartActor [])
 
