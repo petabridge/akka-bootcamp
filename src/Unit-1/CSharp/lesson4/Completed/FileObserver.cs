@@ -28,6 +28,10 @@ namespace WinTail
         /// </summary>
         public void Start()
         {
+            // Need this for Mono 3.12.0 workaround
+            // uncomment this line if you're running on Mono!
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
+
             // make watcher to observe our specific file
             _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
 

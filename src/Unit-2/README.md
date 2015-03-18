@@ -26,7 +26,7 @@ In Unit 2 you will learn:
 1. How and why to switch actor's behavior at run-time; and
 2. How to `Stash` messages for deferred processing.
 
-## Table of Conents
+## Table of Contents
 
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
 2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**

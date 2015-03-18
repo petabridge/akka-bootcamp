@@ -238,3 +238,12 @@ Awesome work! Well done on completing this lesson! We're on the home stretch of 
 
 
 **Let's move onto [Lesson 6 - The Actor Lifecycle](../lesson6).**
+
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
