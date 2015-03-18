@@ -40,7 +40,7 @@ system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
 				              someMessage);
 
 // but inside an actor, we access the ActorSystem via the ActorContext
-Context.System.system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+Context.System.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
 								             someActor,
 								             someMessage);
 ```
@@ -74,7 +74,7 @@ var someMessage = new FetchFeed() {Url = ...};
 system
    .Scheduler
    .Schedule(TimeSpan.FromMinutes(30), // initial delay of 30 min
-			 TimeSpan.FromMinutes(30) // recur every 30 minutes
+             TimeSpan.FromMinutes(30), // recur every 30 minutes
              someActor, someMessage);
 ```
 
@@ -107,7 +107,7 @@ cancellation.Cancel();
 
 That said, there are two situations of imprecision that we're aware of:
 
-1. Scheduled messages become are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
+1. Scheduled messages are scheduled onto the CLR threadpool and use `Task.Delay` under the hood. If there is a high load on the CLR threadpool, the task might finish a little later than planned. There is no guarantee that the task will execute at EXACTLY the millisecond you expect.
 2. If your scheduling requirements demand precision below 15 milliseconds then the `Scheduler` is not precise enough for you. Nor is any typical operating system such as Windows, OSX, or Linux. This is because ~15ms is the interval in which Windows and other general OSes update their system clock ("clock resolution"), so these OSs can't support any timing more precise than their own system clocks.
 
 ### What are the various overloads of `Schedule` and `ScheduleOnce`?
@@ -120,7 +120,7 @@ These are the various API calls you can make to schedule recurring messages.
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action);
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action, CancellationToken cancellationToken);
 public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message);
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken
+public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken cancellationToken);
 ```
 
 #### Overloads of `ScheduleOnce`
@@ -969,4 +969,16 @@ Every other lesson builds on this one, so before continuing, please make sure yo
 
 At this point. you should understand how the `Scheduler` works and how you can use it alongside patterns like Pub-sub to make very reactive systems with actors that have a comparatively small code footprint.
 
+Here is a high-level overview of our working system at this point:
+
+![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_3.png)
+
 **Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
