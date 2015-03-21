@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Akka.Actor;
+using Akka.Routing;
 using Octokit;
 
 namespace GithubActors.Actors
@@ -135,7 +136,7 @@ namespace GithubActors.Actors
                 if (_receivedInitialUsers && _githubProgressStats.IsFinished)
                 {
                     _githubProgressStats = _githubProgressStats.Finish();
-                    
+
                     //all repos minus forks of the current one
                     var sortedSimilarRepos = _similarRepos.Values
                         .Where(x => x.Repo.Name != _currentRepo.Repo).OrderByDescending(x => x.SharedStarrers).ToList();
@@ -169,7 +170,7 @@ namespace GithubActors.Actors
             {
                 //this is our first subscriber, which means we need to turn publishing on
                 if (_subscribers.Count == 0)
-                { 
+                {
                     Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100),
                         Self, PublishUpdate.Instance, _publishTimer.Token);
                 }
