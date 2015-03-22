@@ -14,7 +14,7 @@ In fact, here's what the final output from lesson 5 looks like:
 
 ![Akka.NET Bootcamp Unit 2 Output](lesson5/images/syncharting-complete-output.gif)
 
-**You're going to build this whole thing using actors**, and you'll be surprised at how small your code footprint is when we're finished.
+**You're going to build this whole thing using actors**, and you'll be surprised at how small your code footprint is when we're done.
 
 In Unit 2 you will learn:
 
