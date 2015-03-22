@@ -78,7 +78,7 @@ Thus, if you want to follow the bootcamp we recommend doing the following:
 2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine.
 3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMes](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
 
-### Bootcamp Layout
+### Bootcamp Structure
 
 Akka.NET Bootcamp consists of three modules:
 
