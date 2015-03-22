@@ -17,7 +17,7 @@ The course is self-directed learning—you can do it at whatever pace you wish. 
 ## What will you learn?
 In Akka.NET Bootcamp you will learn how to use Akka.NET actors to build reactive, concurrent applications.
 
-You will learn how to build types of applications that may have seemed impossible or really, really hard prior to learning Akka.NET - and you will walk away from this bootcamp with the confidence to handle bigger and harder problems than before.
+You will learn how to build types of applications that may have seemed impossible or really, really hard to make prior to learning Akka.NET - and you will walk away from this bootcamp with the confidence to handle bigger and harder problems than before.
 
 ### Unit 1
 In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
