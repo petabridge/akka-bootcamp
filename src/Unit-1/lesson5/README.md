@@ -92,7 +92,7 @@ But what if, as part of processing a message, you need to send a message to anot
 #### Reporting to multiple endpoints at once
 Another common case is that you may have some piece of information you want to report to multiple other actors, that perhaps each run a stats service. Using `ActorSelection`, you could send the same piece of data as a message to all of those services at once, if they shared a similar well-known naming scheme. This is one good use case for a wildcard `ActorSelection`.
 
-### Caution: Don't pass `ActorSelections` around
+### Caution: Don't pass `ActorSelection`s around
 We encourage you NOT to pass around `ActorSelection`s as pararmeters, the way you do `ActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
 
 ### How do I make an `ActorSelection`?
@@ -102,7 +102,7 @@ Very simple: `var selection = Context.ActorSelection("/path/to/actorName")`
 
 ```csharp
 class FooActor : UntypedActor {}
-var props = Props.Create<FooActor>();
+Props props = Props.Create<FooActor>();
 
 // the ActorPath for myFooActor is "/user/barBazActor"
 // NOT "/user/myFooActor" or "/user/FooActor"
@@ -163,7 +163,7 @@ Context.ActorSelection("/user/validationActor").Tell(message);
 Finally, let's update `consoleReaderProps` accordingly in `Program.cs` since its constructor no longer takes any arguments:
 ```csharp
 // Program.Main
-var consoleReaderProps = Props.Create<ConsoleReaderActor>();
+Props consoleReaderProps = Props.Create<ConsoleReaderActor>();
 ```
 
 ### Phase 2: Decouple `FileValidatorActor` and `TailCoordinatorActor`
@@ -193,7 +193,7 @@ And finally, let's update `fileValidatorProps` in `Program.cs` to reflect the di
 
 ```csharp
 // Program.Main
-var fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
 ```
 
 ### Phase 3: Build and Run!
@@ -238,3 +238,12 @@ Awesome work! Well done on completing this lesson! We're on the home stretch of 
 
 
 **Let's move onto [Lesson 6 - The Actor Lifecycle](../lesson6).**
+
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

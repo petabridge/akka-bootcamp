@@ -6,25 +6,23 @@ Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in
 
 [![Join the chat at https://gitter.im/petabridge/akka-bootcamp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Over the three units of this bootcamp you will learn how to create fully-functional, real-world programs using Akka.NET actors and lots of other parts of the core Akka.NET framework!
+Over the three units of this bootcamp you will learn how to create fully-functional, real-world programs using Akka.NET actors and many other parts of the core Akka.NET framework!
 
-We will start with some basic actors and have you incrementally work your way up to larger, more sophisticated examples.
+We will start with some basic actors and have you progressively work your way up to larger, more sophisticated examples.
 
-The course is self-directed learning - you can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself.
+The course is self-directed learning. You can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself throughout the course.
 
-> NOTE: Currently this bootcamp only supports C# - we intend to add F# in the future. 
-> 
-> (We will also accept F# pull requests.)
+> NOTE: F# support is in progress (see the [FSharp branch](https://github.com/petabridge/akka-bootcamp/tree/FSharp)). We will happily accept F# pull requests. Feel free to send them in.
 
 ## What will you learn?
 In Akka.NET Bootcamp you will learn how to use Akka.NET actors to build reactive, concurrent applications.
 
-You will learn how to build types of applications that may have seemed impossible or really, really hard prior to learning Akka.NET - and you will walk away from this bootcamp with the confidence to handle bigger and harder problems than before.
+You will learn how to build types of applications that may have seemed impossible or really, really hard to make prior to learning Akka.NET. You will walk away from this bootcamp with the confidence to handle bigger and harder problems than ever before!
 
 ### Unit 1
 In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
 
-*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
+*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows and use the process to learn the fundamentals.
 
 In Unit 1 you will learn:
 
@@ -37,22 +35,23 @@ In Unit 1 you will learn:
 
 **[Begin Unit 1](src/Unit-1)**.
 
-### Unit 2 (TBA)
+### Unit 2
 In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
 
 In Unit 2 you will learn:
 
-1. How to use `ReceiveActor` to handle more complex message matches;
-2. How (and why) to change your actors' behaviors at run-time;
-3. How to use `Stash` with your actors to defer processing of messages until they're ready;
-3. How to handle system failures gracefully;
-4. How to configure and use logging inside your actors; and
-5. How to use HOCON configuration inside your `ActorSystem`.
+1. How to use [HOCON configuration](http://getakka.net/wiki/Configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
+1. How to configure your actor's [Dispatcher](http://getakka.net/wiki/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
+1. How to handle more sophisticated types of pattern matching using `ReceiveActor`;
+1. How to use the `Scheduler` to send recurring messages to actors;
+1. How to use the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) between actors;
+1. How and why to switch actor's behavior at run-time; and
+2. How to `Stash` messages for deferred processing.
 
-> NOTE: Unit 2 is not yet available.
+**[Begin Unit 2](src/Unit-2)**.
 
-### Unit 3 (TBA)
-In Unit 3, we will learn to make our system more scalable and resilient.
+### Unit 3 
+In Unit 3, we will learn how to use actors for parallelism and scale-out using [Octokit](http://octokit.github.io/) and data from Github repos!
 
 In Unit 3 you will learn:
 
@@ -63,7 +62,7 @@ In Unit 3 you will learn:
 5. How to use `Pool` routers to automatically create and manage pools of actors; and
 6. How to use HOCON to configure your routers.
 
-> NOTE: Unit 3 is not yet available.
+**[Begin Unit 3](src/Unit-3)**.
 
 ## How to get started
 
@@ -71,15 +70,15 @@ Here's how Akka.NET bootcamp works!
 
 ### Use Github to Make Life Easy
 
-This Github repository contains Visual Studio solution files and other assets you will need to complete the bootcamp. 
+This Github repository contains Visual Studio solution files and other assets you will need to complete the bootcamp.
 
 Thus, if you want to follow the bootcamp we recommend doing the following:
 
 1. Sign up for [Github](https://github.com/), if you haven't already.
-2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine. 
+2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine.
 3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMes](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
 
-### Bootcamp Layout
+### Bootcamp Structure
 
 Akka.NET Bootcamp consists of three modules:
 
@@ -112,9 +111,9 @@ Each Akka.NET Bootcamp lesson contains a README which explains the following:
 
 A few things to bear in mind when you're following the step-by-step instructions:
 
-1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) for the win.
+1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) FTW!
 2. **You might be required to fill in some blanks during individual lessons.** Part of helping you learn Akka.NET involves leaving some parts of the exercise up to you - if you ever feel lost, always check the contents of the `/Completed` folder for that lesson.
-3. **Don't be afraid to ask questions**. You can [reach the Petabridge team in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) here.
+3. **Don't be afraid to ask questions**. You can [reach the Petabridge and Akka.NET teams in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp) here.
 
 
 ## Docs
@@ -133,7 +132,6 @@ This course expects the following:
 [Let's begin!](src/Unit-1/lesson1)
 
 ## About Petabridge
-
 ![Petabridge logo](images/petabridge_logo.png)
 
 [Petabridge](http://petabridge.com/) is a company dedicated to making it easier for .NET developers to build distributed applications.

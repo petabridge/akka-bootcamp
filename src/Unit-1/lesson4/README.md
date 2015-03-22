@@ -33,8 +33,6 @@ Both of these concepts are important, but for the rest of this lesson we'll put 
 
 How is this achieved? **Supervision.**
 
-**Further Reading: [How Akka.NET Actors Recover from Failure](http://petabridge.com/blog/how-actors-recover-from-failure-hierarchy-and-supervision/).**
-
 ### What is supervision? Why should I care?
 Supervision is the basic concept that allows your actor system to quickly isolate and recover from failures.
 
@@ -105,12 +103,13 @@ Now, let's make child actors for `a2` by creating them inside the context of `a2
 
 ```csharp
 // create the children of actor a2
-ActorRef b1 = a2.ActorOf(Props.Create<BasicActor>(), "b1");
-ActorRef b2 = a2.ActorOf(Props.Create<BasicActor>(), "b2");
+// this is inside actor a2
+ActorRef b1 = Context.ActorOf(Props.Create<BasicActor>(), "b1");
+ActorRef b2 = Context.ActorOf(Props.Create<BasicActor>(), "b2");
 ```
 
 #### Actor path == actor position in hierarchy
-Every actor has an address. To send a message from one actor to another, you just have to know it's address (AKA its "ActorPath"). To refresh your memory, this is what a full actor address looks like:
+Every actor has an address. To send a message from one actor to another, you just have to know it's address (AKA its "ActorPath"). This is what a full actor address looks like:
 
 ![Akka.NET actor address and path](Images/actor_path.png)
 
@@ -314,6 +313,7 @@ namespace WinTail
 ```
 
 You'll also want to make sure to update the `Props` instance in `Main` that references the class:
+
 ```csharp
 // Program.cs
 Props validationActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
@@ -335,7 +335,7 @@ private void DoPrintInstructions()
 #### Add `FileObserver`
 This is a utility class that we're providing for you to use. It does the low-level work of actually watching a file for changes.
 
-Create a new class called `FileObserver` and copy in the code for [FileObserver.cs](Completed/FileObserver.cs):
+Create a new class called `FileObserver` and type in thi code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
 
 ```csharp
 // FileObserver.cs
@@ -369,6 +369,9 @@ namespace WinTail
         /// </summary>
         public void Start()
         {
+            // Need this for Mono 3.12.0 workaround
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled"); // uncomment this line if you're running on Mono!
+
             // make watcher to observe our specific file
             _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
 
@@ -419,19 +422,6 @@ namespace WinTail
 }
 ```
 
-#### Create `ActorRef` for `TailCoordinatorActor`
-In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
-
-```csharp
-// Program.Main
-// make tail coordinator & pass to fileValidatorActorProps
-var tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
-ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
-
-var fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
-ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
-```
-
 ### Phase 2: Make your first parent/child actors!
 Great! Now we're ready to create our actor classes that will form a parent/child relationship.
 
@@ -444,6 +434,7 @@ Add the following code, which defines our coordinator actor (which will soon be 
 
 ```csharp
 // TailCoordinatorActor.cs
+using System;
 using Akka.Actor;
 
 namespace WinTail
@@ -494,6 +485,19 @@ namespace WinTail
 }
 ```
 
+#### Create `ActorRef` for `TailCoordinatorActor`
+In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
+
+```csharp
+// Program.Main
+// make tailCoordinatorActor
+Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
+ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
+
+// pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
+ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
+```
 
 #### Add `TailActor`
 Now, add a class called `TailActor` in its own file. This actor is the actor that is actually responsible for tailing a given file. `TailActor` will be created and supervised by `TailCoordinatorActor` in a moment.
@@ -590,8 +594,6 @@ namespace WinTail
         {
             if (message is FileWrite)
             {
-                var fw = message as FileWrite;
-
                 // move file cursor forward
                 // pull results from cursor to end of file and write to output
                 // (tis is assuming a log file type format that is append-only)
@@ -699,9 +701,13 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ## Great job! Onto Lesson 5!
 Awesome work! Well done on completing this lesson, we know it was a bear! It was a big jump forward for our system and in your understanding.
 
+Here is a high-level overview of our working system!
+
+![Akka.NET Unit 1 Tail System Diagram](Images/system_overview.png)
+
 **Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5).**
 
-*****
+---
 ## Supervision FAQ
 ### How long do child actors have to wait for their supervisor?
 This is a common question we get: What if there are a bunch of messages already in the supervisor's mailbox waiting to be processed when a child reports an error? Won't the crashing child actor have to wait until those are processed until it gets a response?
@@ -714,3 +720,12 @@ Parents come with a default SupervisorStrategy object (or you can provide a cust
 
 ### But what happens to the current message when an actor fails?
 The current message being processed by an actor when it is halted (regardless of whether the failure happened to it or its parent) can be saved and re-processed after restarting. There are several ways to do this. The most common approach used is during `preRestart()`, the actor can stash the message (if it has a stash) or it can send the message to another actor that will send it back once restarted. (Note: If the actor has a stash, it will automatically unstash the message once it successfully restarts.)
+
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

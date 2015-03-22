@@ -17,6 +17,21 @@ In Unit 1 you will learn:
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
+## Using Xamarin?
+Since Unit 1 relies heavily on the console, you'll need to make a small tweaks before beginning. You need to set up your `WinTail` project file (not the solution) to use an **external console**.
+
+To set this up:
+
+1. Click on the `WinTail` project (not the solution)
+2. Navigate to `Project > WinTail Options` in the menu
+3. Inside `WinTail Options`, navigate to `Run > General`
+4. Select `Run on external console`
+5. Click `OK`
+
+Here is a demonstration of how to set it up:
+![Configure Xamarin to use external console](../../images/xamarin.gif)
+
+
 ## Table of Contents
 
 1. **[Lesson 1 - Actors and the `ActorSystem`](lesson1/)**
