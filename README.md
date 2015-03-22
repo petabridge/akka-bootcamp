@@ -8,7 +8,7 @@ Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in
 
 Over the three units of this bootcamp you will learn how to create fully-functional, real-world programs using Akka.NET actors and lots of other parts of the core Akka.NET framework!
 
-We will start with some basic actors and have you incrementally work your way up to larger, more sophisticated examples.
+We will start with some basic actors and have you progressively work your way up to larger, more sophisticated examples.
 
 The course is self-directed learning—you can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself throughout the course.
 
