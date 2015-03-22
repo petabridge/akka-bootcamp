@@ -182,7 +182,3 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
-
-# custom scripts
-publish_to_dropbox
-publish
