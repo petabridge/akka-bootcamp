@@ -22,7 +22,7 @@ You will learn how to build types of applications that may have seemed impossibl
 ### Unit 1
 In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
 
-*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
+*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows and use the process to learn the fundamentals.
 
 In Unit 1 you will learn:
 
