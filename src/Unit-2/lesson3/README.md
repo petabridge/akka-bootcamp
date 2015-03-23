@@ -175,7 +175,7 @@ Now that you're familiar with how the `Scheduler` works, lets put it to use and 
 
 ### Step 1 - Delete the "Add Series" Button and Click Handler from Lesson 2
 
-We're not doing to need it. **Delete the "Add Series" button** from the **[Design]** view of `Main.cs` and remove the click handler:
+We're not going to need it. **Delete the "Add Series" button** from the **[Design]** view of `Main.cs` and remove the click handler:
 
 ```csharp
 // Main.cs - Main
