@@ -27,6 +27,10 @@ In Unit 3 you will learn:
 ### Teaming up with Octokit, the official GitHub SDK for .NET
 In this lesson we'll also be introducing you to [Octokit, the official GitHub SDK for .NET](http://octokit.github.io/) (and other languages!)
 
+> **OCTOKIT NOTE:** If you're working behind a proxy server and have issues connecting to the Github API with Octokit, try adding this to your config file and see if it fixes the issue:
+> 
+>  `<system.net><defaultProxy useDefaultCredentials="true" /></system.net>`
+
 ![Octokit .NET Logo](../../images/gundam-dotnet.png)
 
 If you have any questions about Octokit or want to learn more about it, make sure you check out [Octokit.NET on GitHub](https://github.com/octokit/octokit.net)!
