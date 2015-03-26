@@ -68,7 +68,7 @@ Since this is a top-level actor, we now know thanks to our knowledge of hierarch
 ```csharp
 // send username to AuthenticationActor for authentication
 // this is an "absolute" actor selection, since it starts at top-level /user/
-Context.ActorSelection("/user/AuthenticationActor").Tell(username);
+Context.ActorSelection("akka://MyActorSystem/user/AuthenticationActor").Tell(username);
 ```
 
 > NOTE: `ActorSelection`s can be either absolute or relative. An absolute `ActorSelection` includes the root `/user/` actor in the path. However, an `ActorSelection` could also be relative, such as `Context.ActorSelection("../validationActor")`.
@@ -157,7 +157,7 @@ Then, let's update the call for message validation inside `ConsoleReaderActor` s
 // ConsoleReaderActor.GetAndValidateInput
 
 // otherwise, just send the message off for validation
-Context.ActorSelection("/user/validationActor").Tell(message);
+Context.ActorSelection("akka://MyActorSystem/user/validationActor").Tell(message);
 ```
 
 Finally, let's update `consoleReaderProps` accordingly in `Program.cs` since its constructor no longer takes any arguments:
@@ -186,7 +186,7 @@ Then, let's use `ActorSelection` to communicate between `FileValidatorActor` and
 ```csharp
 // FileValidatorActor.cs
 // start coordinator
-Context.ActorSelection("/user/tailCoordinatorActor").Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
+Context.ActorSelection("akka://MyActorSystem/user/tailCoordinatorActor").Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
 ```
 
 And finally, let's update `fileValidatorProps` in `Program.cs` to reflect the different constructor arguments:
