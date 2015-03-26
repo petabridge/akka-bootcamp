@@ -4,7 +4,7 @@ using Akka.Actor;
 namespace WinTail
 {
     /// <summary>
-    /// Actor responsible for reading FROM the console. 
+    /// Actor responsible for reading FROM the console.
     /// Also responsible for calling <see cref="ActorSystem.Shutdown"/>.
     /// </summary>
     class ConsoleReaderActor : UntypedActor
@@ -45,7 +45,7 @@ namespace WinTail
             }
 
             // otherwise, just send the message off for validation
-            Context.ActorSelection("/user/validationActor").Tell(message);
+            Context.ActorSelection("akka://MyActorSystem/user/validationActor").Tell(message);
         }
         #endregion
     }
