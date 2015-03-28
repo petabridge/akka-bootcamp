@@ -18,6 +18,7 @@ namespace WinTail
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("Please provide an input.\n");
+                Console.ResetColor();
                 return;
             }
 
