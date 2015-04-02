@@ -8,7 +8,7 @@ In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET wo
 
 *NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
 
-In Unit 1 you will learn:
+In Unit 1 you will learn the following:
 
 1. How to create your own `ActorSystem` and actors;
 2. How to send messages actors and how to handle different types of messages;
