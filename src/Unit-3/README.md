@@ -22,13 +22,12 @@ In Unit 3 you will learn:
 3. How to use HOCON to configure your routers
 4. How to use `Ask` to wait inline for actors to respond to your messages
 5. How to perform work asynchronously inside your actors using `PipeTo`
-6. Stateful vs Stateless Routing
 
 ### Teaming up with Octokit, the official GitHub SDK for .NET
 In this lesson we'll also be introducing you to [Octokit, the official GitHub SDK for .NET](http://octokit.github.io/) (and other languages!)
 
 > **OCTOKIT NOTE:** If you're working behind a proxy server and have issues connecting to the Github API with Octokit, try adding this to your config file and see if it fixes the issue:
-> 
+>
 >  `<system.net><defaultProxy useDefaultCredentials="true" /></system.net>`
 
 ![Octokit .NET Logo](../../images/gundam-dotnet.png)
