@@ -86,7 +86,7 @@ Right now, `Props` probably feels like overkill. (If so, no worries.) But here's
 
 The most basic `Props`, like we've seen, seem to only include the ingredients needed to make an actor—it's class and required args to its constructor.
 
-BUT, what you haven't seen yet is that `Props` get extended to contain deployment information and other configuration details that are needed to do remote work. For example, `Props` are serializable can be used to remotely create and deploy entire groups of actors on another machine somewhere on the network!
+BUT, what you haven't seen yet is that `Props` get extended to contain deployment information and other configuration details that are needed to do remote work. For example, `Props` are serializable, and so they can be used to remotely create and deploy entire groups of actors on another machine somewhere on the network!
 
 That's getting way ahead of ourselves though, but the short answer is that we need `Props` to support a lot of the advanced features (clustering, remote actors, etc) that give Akka.NET the serious horsepower which makes it interesting.
 
