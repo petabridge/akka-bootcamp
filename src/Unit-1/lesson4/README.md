@@ -339,7 +339,7 @@ private void DoPrintInstructions()
 #### Add `FileObserver`
 This is a utility class that we're providing for you to use. It does the low-level work of actually watching a file for changes.
 
-Create a new class called `FileObserver` and type in thi code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
+Create a new class called `FileObserver` and type in the code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
 
 ```csharp
 // FileObserver.cs
