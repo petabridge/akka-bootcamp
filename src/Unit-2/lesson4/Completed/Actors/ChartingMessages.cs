@@ -44,7 +44,7 @@ namespace ChartApp.Actors
     /// </summary>
     public class SubscribeCounter
     {
-        public SubscribeCounter(CounterType counter, ActorRef subscriber)
+        public SubscribeCounter(CounterType counter, IActorRef subscriber)
         {
             Subscriber = subscriber;
             Counter = counter;
@@ -52,7 +52,7 @@ namespace ChartApp.Actors
 
         public CounterType Counter { get; private set; }
 
-        public ActorRef Subscriber { get; private set; }
+        public IActorRef Subscriber { get; private set; }
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ namespace ChartApp.Actors
     /// </summary>
     public class UnsubscribeCounter
     {
-        public UnsubscribeCounter(CounterType counter, ActorRef subscriber)
+        public UnsubscribeCounter(CounterType counter, IActorRef subscriber)
         {
             Subscriber = subscriber;
             Counter = counter;
@@ -68,7 +68,7 @@ namespace ChartApp.Actors
 
         public CounterType Counter { get; private set; }
 
-        public ActorRef Subscriber { get; private set; }
+        public IActorRef Subscriber { get; private set; }
     }
 
     #endregion

@@ -20,9 +20,7 @@ namespace ChartApp
         [STAThread]
         static void Main()
         {
-            var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
-            var config = section.AkkaConfig;
-            ChartActors = ActorSystem.Create("ChartActors", config);
+            ChartActors = ActorSystem.Create("ChartActors");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main());

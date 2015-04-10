@@ -44,8 +44,8 @@ namespace GithubActors.Actors
 
         #endregion
 
-        private ActorRef _coordinator;
-        private ActorRef _canAcceptJobSender;
+        private IActorRef _coordinator;
+        private IActorRef _canAcceptJobSender;
 
         public GithubCommanderActor()
         {

@@ -18,7 +18,7 @@ In fact, here's what the final output from lesson 5 looks like:
 
 In Unit 2 you will learn:
 
-1. How to use [HOCON configuration](http://getakka.net/wiki/Configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
+1. How to use [HOCON configuration](http://getakka.net/docs/concepts/configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
 1. How to configure your actor's [Dispatcher](http://getakka.net/wiki/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
 1. How to handle more sophisticated types of pattern matching using `ReceiveActor`;
 1. How to use the `Scheduler` to send recurring messages to actors;
@@ -31,7 +31,7 @@ In Unit 2 you will learn:
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
 2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**
 3. **[Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/)**
-4. **[Lesson 4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`](lesson4/)**
+4. **[Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/)**
 5. **[Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)**
 
 ## Get Started

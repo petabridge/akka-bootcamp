@@ -8,7 +8,7 @@ using Akka.Actor;
 
 namespace ChartApp.Actors
 {
-    public class ChartingActor : ReceiveActor, WithUnboundedStash
+    public class ChartingActor : ReceiveActor, IWithUnboundedStash
     {
         /// <summary>
         /// Maximum number of points we will allow in a series
@@ -93,7 +93,7 @@ namespace ChartApp.Actors
             Receive<TogglePause>(pause =>
             {
                 SetPauseButtonText(true);
-                Become(Paused, false);
+                BecomeStacked(Paused);
             });
         }
 
@@ -105,7 +105,7 @@ namespace ChartApp.Actors
             Receive<TogglePause>(pause =>
             {
                 SetPauseButtonText(false);
-                Unbecome();
+                UnbecomeStacked();
                 Stash.UnstashAll();
             });
         }

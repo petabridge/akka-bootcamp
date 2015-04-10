@@ -20,9 +20,7 @@ namespace GithubActors
         [STAThread]
         static void Main()
         {
-            var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
-            var config = section.AkkaConfig;
-            GithubActors = ActorSystem.Create("GithubActors", config);
+            GithubActors = ActorSystem.Create("GithubActors");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

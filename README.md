@@ -28,7 +28,7 @@ In Unit 1 you will learn:
 
 1. How to create your own `ActorSystem` and actors;
 2. How to send messages actors and how to handle different types of messages;
-3. How to use `Props` and `ActorRef`s to build loosely coupled systems.
+3. How to use `Props` and `IActorRef`s to build loosely coupled systems.
 4. How to use actor paths, addresses, and `ActorSelection` to send messages to actors.
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.

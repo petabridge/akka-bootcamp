@@ -8,7 +8,7 @@ Now we need to show you how to configure and deploy them :)
 #### Quick review of HOCON
 We first learned about HOCON in [Lesson 2.1](../../Unit-2/lesson1/).
 
-To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `ActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
+To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/docs/concepts/hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
 It's this last feature that we'll be using here to configure how our router actors are deployed. An actor is "deployed" when it is instantiated and put into service within the `ActorSystem` somewhere.
 
