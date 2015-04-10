@@ -234,12 +234,12 @@ private void GetAndValidateInput()
             _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you! Message was valid."));
 
             // continue reading messages from console
-            Self.Tell(new Messages.ContinueProcessing());
         }
         else
         {
         	Self.Tell(new Messages.ValidationError("Invalid: input had odd number of characters."));
         }
+        Self.Tell(new Messages.ContinueProcessing());
     }
 }
 
