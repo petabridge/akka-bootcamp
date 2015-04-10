@@ -187,9 +187,9 @@ public class MyActor : UntypedActor
     protected override SupervisorStrategy SupervisorStrategy()
     {
         return new OneForOneStrategy(// or AllForOneStrategy
-            maxNumberOfRetries: 10,
-            duration: TimeSpan.FromSeconds(30),
-            x =>
+            maxNrOfRetries: 10,
+            withinTimeRange: TimeSpan.FromSeconds(30),
+            localOnlyDecider: x =>
             {
                 // Maybe ArithmeticException is not application critical
                 // so we just ignore the error and keep going.
