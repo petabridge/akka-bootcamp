@@ -15,15 +15,15 @@ namespace ChartApp.Actors
         private readonly Func<PerformanceCounter> _performanceCounterGenerator;
         private PerformanceCounter _counter;
 
-        private readonly HashSet<ActorRef> _subscriptions;
-        private readonly CancellationTokenSource _cancelPublishing;
+        private readonly HashSet<IActorRef> _subscriptions;
+        private readonly ICancelable _cancelPublishing;
 
         public PerformanceCounterActor(string seriesName, Func<PerformanceCounter> performanceCounterGenerator)
         {
             _seriesName = seriesName;
             _performanceCounterGenerator = performanceCounterGenerator;
-            _subscriptions = new HashSet<ActorRef>();
-            _cancelPublishing = new CancellationTokenSource();
+            _subscriptions = new HashSet<IActorRef>();
+            _cancelPublishing = new Cancelable(Context.System.Scheduler);
         }
 
         #region Actor lifecycle methods
@@ -32,8 +32,8 @@ namespace ChartApp.Actors
         {
             //create a new instance of the performance counter
             _counter = _performanceCounterGenerator();
-            Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
-                new GatherMetrics(), _cancelPublishing.Token);
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
+                 new GatherMetrics(), Self, _cancelPublishing);
         }
 
         protected override void PostStop()

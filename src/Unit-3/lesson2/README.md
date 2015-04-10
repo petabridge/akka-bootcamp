@@ -11,7 +11,7 @@ A "Pool" router is a `Router` that creates and manages its worker actors ("route
 
 Pool routers are safer to use than group routers. As touched on at the end of Lesson 3.1, group routers usually don't know when their routees are no longer available. This makes them less dependable and not ideal for common routing use.
 
-This is because group routers are given the `ActorPath`s of their routees and in turn, communicate with their routees by sending messages to `ActorSelection`s. In contrast, because a pool router creates its routees, it is their parent, communicates directly with the `ActorRef` of a routee, and knows much more information about routees.
+This is because group routers are given the `ActorPath`s of their routees and in turn, communicate with their routees by sending messages to `ActorSelection`s. In contrast, because a pool router creates its routees, it is their parent, communicates directly with the `IActorRef` of a routee, and knows much more information about routees.
 
 Additionally, pool routers can grow/shrink their routee pool whereas the routee pool for a group router is fixed once set. Also be aware that pool routers don't let you control the names of its routee children, so you have to talk to those routees via the router.
 
@@ -76,7 +76,7 @@ In this case, the router's supervising actor will treat the error as an error wi
 ##### What this means in practice
 *This is about default behavior in the case of an error.*
 
-Here's what will happen, by default, if you haven't specified a `supervisorStrategy` on the pool router:
+Here's what will happen, by default, if you haven't specified a `SupervisorStrategy` on the pool router:
 
 1. A failure in a routee will bubble up to the parent of the router
 2. The parent of the router will issue a `restart` directive to the router

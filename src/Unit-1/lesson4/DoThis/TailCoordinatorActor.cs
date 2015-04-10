@@ -10,7 +10,7 @@ namespace WinTail
         /// </summary>
         public class StartTail
         {
-            public StartTail(string filePath, ActorRef reporterActor)
+            public StartTail(string filePath, IActorRef reporterActor)
             {
                 FilePath = filePath;
                 ReporterActor = reporterActor;
@@ -18,7 +18,7 @@ namespace WinTail
 
             public string FilePath { get; private set; }
 
-            public ActorRef ReporterActor { get; private set; }
+            public IActorRef ReporterActor { get; private set; }
         }
 
         /// <summary>

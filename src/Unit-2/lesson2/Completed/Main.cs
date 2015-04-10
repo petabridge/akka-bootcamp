@@ -10,7 +10,7 @@ namespace ChartApp
 {
     public partial class Main : Form
     {
-        private ActorRef _chartActor;
+        private IActorRef _chartActor;
         private readonly AtomicCounter _seriesCounter = new AtomicCounter(1);
 
         public Main()

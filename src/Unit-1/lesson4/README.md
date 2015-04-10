@@ -95,8 +95,8 @@ Whenever you make an actor directly from the context of the actor system itself,
 
 ```csharp
 // create the top level actors from above diagram
-ActorRef a1 = MyActorSystem.ActorOf(Props.Create<BasicActor>(), "a1");
-ActorRef a2 = MyActorSystem.ActorOf(Props.Create<BasicActor>(), "a2");
+IActorRef a1 = MyActorSystem.ActorOf(Props.Create<BasicActor>(), "a1");
+IActorRef a2 = MyActorSystem.ActorOf(Props.Create<BasicActor>(), "a2");
 ```
 
 Now, let's make child actors for `a2` by creating them inside the context of `a2`, our parent-to-be:
@@ -104,8 +104,8 @@ Now, let's make child actors for `a2` by creating them inside the context of `a2
 ```csharp
 // create the children of actor a2
 // this is inside actor a2
-ActorRef b1 = Context.ActorOf(Props.Create<BasicActor>(), "b1");
-ActorRef b2 = Context.ActorOf(Props.Create<BasicActor>(), "b2");
+IActorRef b1 = Context.ActorOf(Props.Create<BasicActor>(), "b1");
+IActorRef b2 = Context.ActorOf(Props.Create<BasicActor>(), "b2");
 ```
 
 #### Actor path == actor position in hierarchy
@@ -189,7 +189,7 @@ public class MyActor : UntypedActor
         return new OneForOneStrategy(// or AllForOneStrategy
             maxNumberOfRetries: 10,
             duration: TimeSpan.FromSeconds(30),
-            decider: x =>
+            x =>
             {
                 // Maybe ArithmeticException is not application critical
                 // so we just ignore the error and keep going.
@@ -258,10 +258,10 @@ namespace WinTail
     /// </summary>
     public class FileValidatorActor : UntypedActor
     {
-        private readonly ActorRef _consoleWriterActor;
-        private readonly ActorRef _tailCoordinatorActor;
+        private readonly IActorRef _consoleWriterActor;
+        private readonly IActorRef _tailCoordinatorActor;
 
-        public FileValidatorActor(ActorRef consoleWriterActor, ActorRef tailCoordinatorActor)
+        public FileValidatorActor(IActorRef consoleWriterActor, IActorRef tailCoordinatorActor)
         {
             _consoleWriterActor = consoleWriterActor;
             _tailCoordinatorActor = tailCoordinatorActor;
@@ -354,13 +354,13 @@ namespace WinTail
     /// </summary>
     public class FileObserver : IDisposable
     {
-        private readonly ActorRef _tailActor;
+        private readonly IActorRef _tailActor;
         private readonly string _absoluteFilePath;
         private FileSystemWatcher _watcher;
         private readonly string _fileDir;
         private readonly string _fileNameOnly;
 
-        public FileObserver(ActorRef tailActor, string absoluteFilePath)
+        public FileObserver(IActorRef tailActor, string absoluteFilePath)
         {
             _tailActor = tailActor;
             _absoluteFilePath = absoluteFilePath;
@@ -406,7 +406,7 @@ namespace WinTail
         /// <param name="e"></param>
         void OnFileError(object sender, ErrorEventArgs e)
         {
-            _tailActor.Tell(new TailActor.FileError(_fileNameOnly, e.GetException().Message), ActorRef.NoSender);
+            _tailActor.Tell(new TailActor.FileError(_fileNameOnly, e.GetException().Message), ActorRefs.NoSender);
         }
 
         /// <summary>
@@ -418,9 +418,9 @@ namespace WinTail
         {
             if (e.ChangeType == WatcherChangeTypes.Changed)
             {
-                // here we use a special ActorRef.NoSender
+                // here we use a special ActorRefs.NoSender
                 // since this event can happen many times, this is a little microoptimization
-                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRef.NoSender);
+                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
             }
 
         }
@@ -454,7 +454,7 @@ namespace WinTail
         /// </summary>
         public class StartTail
         {
-            public StartTail(string filePath, ActorRef reporterActor)
+            public StartTail(string filePath, IActorRef reporterActor)
             {
                 FilePath = filePath;
                 ReporterActor = reporterActor;
@@ -462,7 +462,7 @@ namespace WinTail
 
             public string FilePath { get; private set; }
 
-            public ActorRef ReporterActor { get; private set; }
+            public IActorRef ReporterActor { get; private set; }
         }
 
         /// <summary>
@@ -496,18 +496,18 @@ namespace WinTail
 
 ```
 
-#### Create `ActorRef` for `TailCoordinatorActor`
-In `Main()`, create a new `ActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
+#### Create `IActorRef` for `TailCoordinatorActor`
+In `Main()`, create a new `IActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
 
 ```csharp
 // Program.Main
 // make tailCoordinatorActor
 Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
-ActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
+IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
 
 // pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
 Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
-ActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
+IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
 ```
 
 #### Add `TailActor`
@@ -577,12 +577,12 @@ namespace WinTail
         #endregion
 
         private readonly string _filePath;
-        private readonly ActorRef _reporterActor;
+        private readonly IActorRef _reporterActor;
         private readonly FileObserver _observer;
         private readonly Stream _fileStream;
         private readonly StreamReader _fileStreamReader;
 
-        public TailActor(ActorRef reporterActor, string filePath)
+        public TailActor(IActorRef reporterActor, string filePath)
         {
             _reporterActor = reporterActor;
             _filePath = filePath;
@@ -670,7 +670,7 @@ protected override SupervisorStrategy SupervisorStrategy()
     return new OneForOneStrategy (
         10, // maxNumberOfRetries
         TimeSpan.FromSeconds(30), // duration
-        decider: x =>
+        x =>
         {
             //Maybe we consider ArithmeticException to not be application critical
             //so we just ignore the error and keep going.

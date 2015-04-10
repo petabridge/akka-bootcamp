@@ -90,7 +90,7 @@ namespace ChartApp.Actors
             Receive<TogglePause>(pause =>
             {
                 SetPauseButtonText(true);
-                Become(Paused, false);
+                BecomeStacked(Paused);
             });
         }
 
@@ -100,7 +100,7 @@ namespace ChartApp.Actors
             Receive<TogglePause>(pause =>
             {
                 SetPauseButtonText(false);
-                Unbecome();
+                UnbecomeStacked();
             });
         }
 

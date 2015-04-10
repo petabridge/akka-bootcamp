@@ -21,7 +21,7 @@ Does this mean we have to rewrite `ChartingActor` with some evil code to manuall
 
 Nope! We can relax.
 
-**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/wiki/Configuration) without updating any of the code that defines `ChartingActor`.**
+**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/docs/concepts/configuration) without updating any of the code that defines `ChartingActor`.**
 
 But first, we need to understand `Dispatcher`s.
 
@@ -46,8 +46,8 @@ This `Dispatcher` schedules all actor messages to be processed in the same synch
 
 In this lesson, we're going to use the `CurrentSynchronizationContextDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way, the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
 
-##### `ForkJoinDispatcher`
-This `Dispatcher` runs actors on top of a dedicated group of threads, for tunable concurrency (**[not yet implemented](https://github.com/akkadotnet/akka.net/issues/675)**).
+##### [`ForkJoinDispatcher`](http://api.getakka.net/docs/stable/html/F0DC1571.htm "Akka.NET Stable API Docs - ForkJoinDispatcher")
+This `Dispatcher` runs actors on top of a dedicated group of threads, for tunable concurrency.
 
 This is meant for actors that need their own dedicated threads in order to run (that need isolation guarantees). This is primarily used by `System` actors so you won't touch it much.
 
@@ -73,7 +73,7 @@ Time to meet HOCON.
 Akka.NET leverages a configuration format, called HOCON, to allow you to configure your Akka.NET applications with whatever level of granularity you want.
 
 #### What is HOCON?
-[HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `ActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
+[HOCON (Human-Optimized Config Object Notation)](http://getakka.net/docs/concepts/hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
 Values returned by HOCON are strongly typed (i.e. you can fetch out an `int`, a `Timespan`, etc).
 
@@ -142,7 +142,7 @@ Here's an example of using HOCON inside `App.config`:
             loglevel = ERROR
             # this config section will be referenced as akka.actor
             actor {
-              provider = "Akka.Remote.RemoteActorRefProvider, Akka.Remote"
+              provider = "Akka.Remote.RemoteIActorRefProvider, Akka.Remote"
               debug {
                   receive = on
                   autoreceive = on
@@ -172,18 +172,10 @@ Here's an example of using HOCON inside `App.config`:
 And then we can load this configuration section into our `ActorSystem` via the following code:
 
 ```csharp
-var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
-var system = ActorSystem.Create("Mysystem", section.AkkaConfig);
+var system = ActorSystem.Create("Mysystem");
+// Loads section.AkkaConfig from App or Web.config automatically
 // FYI, section.AkkaConfig is built into Akka.NET for you
 ```
-
-> **NOTE:** [There's currently an open issue in Akka.NET](https://github.com/akkadotnet/akka.net/issues/671) to automatically take care of the `ConfigurationManager.GetSection("akka")` loading for you, so in the future you'll only need to write
->
-> ```csharp
-> var system = ActorSystem.Create("Mysystem");
-> ```
->
-> and your config section will be automatically loaded for you.
 
 #### HOCON Configuration Supports Fallbacks
 Although this isn't a concept we leverage explicitly in Unit 2, it's a powerful trait of the `Config` class that comes in handy in lots of production use cases.
@@ -284,32 +276,6 @@ When we call `ActorSystem.ActorOf` the `ActorOf` method will automatically look 
 > As the Akka.NET end-user, you can only specify deployment settings for actors created inside the `/user/` hierarchy. Because of this, you don't need to specify `/user` when you declare your deployment settings - **it's implicit**.
 >
 > By extension, you also cannot specify how to deploy the `/system` actors. This is up to the `ActorSystem`.
-
-### Consume Your `AkkaConfigurationSection` Inside Your `ActorSystem`
-[As we mentioned, very soon this will be done automatically for you by Akka.NET](https://github.com/akkadotnet/akka.net/issues/671), but in the meantime we have to manually load your `AkkaConfigurationSection`.
-
-#### Require HOCON
-Go to `Program.cs` and modify the `using` statements to this:
-
-```csharp
-// in Program.cs - update all of the using statements to match this
-using System;
-using System.Configuration;
-using System.Windows.Forms;
-using Akka.Actor;
-using Akka.Configuration.Hocon;
-```
-
-#### Load HOCON config into `ActorSystem`
-And then load the `Config` into your `ActorSystem` by updating the call to `ActorSystem.Create()`:
-
-```csharp
-// in Program.Main()
-// replace the existing ActorSystem.Create call with this:
-var section = (AkkaConfigurationSection)ConfigurationManager.GetSection("akka");
-var config = section.AkkaConfig;
-ChartActors = ActorSystem.Create("ChartActors", config);
-```
 
 And... we're finished!
 

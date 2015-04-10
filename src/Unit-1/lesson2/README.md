@@ -326,7 +326,7 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ##  Great job! Onto Lesson 3!
 Awesome work! Well done on completing this lesson.
 
-**Let's move onto [Lesson 3 - `Props` and `ActorRef`s](../lesson3).**
+**Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).

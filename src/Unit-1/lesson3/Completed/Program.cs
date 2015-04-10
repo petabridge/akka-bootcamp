@@ -16,17 +16,17 @@ namespace WinTail
             // it will compile, but can easily blow up in your face at runtime :(
             // UNCOMMENT THE BELOW TWO LINES, BUILD THE SOLUTION, AND THEN TRY TO RUN IT TO SEE
             //Props fakeActorProps = Props.Create(typeof(FakeActor));
-            //ActorRef fakeActor = MyActorSystem.ActorOf(fakeActorProps, "fakeActor");
+            //IActorRef fakeActor = MyActorSystem.ActorOf(fakeActorProps, "fakeActor");
 
             // set up actors, using props (split props onto own line so easier to read)
             Props consoleWriterProps = Props.Create<ConsoleWriterActor>();
-            ActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps, "consoleWriterActor");
+            IActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps, "consoleWriterActor");
 
             Props validationActorProps = Props.Create(() => new ValidationActor(consoleWriterActor));
-            ActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, "validationActor");
+            IActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, "validationActor");
             
             Props consoleReaderProps = Props.Create<ConsoleReaderActor>(validationActor);
-            ActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps, "consoleReaderActor");
+            IActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps, "consoleReaderActor");
 
             // tell console reader to begin
             consoleReaderActor.Tell(ConsoleReaderActor.StartCommand);

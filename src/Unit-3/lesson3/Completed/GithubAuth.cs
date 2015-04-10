@@ -15,7 +15,7 @@ namespace GithubActors
 {
     public partial class GithubAuth : Form
     {
-        private ActorRef _authActor;
+        private IActorRef _authActor;
 
         public GithubAuth()
         {
