@@ -21,14 +21,14 @@ One of the side effects of switchable behavior for actors is that some behaviors
 The `Stash` is a stack-like data structure implemented in your actor to defer messages for later processing.
 
 ### How to add a `Stash` to your actor
-To add a `Stash` to an actor, all we need to do is decorate it with the `WithBoundedStash` or `WithUnboundedStash` interface, like so:
+To add a `Stash` to an actor, all we need to do is decorate it with the [`IWithBoundedStash`](http://api.getakka.net/docs/stable/html/683AD26A.htm "Akka.NET Stable API Docs - IWithBoundedStash interface") or [`IWithUnboundedStash`](http://api.getakka.net/docs/stable/html/BB4565A9.htm "Akka.NET Stable API Docs - IWithUnboundedStash interface") interface, like so:
 
 ```csharp
-public class UserActor : ReceiveActor, WithUnboundedStash {
+public class UserActor : ReceiveActor, IWithUnboundedStash {
 	private readonly string _userId;
 	private readonly string _chatRoomId;
 
-	// added along with the WithUnboundedStash interface
+	// added along with the IWithUnboundedStash interface
 	public IStash Stash {get;set;}
 
 	// constructors, behaviors, etc...
@@ -43,7 +43,7 @@ But wait a minute, there's a new `Stash` property on the `UserActor` that includ
 
 The `Stash` property is automatically populated by an Akka.NET feature known as the "Actor Construction Pipeline," which gets used every time an actor is created locally (the details are beyond the scope of this lesson.)
 
-When the `ActorSystem` sees a `WithBoundedStash` interface on an actor, it knows to automatically populate a `BoundedStash` inside its `Stash` property. Likewise, if it sees a `WithUnboundedStash` interface, it knows to populate a `UnboundedStash` in that property instead.
+When the `ActorSystem` sees a `IWithBoundedStash` interface on an actor, it knows to automatically populate a `BoundedStash` inside its `Stash` property. Likewise, if it sees a `IWithUnboundedStash` interface, it knows to populate a `UnboundedStash` in that property instead.
 
 ### How to use the `Stash`
 Now that we've added a `Stash` to `UserActor`, how do we actually use it to store messages for later processing, and release previously stored messages to be processed?
@@ -187,7 +187,7 @@ The right way to deal these messages is to temporarily store them until the `Use
 This is what it looks like once we update the `Authenticating` behavior of our `UserActor` to delay processing messages until it knows whether or not the user is authenticated:
 
 ```csharp
-public class UserActor : ReceiveActor, WithUnboundedStash {
+public class UserActor : ReceiveActor, IWithUnboundedStash {
 	// constructors, fields, etc...
 
 	private void Authenticating() {
@@ -227,7 +227,7 @@ Inside `Actors/ChartingActor.cs`, update the `ChartingActor` class declaration a
 
 ```csharp
 // Actors/ChartingActor.cs
-public class ChartingActor : ReceiveActor, WithUnboundedStash
+public class ChartingActor : ReceiveActor, IWithUnboundedStash
 ```
 
 Also, implement the interface and have it add the following property somewhere inside `ChartingActor`:

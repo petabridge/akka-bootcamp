@@ -28,12 +28,12 @@ namespace GithubActors.Actors
 
         public class SubscribeToProgressUpdates
         {
-            public SubscribeToProgressUpdates(ActorRef subscriber)
+            public SubscribeToProgressUpdates(IActorRef subscriber)
             {
                 Subscriber = subscriber;
             }
 
-            public ActorRef Subscriber { get; private set; }
+            public IActorRef Subscriber { get; private set; }
         }
 
         public class PublishUpdate
@@ -62,12 +62,12 @@ namespace GithubActors.Actors
 
         #endregion
 
-        private ActorRef _githubWorker;
+        private IActorRef _githubWorker;
 
         private RepoKey _currentRepo;
         private Dictionary<string, SimilarRepo> _similarRepos;
-        private HashSet<ActorRef> _subscribers;
-        private CancellationTokenSource _publishTimer;
+        private HashSet<IActorRef> _subscribers;
+        private ICancelable _publishTimer;
         private GithubProgressStats _githubProgressStats;
 
         private bool _receivedInitialUsers = false;
@@ -99,9 +99,9 @@ namespace GithubActors.Actors
         {
             _receivedInitialUsers = false;
             _currentRepo = repo;
-            _subscribers = new HashSet<ActorRef>();
+            _subscribers = new HashSet<IActorRef>();
             _similarRepos = new Dictionary<string, SimilarRepo>();
-            _publishTimer = new CancellationTokenSource();
+            _publishTimer = new Cancelable(Context.System.Scheduler);
             _githubProgressStats = new GithubProgressStats();
             Become(Working);
         }
@@ -172,8 +172,8 @@ namespace GithubActors.Actors
                 //this is our first subscriber, which means we need to turn publishing on
                 if (_subscribers.Count == 0)
                 { 
-                    Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100),
-                        Self, PublishUpdate.Instance, _publishTimer.Token);
+                    Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100),
+                        Self, PublishUpdate.Instance, Self, _publishTimer);
                 }
 
                 _subscribers.Add(updates.Subscriber);

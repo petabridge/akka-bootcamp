@@ -63,15 +63,15 @@ namespace ChartApp.Actors
             {CounterType.Disk, () => new Series(CounterType.Disk.ToString()){ ChartType = SeriesChartType.SplineArea, Color = Color.DarkRed}},
         };
 
-        private Dictionary<CounterType, ActorRef> _counterActors;
+        private Dictionary<CounterType, IActorRef> _counterActors;
 
-        private ActorRef _chartingActor;
+        private IActorRef _chartingActor;
 
-        public PerformanceCounterCoordinatorActor(ActorRef chartingActor) : this(chartingActor, new Dictionary<CounterType, ActorRef>())
+        public PerformanceCounterCoordinatorActor(IActorRef chartingActor) : this(chartingActor, new Dictionary<CounterType, IActorRef>())
         {
         }
 
-        public PerformanceCounterCoordinatorActor(ActorRef chartingActor, Dictionary<CounterType, ActorRef> counterActors)
+        public PerformanceCounterCoordinatorActor(IActorRef chartingActor, Dictionary<CounterType, IActorRef> counterActors)
         {
             _chartingActor = chartingActor;
             _counterActors = counterActors;

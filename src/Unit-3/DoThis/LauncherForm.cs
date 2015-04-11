@@ -7,7 +7,7 @@ namespace GithubActors
 {
     public partial class LauncherForm : Form
     {
-        private ActorRef _mainFormActor;
+        private IActorRef _mainFormActor;
 
         public LauncherForm()
         {

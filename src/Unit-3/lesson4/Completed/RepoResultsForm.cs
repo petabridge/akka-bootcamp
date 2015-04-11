@@ -6,11 +6,11 @@ namespace GithubActors
 {
     public partial class RepoResultsForm : Form
     {
-        private ActorRef _formActor;
-        private ActorRef _githubCoordinator;
+        private IActorRef _formActor;
+        private IActorRef _githubCoordinator;
         private RepoKey _repo;
 
-        public RepoResultsForm(ActorRef githubCoordinator, RepoKey repo)
+        public RepoResultsForm(IActorRef githubCoordinator, RepoKey repo)
         {
             _githubCoordinator = githubCoordinator;
             _repo = repo;

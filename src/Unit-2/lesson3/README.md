@@ -22,7 +22,7 @@ Perhaps you want an actor to periodically fetch information, or to occasionally 
 Akka.NET provides a mechanism for doing just this sort of thing. Meet your new best friend: the `Scheduler`.
 
 ### What is the `Scheduler`?
-The `Scheduler` is a singleton within every `ActorSystem` that allows you to schedule messages to be sent to an actor in the future. The `Scheduler` can send both one-off and recurring messages.
+The `ActorSystem.Scheduler` ([docs](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Docs - IScheduler interface")) is a singleton within every `ActorSystem` that allows you to schedule messages to be sent to an actor in the future. The `Scheduler` can send both one-off and recurring messages.
 
 ### How do I use the `Scheduler`?
 As we mentioned, you can schedule one-off or recurring messages to an actor.
@@ -35,18 +35,18 @@ You can also schedule an `Action` to occur in the future, instead of sending a m
 ```csharp
 // inside Main.cs we have direct handle to the ActorSystem
 var system = ActorSystem.Create("MySystem");
-system.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+system.Scheduler.ScheduleTellOnce(TimeSpan.FromMinutes(30),
 				              someActor,
-				              someMessage);
+				              someMessage, ActorRefs.Nobody);
 
 // but inside an actor, we access the ActorSystem via the ActorContext
-Context.System.Scheduler.ScheduleOnce(TimeSpan.FromMinutes(30),
+Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromMinutes(30),
 								             someActor,
-								             someMessage);
+								             someMessage, ActorRefs.Nobody);
 ```
 
-#### Schedule one-off messages with `ScheduleOnce()`
-Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use `Scheduler.ScheduleOnce()` to do that:
+#### Schedule one-off messages with `ScheduleTellOnce()`
+Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use [`IScheduler.ScheduleTellOnce()`](http://api.getakka.net/docs/stable/html/190E4EB.htm "Akka.NET Stable API Docs - IScheduler.ScheduleTellOnce method") to do that:
 
 ```csharp
 var system = ActorSystem.Create("MySystem");
@@ -55,16 +55,16 @@ var someMessage = new FetchFeed() {Url = ...};
 // schedule the message
 system
    .Scheduler
-   .ScheduleOnce(TimeSpan.FromMinutes(30), // initial delay of 30 min
-             someActor, someMessage);
+   .ScheduleTellOnce(TimeSpan.FromMinutes(30), // initial delay of 30 min
+             someActor, someMessage, ActorRefs.Nobody);
 ```
 
 Voila! `someActor` will receive `someMessage` in 30 minutes time.
 
-#### Schedule recurring messages with `Schedule()`
+#### Schedule recurring messages with `ScheduleTellRepeatedly()`
 Now, **what if we want to schedule this message to be delivered once *every 30 minutes*?**
 
-For this we can use the following `Scheduler.Schedule()` overload.
+For this we can use the following [`IScheduler.ScheduleTellRepeatedly()`](http://api.getakka.net/docs/stable/html/A909C289.htm "Akka.NET Stable API Docs - IScheduler.ScheduleTellRepeatedly") overload.
 
 ```csharp
 var system = ActorSystem.Create("MySystem");
@@ -73,34 +73,53 @@ var someMessage = new FetchFeed() {Url = ...};
 // schedule recurring message
 system
    .Scheduler
-   .Schedule(TimeSpan.FromMinutes(30), // initial delay of 30 min
+   .ScheduleTellRepeatedly(TimeSpan.FromMinutes(30), // initial delay of 30 min
              TimeSpan.FromMinutes(30), // recur every 30 minutes
-             someActor, someMessage);
+             someActor, someMessage, ActorRefs.Nobody);
 ```
 
 That's it!
 
 ### How do I cancel a scheduled message?
-What happens if we need to cancel a scheduled or recurring message? We use a `CancellationToken`, which is retrieved from a [`CancellationTokenSource`](https://msdn.microsoft.com/en-us/library/vstudio/system.threading.cancellationtokensource.aspx) for that.
+What happens if we need to cancel a scheduled or recurring message? We use a [`ICancelable`](http://api.getakka.net/docs/stable/html/3FA8058E.htm "Akka.NET Stable API Docs - ICancelable interface"), which we can create using a [`Cancelable`](http://api.getakka.net/docs/stable/html/8869EC52.htm) instance.
 
-First, the message must be scheduled so that it can be cancelled. If a message is cancelable, we then just have to call `Cancel()` on our handle to the `CancellationTokenSource` and it will not be delivered. For example:
+First, the message must be scheduled so that it can be cancelled. If a message is cancelable, we then just have to call `Cancel()` on our handle to the `ICancelable` and it will not be delivered. For example:
 
 ```csharp
-var cancellation = new CancellationTokenSource();
 var system = ActorSystem.Create("MySystem");
+var cancellation = new Cancelable(system.Scheduler);
 var someActor = system.ActorOf<SomeActor>("someActor");
 var someMessage = new FetchFeed() {Url = ...};
 
 // first, set up the message so that it can be canceled
 system
    .Scheduler
-   .ScheduleOnce(TimeSpan.FromMinutes(30),
-                 someActor, someMessage,
-  			     cancellation.Token); // add cancellation support
+   .ScheduleTellRepeatedly(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(30)
+                 someActor, someMessage, ActorRefs.Nobody,
+  			     cancellation); // add cancellation support
 
 // here we actually cancel the message and prevent it from being delivered
 cancellation.Cancel();
 ```
+
+####Alternative: get an `ICancelable` task using `ScheduleTellRepeatedlyCancelable`
+One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://api.getakka.net/docs/stable/html/9B66375D.htm "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method").This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
+
+```csharp
+var system = ActorSystem.Create("MySystem");
+var someActor = system.ActorOf<SomeActor>("someActor");
+var someMessage = new FetchFeed() {Url = ...};
+
+// cancellable recurring message send created automatically
+var cancellation =  system
+   .Scheduler
+   .ScheduleTellRepeatedlyCancelable(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(30)
+                 someActor, someMessage, ActorRefs.Nobody); 
+
+// here we actually cancel the message and prevent it from being delivered
+cancellation.Cancel();
+```
+This is a more concise alternative to the previous example, and we recommend using it going forward even though we won't be using it in this bootcamp.
 
 ### How precise is the timing of scheduled messages?
 ***Scheduled messages are more than precise enough for all the use cases we've come across.***
@@ -113,29 +132,15 @@ That said, there are two situations of imprecision that we're aware of:
 ### What are the various overloads of `Schedule` and `ScheduleOnce`?
 Here are all the overload options you have for scheduling a message.
 
-#### Overloads of `Schedule`
+#### Overloads of `ScheduleTellRepeatedly`
 These are the various API calls you can make to schedule recurring messages.
 
-```csharp
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action);
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, Action action, CancellationToken cancellationToken);
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message);
-public Task Schedule(TimeSpan initialDelay, TimeSpan interval, ActorRef receiver, object message, CancellationToken cancellationToken);
-```
+[Refer to the `IScheduler` API documentation](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Documentation - IScheduler Interface").
 
-#### Overloads of `ScheduleOnce`
+#### Overloads of `ScheduleTellOnce`
 These are the various API calls you can make to schedule one-off messages.
 
-```csharp
-public Task ScheduleOnce(TimeSpan initialDelay, Action action);
-public Task ScheduleOnce(TimeSpan initialDelay, Action action, CancellationToken cancellationToken);
-public Task ScheduleOnce(TimeSpan initialDelay, ActorRef receiver, object message);
-public Task ScheduleOnce(TimeSpan initialDelay, ActorRef receiver, object message, CancellationToken cancellationToken);
-```
-
-> **NOTE: THE `Scheduler` API is changing soon.** [The `Scheduler` API is going to be modified as part of the upcoming Akka.NET v1.0 release](https://github.com/akkadotnet/akka.net/issues/468).
->
-> All of the `Scheduler`'s capabilities will remain intact, but the API signatures will be different.
+[Refer to the `IScheduler` API documentation](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Documentation - IScheduler Interface").
 
 ### How do I do Pub/Sub with Akka.NET Actors?
 It's actually very simple. Many people expect this to be very complicated and are suspicious that there isn't more code involved. Rest assured, there's nothing magic about pub/sub with Akka.NET actors. It can literally be as simple as this:
@@ -143,13 +148,13 @@ It's actually very simple. Many people expect this to be very complicated and ar
 ```csharp
 public class PubActor : ReceiveActor {
 	// HashSet automatically eliminates duplicates
-	private HashSet<ActorRef> _subscribers;
+	private HashSet<IActorRef> _subscribers;
 
 	PubActor() {
-		_subscribers = new HashSet<ActorRef>();
+		_subscribers = new HashSet<IActorRef>();
 
 		Receive<Subscribe>(sub => {
-			_subscribers.Add(sub.ActorRef);
+			_subscribers.Add(sub.IActorRef);
 		});
 
 		Receive<MessageSubscribersWant>(message => {
@@ -160,7 +165,7 @@ public class PubActor : ReceiveActor {
 		});
 
 		Receive<Unsubscribe>(unsub => {
-			_subscribers.Remove(unsub.ActorRef);
+			_subscribers.Remove(unsub.IActorRef);
 		}
 	}
 }
@@ -283,7 +288,7 @@ namespace ChartApp.Actors
     /// </summary>
     public class SubscribeCounter
     {
-        public SubscribeCounter(CounterType counter, ActorRef subscriber)
+        public SubscribeCounter(CounterType counter, IActorRef subscriber)
         {
             Subscriber = subscriber;
             Counter = counter;
@@ -291,7 +296,7 @@ namespace ChartApp.Actors
 
         public CounterType Counter { get; private set; }
 
-        public ActorRef Subscriber { get; private set; }
+        public IActorRef Subscriber { get; private set; }
     }
 
     /// <summary>
@@ -299,7 +304,7 @@ namespace ChartApp.Actors
     /// </summary>
     public class UnsubscribeCounter
     {
-        public UnsubscribeCounter(CounterType counter, ActorRef subscriber)
+        public UnsubscribeCounter(CounterType counter, IActorRef subscriber)
         {
             Subscriber = subscriber;
             Counter = counter;
@@ -307,7 +312,7 @@ namespace ChartApp.Actors
 
         public CounterType Counter { get; private set; }
 
-        public ActorRef Subscriber { get; private set; }
+        public IActorRef Subscriber { get; private set; }
     }
 
     #endregion
@@ -342,42 +347,42 @@ namespace ChartApp.Actors
         private readonly Func<PerformanceCounter> _performanceCounterGenerator;
         private PerformanceCounter _counter;
 
-        private readonly HashSet<ActorRef> _subscriptions;
-        private readonly CancellationTokenSource _cancelPublishing;
+        private readonly HashSet<IActorRef> _subscriptions;
+        private readonly ICancelable _cancelPublishing;
 
         public PerformanceCounterActor(string seriesName, Func<PerformanceCounter> performanceCounterGenerator)
         {
             _seriesName = seriesName;
             _performanceCounterGenerator = performanceCounterGenerator;
-            _subscriptions = new HashSet<ActorRef>();
-            _cancelPublishing = new CancellationTokenSource();
+            _subscriptions = new HashSet<IActorRef>();
+            _cancelPublishing = new Cancelable(Context.System.Scheduler);
         }
 
         #region Actor lifecycle methods
 
         protected override void PreStart()
         {
-            // create a new instance of the performance counter
+            //create a new instance of the performance counter
             _counter = _performanceCounterGenerator();
-            Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
-                new GatherMetrics(), _cancelPublishing.Token);
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
+                new GatherMetrics(), Self, _cancelPublishing);
         }
 
         protected override void PostStop()
         {
             try
             {
-                // terminate the scheduled task
+                //terminate the scheduled task
                 _cancelPublishing.Cancel(false);
                 _counter.Dispose();
             }
-            catch
+            catch 
             {
-                // we don't care about additional "ObjectDisposed" exceptions
+                //don't care about additional "ObjectDisposed" exceptions
             }
             finally
             {
-                base.PostStop();
+                base.PostStop();    
             }
         }
 
@@ -387,7 +392,7 @@ namespace ChartApp.Actors
         {
             if (message is GatherMetrics)
             {
-                // publish latest counter value to all subscribers
+                //publish latest counter value to all subscribers
                 var metric = new Metric(_seriesName, _counter.NextValue());
                 foreach(var sub in _subscriptions)
                     sub.Tell(metric);
@@ -408,6 +413,7 @@ namespace ChartApp.Actors
         }
     }
 }
+
 ```
 
 *Before we move onto the next step, let's talk about what you just did...*
@@ -489,19 +495,19 @@ protected override void PreStart()
 {
     // create a new instance of the performance counter
     _counter = _performanceCounterGenerator();
-    Context.System.Scheduler.Schedule(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
-        new GatherMetrics(), _cancelPublishing.Token);
+    Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(250), Self,
+        new GatherMetrics(), Self, _cancelPublishing);
 }
 ```
 
-Notice that inside the `PerformanceCounterActor`'s `PostStop` method, we invoke the `CancellationTokenSource` we created to cancel this recurring message:
+Notice that inside the `PerformanceCounterActor`'s `PostStop` method, we invoke the `ICancelable` we created to cancel this recurring message:
 
 ```csharp
  // terminate the scheduled task
-_cancelPublishing.Cancel(false);
+_cancelPublishing.Cancel();
 ```
 
-We do this for the same reason we `Dispose` the `PerformanceCounter` - to eliminate resource leaks and to prevent the `Scheduler` from sending recurring messages to dead or restarted actors.
+We do this for the same reason we `Dispose` the `PerformanceCounter` - to eliminate resource leaks and to prevent the `IScheduler` from sending recurring messages to dead or restarted actors.
 
 ### Step 5 - Create the `PerformanceCounterCoordinatorActor`
 
@@ -594,16 +600,16 @@ namespace ChartApp.Actors
 			Color = Color.DarkRed}},
         };
 
-        private Dictionary<CounterType, ActorRef> _counterActors;
+        private Dictionary<CounterType, IActorRef> _counterActors;
 
-        private ActorRef _chartingActor;
+        private IActorRef _chartingActor;
 
-        public PerformanceCounterCoordinatorActor(ActorRef chartingActor) :
-			this(chartingActor, new Dictionary<CounterType, ActorRef>())
+        public PerformanceCounterCoordinatorActor(IActorRef chartingActor) :
+			this(chartingActor, new Dictionary<CounterType, IActorRef>())
         {
         }
 
-        public PerformanceCounterCoordinatorActor(ActorRef chartingActor, Dictionary<CounterType, ActorRef> counterActors)
+        public PerformanceCounterCoordinatorActor(IActorRef chartingActor, Dictionary<CounterType, IActorRef> counterActors)
         {
             _chartingActor = chartingActor;
             _counterActors = counterActors;
@@ -683,9 +689,9 @@ namespace ChartApp.Actors
         private readonly CounterType _myCounterType;
         private bool _isToggledOn;
         private readonly Button _myButton;
-        private readonly ActorRef _coordinatorActor;
+        private readonly IActorRef _coordinatorActor;
 
-        public ButtonToggleActor(ActorRef coordinatorActor, Button myButton,
+        public ButtonToggleActor(IActorRef coordinatorActor, Button myButton,
 				CounterType myCounterType, bool isToggledOn = false)
         {
             _coordinatorActor = coordinatorActor;
@@ -887,8 +893,8 @@ Add the following declarations to the top of the `Main` class inside `Main.cs`:
 
 ```csharp
 // Main.cs - at top of Main class
-private ActorRef _coordinatorActor;
-private Dictionary<CounterType, ActorRef> _toggleActors = new Dictionary<CounterType, ActorRef>();
+private IActorRef _coordinatorActor;
+private Dictionary<CounterType, IActorRef> _toggleActors = new Dictionary<CounterType, IActorRef>();
 ```
 
 Then, replace the `Main_Load` event handler in the `Init` region so that it matches this:

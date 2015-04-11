@@ -7,9 +7,9 @@ namespace WinTail
     /// </summary>
     public class ValidationActor : UntypedActor
     {
-        private readonly ActorRef _consoleWriterActor;
+        private readonly IActorRef _consoleWriterActor;
 
-        public ValidationActor(ActorRef consoleWriterActor)
+        public ValidationActor(IActorRef consoleWriterActor)
         {
             _consoleWriterActor = consoleWriterActor;
         }

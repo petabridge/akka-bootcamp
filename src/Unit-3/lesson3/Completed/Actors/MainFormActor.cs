@@ -8,13 +8,13 @@ namespace GithubActors.Actors
     /// Actor that runs on the UI thread and handles
     /// UI events for <see cref="LauncherForm"/>
     /// </summary>
-    public class MainFormActor : ReceiveActor, WithUnboundedStash
+    public class MainFormActor : ReceiveActor, IWithUnboundedStash
     {
         #region Messages
 
         public class LaunchRepoResultsWindow
         {
-            public LaunchRepoResultsWindow(RepoKey repo, ActorRef coordinator)
+            public LaunchRepoResultsWindow(RepoKey repo, IActorRef coordinator)
             {
                 Repo = repo;
                 Coordinator = coordinator;
@@ -22,7 +22,7 @@ namespace GithubActors.Actors
 
             public RepoKey Repo { get; private set; }
 
-            public ActorRef Coordinator { get; private set; }
+            public IActorRef Coordinator { get; private set; }
         }
 
         #endregion

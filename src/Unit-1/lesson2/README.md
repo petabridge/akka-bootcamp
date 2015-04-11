@@ -232,14 +232,14 @@ private void GetAndValidateInput()
         if (valid)
         {
             _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you! Message was valid."));
-
-            // continue reading messages from console
-            Self.Tell(new Messages.ContinueProcessing());
         }
         else
         {
         	Self.Tell(new Messages.ValidationError("Invalid: input had odd number of characters."));
         }
+
+        // continue reading messages from console
+        Self.Tell(new Messages.ContinueProcessing());
     }
 }
 
@@ -326,7 +326,7 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ##  Great job! Onto Lesson 3!
 Awesome work! Well done on completing this lesson.
 
-**Let's move onto [Lesson 3 - `Props` and `ActorRef`s](../lesson3).**
+**Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
