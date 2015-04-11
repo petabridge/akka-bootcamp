@@ -669,8 +669,8 @@ protected override SupervisorStrategy SupervisorStrategy()
 {
     return new OneForOneStrategy (
         10, // maxNumberOfRetries
-        TimeSpan.FromSeconds(30), // duration
-        x =>
+        TimeSpan.FromSeconds(30), // withinTimeRange
+        x => // localOnlyDecider
         {
             //Maybe we consider ArithmeticException to not be application critical
             //so we just ignore the error and keep going.
