@@ -607,7 +607,7 @@ namespace WinTail
             {
                 // move file cursor forward
                 // pull results from cursor to end of file and write to output
-                // (tis is assuming a log file type format that is append-only)
+                // (this is assuming a log file type format that is append-only)
                 var text = _fileStreamReader.ReadToEnd();
                 if (!string.IsNullOrEmpty(text))
                 {
