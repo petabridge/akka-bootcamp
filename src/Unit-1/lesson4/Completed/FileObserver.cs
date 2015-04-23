@@ -9,13 +9,13 @@ namespace WinTail
     /// </summary>
     public class FileObserver : IDisposable
     {
-        private readonly ActorRef _tailActor;
+        private readonly IActorRef _tailActor;
         private readonly string _absoluteFilePath;
         private FileSystemWatcher _watcher;
         private readonly string _fileDir;
         private readonly string _fileNameOnly;
 
-        public FileObserver(ActorRef tailActor, string absoluteFilePath)
+        public FileObserver(IActorRef tailActor, string absoluteFilePath)
         {
             _tailActor = tailActor;
             _absoluteFilePath = absoluteFilePath;
@@ -28,6 +28,10 @@ namespace WinTail
         /// </summary>
         public void Start()
         {
+            // Need this for Mono 3.12.0 workaround
+            // uncomment this line if you're running on Mono!
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
+
             // make watcher to observe our specific file
             _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
 
@@ -58,7 +62,7 @@ namespace WinTail
         /// <param name="e"></param>
         void OnFileError(object sender, ErrorEventArgs e)
         {
-            _tailActor.Tell(new TailActor.FileError(_fileNameOnly, e.GetException().Message), ActorRef.NoSender);
+            _tailActor.Tell(new TailActor.FileError(_fileNameOnly, e.GetException().Message), ActorRefs.NoSender);
         }
 
         /// <summary>
@@ -70,9 +74,9 @@ namespace WinTail
         {
             if (e.ChangeType == WatcherChangeTypes.Changed)
             {
-                // here we use a special ActorRef.NoSender
+                // here we use a special ActorRefs.NoSender
                 // since this event can happen many times, this is a little microoptimization
-                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRef.NoSender);
+                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
             }
 
         }

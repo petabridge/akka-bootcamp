@@ -11,9 +11,9 @@ namespace WinTail
     {
         public const string StartCommand = "start";
         public const string ExitCommand = "exit";
-        private readonly ActorRef _consoleWriterActor;
+        private readonly IActorRef _consoleWriterActor;
 
-        public ConsoleReaderActor(ActorRef consoleWriterActor)
+        public ConsoleReaderActor(IActorRef consoleWriterActor)
         {
             _consoleWriterActor = consoleWriterActor;
         }
@@ -55,7 +55,7 @@ namespace WinTail
                 // received input was blank
                 Self.Tell(new Messages.NullInputError("No input received."));
             }
-            else if (message.Equals(ExitCommand))
+            else if (String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
                 // shut down the entire actor system (allows the process to exit)
                 Context.System.Shutdown();

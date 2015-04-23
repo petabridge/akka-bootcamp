@@ -11,7 +11,7 @@ namespace WinTail
         /// </summary>
         public class StartTail
         {
-            public StartTail(string filePath, ActorRef reporterActor)
+            public StartTail(string filePath, IActorRef reporterActor)
             {
                 FilePath = filePath;
                 ReporterActor = reporterActor;
@@ -19,7 +19,7 @@ namespace WinTail
 
             public string FilePath { get; private set; }
 
-            public ActorRef ReporterActor { get; private set; }
+            public IActorRef ReporterActor { get; private set; }
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace WinTail
             return new OneForOneStrategy (
                 10, // maxNumberOfRetries
                 TimeSpan.FromSeconds(30), // duration
-                decider: x =>
+                x =>
                 {
                     //Maybe we consider ArithmeticException to not be application critical
                     //so we just ignore the error and keep going.

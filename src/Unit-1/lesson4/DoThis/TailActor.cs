@@ -58,12 +58,12 @@ namespace WinTail
         #endregion
 
         private readonly string _filePath;
-        private readonly ActorRef _reporterActor;
+        private readonly IActorRef _reporterActor;
         private readonly FileObserver _observer;
         private readonly Stream _fileStream;
         private readonly StreamReader _fileStreamReader;
 
-        public TailActor(ActorRef reporterActor, string filePath)
+        public TailActor(IActorRef reporterActor, string filePath)
         {
             _reporterActor = reporterActor;
             _filePath = filePath;
@@ -86,8 +86,6 @@ namespace WinTail
         {
             if (message is FileWrite)
             {
-                var fw = message as FileWrite;
-
                 // move file cursor forward
                 // pull results from cursor to end of file and write to output
                 // (tis is assuming a log file type format that is append-only)

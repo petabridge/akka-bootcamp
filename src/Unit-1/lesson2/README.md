@@ -16,7 +16,31 @@ As you saw in the first lesson, you `Tell()` the actor the message.
 This is entirely up to you, and doesn't really have much to do with Akka.NET. You can handle (or not handle) a message as you choose within an actor.
 
 ### What happens if my actor receives a message it doesn't know how to handle?
-Actors ignore messages they don't know how to handle. (It will mark the message as `Unhandled`.)
+Actors ignore messages they don't know how to handle. Whether or not this ignored message is logged as such depends on the type of actor.
+
+With an `UntypedActor`, unhandled messages are not logged as unhandled unless you manually mark them as such, like so:
+
+```csharp
+
+class MyActor : UntypedActor
+{
+    protected override void OnReceive(object message)
+    {
+         if (message is Messages.InputError)
+        {
+            var msg = message as Messages.InputError;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(msg.Reason);
+        }
+        else
+        {
+            Unhandled(message);
+        }
+    }
+}
+```
+
+However, in a `ReceiveActor`—which we cover in Unit 2—unhandled messages are automatically sent to `Unhandled` so the logging is done for you.
 
 ### How do my actors respond to messages?
 This is up to you - you can respond by simply processing the message, replying to the `Sender`, forwarding the message onto another actor, or doing nothing at all.
@@ -137,7 +161,7 @@ public const string StartCommand = "start";
 
 Update the `Main` method to use `ConsoleReaderActor.StartCommand`:
 
-Replace
+Replace this:
 
 ```csharp
 // in Program.cs
@@ -145,7 +169,7 @@ Replace
 consoleReaderActor.Tell("start");
 ```
 
-with
+with this:
 
 ```csharp
 // in Program.cs
@@ -197,7 +221,7 @@ private void GetAndValidateInput()
         // received input was blank
         Self.Tell(new Messages.NullInputError("No input received."));
     }
-    else if (message.Equals(ExitCommand))
+    else if (String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
     {
         // shut down the entire actor system (allows the process to exit)
         Context.System.Shutdown();
@@ -300,6 +324,14 @@ If everything is working as it should, you should see an output like this:
 Compare your code to the solution in the [Completed](Completed/) folder to see what the instructors included in their samples.
 
 ##  Great job! Onto Lesson 3!
-Awesome work! Well done on completing this lesson. 
+Awesome work! Well done on completing this lesson.
 
-**Let's move onto [Lesson 3 - `Props` and `ActorRef`s](../lesson3).**
+**Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
