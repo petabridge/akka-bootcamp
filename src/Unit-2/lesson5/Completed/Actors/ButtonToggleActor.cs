@@ -21,9 +21,9 @@ namespace ChartApp.Actors
         private readonly CounterType _myCounterType;
         private bool _isToggledOn;
         private readonly Button _myButton;
-        private readonly ActorRef _coordinatorActor;
+        private readonly IActorRef _coordinatorActor;
 
-        public ButtonToggleActor(ActorRef coordinatorActor, Button myButton, CounterType myCounterType,  bool isToggledOn = false)
+        public ButtonToggleActor(IActorRef coordinatorActor, Button myButton, CounterType myCounterType,  bool isToggledOn = false)
         {
             _coordinatorActor = coordinatorActor;
             _myButton = myButton;

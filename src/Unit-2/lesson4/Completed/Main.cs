@@ -9,10 +9,10 @@ namespace ChartApp
 {
     public partial class Main : Form
     {
-        private ActorRef _chartActor;
+        private IActorRef _chartActor;
         private AtomicCounter _seriesCounter = new AtomicCounter(1);
-        private ActorRef _coordinatorActor;
-        private Dictionary<CounterType, ActorRef> _toggleActors = new Dictionary<CounterType, ActorRef>();
+        private IActorRef _coordinatorActor;
+        private Dictionary<CounterType, IActorRef> _toggleActors = new Dictionary<CounterType, IActorRef>();
 
         public Main()
         {

@@ -7,7 +7,7 @@ namespace GithubActors.Actors
     /// <summary>
     /// Top-level actor responsible for coordinating and launching repo-processing jobs
     /// </summary>
-    public class GithubCommanderActor : ReceiveActor, WithUnboundedStash
+    public class GithubCommanderActor : ReceiveActor, IWithUnboundedStash
     {
         #region Message classes
 
@@ -43,8 +43,8 @@ namespace GithubActors.Actors
 
         #endregion
 
-        private ActorRef _coordinator;
-        private ActorRef _canAcceptJobSender;
+        private IActorRef _coordinator;
+        private IActorRef _canAcceptJobSender;
         private int pendingJobReplies;
 
         public GithubCommanderActor()

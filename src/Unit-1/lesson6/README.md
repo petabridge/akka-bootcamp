@@ -33,7 +33,7 @@ If the actor is being restarted, it's common to save state or messages during th
 If the actor is being terminated, all the messages in its `Mailbox` will be sent to the `DeadLetters` mailbox of the `ActorSystem`. `DeadLetters` is a store of undeliverable messages, usually undeliverable because an actor is dead.
 
 #### `Terminated`
-The actor is dead. Any messages sent to its former `ActorRef` will now go to `DeadLetters` instead. The actor cannot be restarted, but a new actor can be created at its former address (which will have a new `ActorRef` but an identical `ActorPath`).
+The actor is dead. Any messages sent to its former `IActorRef` will now go to `DeadLetters` instead. The actor cannot be restarted, but a new actor can be created at its former address (which will have a new `IActorRef` but an identical `ActorPath`).
 
 #### `Restarting`
 The actor is about to restart and go back into a `Starting` state.
@@ -123,7 +123,7 @@ private FileObserver _observer;
 private Stream _fileStream;
 private StreamReader _fileStreamReader;
 
-public TailActor(ActorRef reporterActor, string filePath)
+public TailActor(IActorRef reporterActor, string filePath)
 {
     _reporterActor = reporterActor;
     _filePath = filePath;
@@ -191,4 +191,4 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

@@ -8,7 +8,7 @@ Now we need to show you how to configure and deploy them :)
 #### Quick review of HOCON
 We first learned about HOCON in [Lesson 2.1](../../Unit-2/lesson1/).
 
-To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `ActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
+To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/docs/concepts/hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
 It's this last feature that we'll be using here to configure how our router actors are deployed. An actor is "deployed" when it is instantiated and put into service within the `ActorSystem` somewhere.
 
@@ -152,8 +152,6 @@ Bonus concept! We're also going to teach you to use `Ask` in addition to HOCON.
 #### What is `Ask`?
 `Ask` is how one actor can ask another actor for some information and wait for a reply.
 
-***NOTE: `Ask` is a blocking, synchronous operation.***
-
 #### When do I use `Ask`?
 Whenever you want one actor to retrieve information from another and wait for a response. It isn't used that often—certainly not compared to `Tell()`—but there are places where it is ***exactly*** what you need.
 
@@ -200,7 +198,7 @@ private void BecomeAsking()
 
 Since the number of routees underneath `_coordinator` is now defined via configuration, we're going to `Ask<T>` the router using a built-in `GetRoutees` message to determine how many replies we need (1 per routee) before we can accept a new job. This is a special message that tells the router to return the full list of all of its current `Routees` back to the sender.
 
-This is an asynchronous operation, but we're going to block and wait for the result - because the `GithubCommander`can't execute its next behavior until it knows how many parallel jobs can be run at once, which is determined by the number of routees.
+`Ask` is usually an asynchronous operation, but in this case we're going to block and wait for the result - because the `GithubCommander` can't execute its next behavior until it knows how many parallel jobs can be run at once, which is determined by the number of routees.
 
 > **NOTE: Blocking is not evil**. In the wake of `async` / `await`, many .NET developers have come to the conclusion that blocking is an anti-pattern or generally evil. This is ludicrous. It depends entirely on the context. Blocking is absolutely the right thing to do if your application can't proceed until the operation you're waiting on finishes, and that's the case here.
 
@@ -236,4 +234,4 @@ We've been able to leverage routers for parallelism both via explicit programmat
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
