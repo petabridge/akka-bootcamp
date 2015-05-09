@@ -114,7 +114,7 @@ var someMessage = new FetchFeed() {Url = ...};
 var cancellation =  system
    .Scheduler
    .ScheduleTellRepeatedlyCancelable(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(30)
-                 someActor, someMessage, ActorRefs.Nobody); 
+                 someActor, someMessage, ActorRefs.Nobody);
 
 // here we actually cancel the message and prevent it from being delivered
 cancellation.Cancel();
@@ -376,13 +376,13 @@ namespace ChartApp.Actors
                 _cancelPublishing.Cancel(false);
                 _counter.Dispose();
             }
-            catch 
+            catch
             {
                 //don't care about additional "ObjectDisposed" exceptions
             }
             finally
             {
-                base.PostStop();    
+                base.PostStop();
             }
         }
 
@@ -987,4 +987,4 @@ Here is a high-level overview of our working system at this point:
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
