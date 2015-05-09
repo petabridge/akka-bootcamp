@@ -124,7 +124,7 @@ Time to put your first actors to work!
 
 You will need to do the following:
 
-1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
+1. ConsoleReaderActor is set up to read from the console. Have it send a message to ConsoleWriterActor containing the content that it just read.
 
 	```csharp
 	// in ConsoleReaderActor.cs
