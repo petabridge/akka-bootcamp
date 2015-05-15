@@ -44,7 +44,7 @@ let consoleWriterActor message =
     | _ -> printInColor ConsoleColor.Black (message.ToString())
 
 let validationActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = 
-    let (|ValidMessage|_|) msg = if (msg.ToString ()).Length % 2 = 0 then Some msg else None
+    let (|ValidMessage|_|) msg = if (msg.ToString()).Length % 2 = 0 then Some msg else None
     
     match message with
     | EmptyCommand -> consoleWriter <! InputError("No input received.", ErrorType.Null)
