@@ -659,7 +659,7 @@ You have just established your first parent/child actor relationship!
 ### Phase 3: Implement a `SupervisorStrategy`
 Now it's time to add a supervision strategy to your new parent, `TailCoordinatorActor`.
 
-The default `SupervisorStrategy` is a One-For-One strategy ([docs](http://getakka.net/wiki/Supervision#one-for-one-strategy-vs-all-for-one-strategy)) w/ a Restart directive ([docs](http://getakka.net/wiki/Supervision#what-restarting-means)).
+The default `SupervisorStrategy` is a One-For-One strategy ([docs](http://getakka.net/docs/Supervision#one-for-one-strategy-vs-all-for-one-strategy)) w/ a Restart directive ([docs](http://getakka.net/docs/Supervision#what-restarting-means)).
 
 Add this code to the bottom of `TailCoordinatorActor`:
 

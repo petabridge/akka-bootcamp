@@ -74,7 +74,7 @@ Context.ActorSelection("akka://MyActorSystem/user/AuthenticationActor").Tell(use
 > NOTE: `ActorSelection`s can be either absolute or relative. An absolute `ActorSelection` includes the root `/user/` actor in the path. However, an `ActorSelection` could also be relative, such as `Context.ActorSelection("../validationActor")`.
 
 #### Doing elastic processing of large data streams
-A very common extension of the well-known actor pattern is talking to routers ([docs](http://getakka.net/wiki/Routing)). Routers are a more advanced topic we go in-depth on in unit 2.
+A very common extension of the well-known actor pattern is talking to routers ([docs](http://getakka.net/docs/Routing)). Routers are a more advanced topic we go in-depth on in unit 2.
 
 As a quick example, imagine that you had a system that needed to process a large data stream in real time. Let's say for fun that you had a very popular consumer app that had peak usage once or twice a day, like a social app that people love to use on their breaks at work. Each user is generating a flurry of activity that has to be processed and rolled up in realtime. For the sake of this example, imagine that you had an actor running per user tracking the user's activity, and feeding that data to other parts of the system.
 
