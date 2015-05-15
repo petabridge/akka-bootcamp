@@ -10,10 +10,10 @@ let ExitCommand = "exit"
 [<Literal>]
 let ContinueCommand = "continue"
 
-let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = 
-    let line = Console.ReadLine ()
-    match line.ToLower () with
-    | ExitCommand -> mailbox.Context.System.Shutdown ()
+let consoleReaderActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = 
+    let line = Console.ReadLine()
+    match line.ToLower() with
+    | ExitCommand -> mailbox.Context.System.Shutdown()
     | _ -> 
         consoleWriter <! line
         mailbox.Self  <! ContinueCommand
@@ -23,8 +23,8 @@ let consoleWriterActor message =
     
     let printInColor color message =
         Console.ForegroundColor <- color
-        Console.WriteLine (message.ToString ())
-        Console.ResetColor ()
+        Console.WriteLine(message.ToString())
+        Console.ResetColor()
 
     match message.ToString().Length with
     | 0    -> printInColor ConsoleColor.DarkYellow "Please provide an input.\n"
