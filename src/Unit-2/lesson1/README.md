@@ -36,15 +36,19 @@ The default dispatcher in Akka.NET is the `ThreadPoolDispatcher`. As you can pro
 There are several types of `Dispatcher`s we can use with our actors:
 
 ##### `SingleThreadDispatcher`
-This `Dispatcher` runs multiple actors on a single thread;
+This `Dispatcher` runs multiple actors on a single thread.
 
 ##### `ThreadPoolDispatcher` (default)
-This `Dispatcher` runs actors on top of the CLR `ThreadPool` for maximum concurrency;
+This `Dispatcher` runs actors on top of the CLR `ThreadPool` for maximum concurrency.
 
-##### `CurrentSynchronizationContextDispatcher`
+##### `SynchronizedDispatcher`
 This `Dispatcher` schedules all actor messages to be processed in the same synchronization context as the caller. 99% of the time, this is where you're going to run actors that need access to the UI thread, such as in client applications.
 
-In this lesson, we're going to use the `CurrentSynchronizationContextDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way, the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
+The `SynchronizedDispatcher` uses the *current* [SynchronizationContext](https://msdn.microsoft.com/en-us/magazine/gg598924.aspx) to schedule executions.
+
+> **Note:** As a general rule, actors running in the `SynchronizedDispatcher` shouldn't do much work. Avoid doing any extra work that may be done by actors running in other pools.
+
+In this lesson, we're going to use the `SynchronizedDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way, the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
 
 ##### [`ForkJoinDispatcher`](http://api.getakka.net/docs/stable/html/F0DC1571.htm "Akka.NET Stable API Docs - ForkJoinDispatcher")
 This `Dispatcher` runs actors on top of a dedicated group of threads, for tunable concurrency.
@@ -222,7 +226,7 @@ In this case `yourConfig` will fallback twice to `f2` and return "baz" as the va
 Now that we understand HOCON, let's use it to fix the `Dispatcher` for `ChartingActor`!
 
 ## Exercise
-We need to configure `ChartingActor` to use the `CurrentSynchronizationContextDispatcher` in order to make our charting work correctly on the UI thread.
+We need to configure `ChartingActor` to use the `SynchronizedDispatcher` in order to make our charting work correctly on the UI thread.
 
 ### Add Akka.NET Config Section to `App.config`
 The first thing you need to do is declare the `AkkaConfigurationSection` at the top of your `App.config`:
@@ -292,7 +296,7 @@ Nice work on completing your first lesson in Unit 2! We covered a lot of concept
 **Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2).**
 
 ## Further reading
-As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/wiki/HOCON).
+As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/docs/HOCON).
 
 ## Any questions?
 **Don't be afraid to ask questions** :).

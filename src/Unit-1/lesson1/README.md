@@ -52,7 +52,7 @@ Actors are inherently asynchronous (more on this in a future lesson), and there 
 ### What kinds of actors are there?
 All types of actors inherit from `UntypedActor`, but don't worry about that now. We'll cover different actor types later.
 
-In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.net/wiki/Working%20with%20actors#untypedactor-api "Akka.NET - UntypedActor API").
+In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.net/docs/Working%20with%20actors#untypedactor-api "Akka.NET - UntypedActor API").
 
 ### How do you make an actor?
 There are 2 key things to know about creating an actor:
