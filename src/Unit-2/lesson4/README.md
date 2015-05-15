@@ -52,10 +52,10 @@ Akka.NET actors have the concept of a "behavior stack". Whichever method sits at
 
 ![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
 
-#### Use `Become` to adopt a new behavior
+#### Use `Become` and `BecomeStacked` to adopt new behavior
 Whenever we call [`BecomeStacked`](http://api.getakka.net/docs/stable/html/33B96712.htm "Akka.NET Stable API - BecomeStacked method"), we tell the `ReceiveActor` to push a new behavior onto the stack. This new behavior dictates which `Receive` methods will be used to process any messages delivered to an actor.
 
-Here's what happens to the behavior stack when our example actor `Become`s `Authenticated`:
+Here's what happens to the behavior stack when our example actor becomes `Authenticated` via `BecomeStacked`:
 
 ![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
 
@@ -65,13 +65,24 @@ Here's what happens to the behavior stack when our example actor `Become`s `Auth
 
 
 #### Use `UnbecomeStacked` to revert to old behavior
-To make an actor revert to the previous behavior, all we have to do is call `UnbecomeStacked`.
+To make an actor revert to the previous behavior in the behavior stack, all we have to do is call `UnbecomeStacked`.
 
 Whenever we call `UnbecomeStacked`, we pop our current behavior off of the stack and replace it with the previous behavior from before (again, this new behavior will dictate which `Receive` methods are used to handle incoming messages).
 
 Here's what happens to the behavior stack when our example actor `UnbecomeStacked`s:
 
 ![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
+
+
+#### What is the API to change behaviors?
+The API to change behaviors is very simple:
+
+* `Become` - Replaces the current receive loop with the specified one. Eliminates the behavior stack.
+* `BecomeStacked` - Adds the specified method to the top of the behavior stack, while maintaining the previous ones below it;
+* `UnbecomeStacked` - Reverts to the previous receive method from the stack (only works with `BecomeStacked`).
+
+The difference is that `BecomeStacked` preserves the old behavior, so you can just call `UnbecomeStacked` to go back to the previous behavior. The preference of one over the other depends on your needs. You can call `BecomeStacked` as many times as you need, and you can call `UnbecomeStacked` as many times as you called `BecomeStacked`. Additional calls to `UnbecomeStacked` won't do anything if the current behavior is the only behavior in the stack.
+
 
 ### Isn't it problematic for actors to change behaviors?
 No, actually it's safe and is a feature that gives your `ActorSystem` a ton of flexibility and code reuse.
@@ -81,14 +92,20 @@ Here are some common questions about switchable behavior:
 #### When is the new behavior applied?
 We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). The new message processing behavior won't be applied until the next message arrives.
 
+#### Isn't it bad that `Become` blows away the behavior stack?
+No, not really. This is the way it's most commonly used, by far. Explicitly switching from one behavior to another is the most common approach used for switching behavior. Simple, explicit switches also make it much easier to read and reason about your code.
+
+If you find you actually need to take advantage of the behavior stack—and a simple, explicit `Become(YourNewBehavior)` won't work for the situation—the behavior stack is available to you.
+
+In this lesson, we use `BecomeStacked` and `UnbecomeStacked` to demonstrate them. Usually we just use `Become`.
+
 #### How deep can the behavior stack go?
 The stack can go *really* deep, but it's not unlimited.
 
 Also, each time your actor restarts, the behavior stack is cleared and the actor starts from the initial behavior you've coded.
 
 #### What happens if you call `UnbecomeStacked` and with nothing left in the behavior stack?
-The answer is: *nothing* - `UnbecomeStacked` is a safe method and won't do anything unless there's more than one behavior in the stack.
-
+*Nothing* - `UnbecomeStacked` is a safe method and won't do anything if the current behavior is the only behavior in the stack.
 
 ### Back to the real-world example
 Okay, now that you understand switchable behavior, let's return to our real-world scenario and see how it is used. Recall that we need to add authentication to our chat system actor.
