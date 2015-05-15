@@ -195,7 +195,7 @@ We called `Authenticating()` from the constructor, so our actor began in the `Au
 However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](http://getakka.net/docs/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
 
 ### Can I switch behaviors in an `UntypedActor`?
-Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `Become` and `Unbecome` via the `ActorContext`, instead of calling them directly.
+Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `BecomeStacked` and `UnbecomeStacked` via the `ActorContext`, instead of calling them directly.
 
 These are the API calls inside an `UntypedActor`:
 
