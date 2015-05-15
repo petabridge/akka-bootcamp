@@ -253,7 +253,7 @@ private void Paused()
     Receive<TogglePause>(pause =>
     {
         SetPauseButtonText(false);
-        Unbecome();
+        UnbecomeStacked();
 
         // ChartingActor is leaving the Paused state, put messages back
         // into mailbox for processing under new behavior
