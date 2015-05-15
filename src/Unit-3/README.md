@@ -47,6 +47,19 @@ If you have any questions about Octokit or want to learn more about it, make sur
 
 This will be a throwaway token in your account only used for this app. [Follow the instructions here](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and write down your OAuth token.
 
+When you run the samples and are actually pulling data from GitHub, you will get two popup windows:
+1. The first popup window will ask you for your GitHub token. This is the read-only access token that you just created.
+2. The second window is where you'll enter the URL of the actual repo that you want to fetch info for.
+
+This is where you enter your access token when you run the code:
+
+![Unit 3 GithubScraper App Live Run Token](lesson5/images/enter-access-token.gif)
+
+You will then get a second window, where you enter the URL of the repo you want to inspect:
+
+![Unit 3 GithubScraper App Live Run](lesson5/images/lesson5-live-run.gif)
+
+
 ## Get Started
 To get started, [go to the /DoThis/ folder](DoThis/) and open `GithubActors.sln`.
 
