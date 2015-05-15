@@ -13,6 +13,6 @@ let toExpression<'Actor>(f : Quotations.Expr<(unit -> 'Actor)>) =
         Expression.Lambda(p, [||]) :?> System.Linq.Expressions.Expression<System.Func<'Actor>>
     | _ -> failwith "Doesn't match"
 
-let spawnObj<'Actor when 'Actor :> ActorBase> (actorFactory : ActorRefFactory) (name : string) (f : Quotations.Expr<(unit -> 'Actor)>) : ActorRef = 
+let spawnObj<'Actor when 'Actor :> ActorBase> (actorFactory : IActorRefFactory) (name : string) (f : Quotations.Expr<(unit -> 'Actor)>) : IActorRef = 
     let e = toExpression<'Actor> f
     actorFactory.ActorOf((Props.Create e), name)
