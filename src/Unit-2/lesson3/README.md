@@ -786,7 +786,7 @@ Add the following method to the bottom of the `ChartingActor` class (don't worry
 
 private void SetChartBoundaries()
 {
-    double maxAxisX, maxAxisY, minAxisX, minAxisY = 0.0d;
+    double maxAxisX, maxAxisY, minAxisX, minAxisY;
     var allPoints = _seriesIndex.Values.Aggregate(new HashSet<DataPoint>(),
 			(set, series) => new HashSet<DataPoint>(set.Concat(series.Points)));
     var yValues = allPoints.Aggregate(new List<double>(), (list, point) => list.Concat(point.YValues).ToList());
