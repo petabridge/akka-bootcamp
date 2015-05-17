@@ -35,7 +35,7 @@ In Unit 1 you will learn:
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
-**[Begin Unit 1](src/Unit-1/CSharp)**.
+**[Begin Unit 1](src/Unit-1/FSharp)**.
 
 ### Unit 2
 In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
