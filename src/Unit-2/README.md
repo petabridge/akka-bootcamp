@@ -19,7 +19,7 @@ In fact, here's what the final output from lesson 5 looks like:
 In Unit 2 you will learn:
 
 1. How to use [HOCON configuration](http://getakka.net/docs/concepts/configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
-1. How to configure your actor's [Dispatcher](http://getakka.net/wiki/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
+1. How to configure your actor's [Dispatcher](http://getakka.net/docs/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
 1. How to handle more sophisticated types of pattern matching using `ReceiveActor`;
 1. How to use the `Scheduler` to send recurring messages to actors;
 1. How to use the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) between actors;
