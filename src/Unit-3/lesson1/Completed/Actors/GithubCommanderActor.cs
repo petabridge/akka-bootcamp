@@ -54,45 +54,54 @@ namespace GithubActors.Actors
 
         private void Ready()
         {
-            Receive<CanAcceptJob>(job =>
+            Receive<CanAcceptJob>(request =>
             {
-                _coordinator.Tell(job);
+                // Pass this job request to a coordinator...
+                _coordinator.Tell(request);
 
-                BecomeAsking();
+                // ...and wait to see if someone accepts the job.
+                BecomeWaitingForJobResponse();
             });
         }
 
-        private void BecomeAsking()
+        private void BecomeWaitingForJobResponse()
         {
             _canAcceptJobSender = Sender;
             pendingJobReplies = 3; //the number of routees
-            Become(Asking);
+            Become(WaitingForJobResponse);
         }
 
-        private void Asking()
+        private void WaitingForJobResponse()
         {
-            //stash any subsequent requests
-            Receive<CanAcceptJob>(job => Stash.Stash());
+            // Anyone else asks for work to be done while we're
+            // assigning this one, stash it for later.
+            Receive<CanAcceptJob>(request => Stash.Stash());
 
-            Receive<UnableToAcceptJob>(job =>
+            Receive<UnableToAcceptJob>(response =>
             {
                 pendingJobReplies--;
                 if (pendingJobReplies == 0)
                 {
-                    _canAcceptJobSender.Tell(job);
+                    // All three workers said, "No," so report
+                    // this back to the Actor that originally
+                    // originally made the request.
+                    _canAcceptJobSender.Tell(response);
                     BecomeReady();
                 }
             });
 
-            Receive<AbleToAcceptJob>(job =>
+            Receive<AbleToAcceptJob>(response =>
             {
-                _canAcceptJobSender.Tell(job);
+                // Someone took our job! Tell the Actor that
+                // originally requested it.
+                _canAcceptJobSender.Tell(response);
 
-                //start processing messages
-                Sender.Tell(new GithubCoordinatorActor.BeginJob(job.Repo));
+                // Tell the Actor that said they could do the
+                // job to actually start doing it.
+                Sender.Tell(new GithubCoordinatorActor.BeginJob(response.Repo));
 
-                //launch the new window to view results of the processing
-                Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(new MainFormActor.LaunchRepoResultsWindow(job.Repo, Sender));
+                // Launch the new window to view results of the processing
+                Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(new MainFormActor.LaunchRepoResultsWindow(response.Repo, Sender));
 
                 BecomeReady();
             });
