@@ -144,7 +144,7 @@ Regardless of its `RoutingStrategy`, there are a few special messages that you c
 #### `Broadcast`
 Sending a `Broadcast` message to a non-`Broadcast` router makes the router act like a `BroadcastRouter` for that single message. After the message is processed, the router will return to its normal `RoutingStrategy`.
 
-When would you use this? It doesn't come up very often, but one use case we can think of is if you a group of routees all needed to take some action in response to a global-level event.
+When would you use this? It doesn't come up very often, but one use case we can think of is if a group of routees all needed to take some action in response to a global-level event.
 
 For example, perhaps you have a group of actors that all must be alerted if a critical system goes down. In this case, you could send their router a `Broadcast` message and all the routees would be alerted.
 
