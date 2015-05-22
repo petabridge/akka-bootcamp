@@ -41,18 +41,18 @@ Anything you can code. Really :)
 
 You code actors to handle messages they receive, and actors can do whatever you need them to in order to handle a message. Talk to a database, write to a file, change an internal variable, or anything else you might need.
 
-But in addition to processing messages it receives, and actors are also able to do 3 other special actions:
+In addition to processing a message it receives, an actor can:
 
-1. Create other actors;
-1. Send messages to other actors (such as the `Sender` of the current message;) or
-1. Change its own behavior and process the next message it receives differently.
+1. Create other actors
+1. Send messages to other actors (such as the `Sender` of the current message)
+1. Change its own behavior and process the next message it receives differently
 
 Actors are inherently asynchronous (more on this in a future lesson), and there is nothing about the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) that says which of the above an actor must do, or the order it has to do them in. It's up to you.
 
 ### What kinds of actors are there?
 All types of actors inherit from `UntypedActor`, but don't worry about that now. We'll cover different actor types later.
 
-In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.net/wiki/Working%20with%20actors#untypedactor-api "Akka.NET - UntypedActor API").
+In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.net/docs/Working%20with%20actors#untypedactor-api "Akka.NET - UntypedActor API").
 
 ### How do you make an actor?
 There are 2 key things to know about creating an actor:
@@ -124,7 +124,7 @@ Time to put your first actors to work!
 
 You will need to do the following:
 
-1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
+1. ConsoleReaderActor is set up to read from the console. Have it send a message to ConsoleWriterActor containing the content that it just read.
 
 	```csharp
 	// in ConsoleReaderActor.cs

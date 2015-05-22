@@ -155,7 +155,7 @@ What happens in this case is that the second handler (for `s.StartsWith("AkkaDot
 
 ***The order of the `Receive<T>` handlers matters!***
 
-This is because **`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler** and it [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/wiki/ReceiveActor#handler-priority).
+This is because **`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler** and it [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/docs/ReceiveActor#handler-priority).
 
 So, how do we solve the above problem, where our handler for strings starting with "AkkaDotNetSuccess" is never triggered?
 
