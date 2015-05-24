@@ -143,10 +143,10 @@ There are two factors that determine how a failure is resolved:
 
 ##### Here's the sequence of events when an error occurs:
 
-1. Unhandled exception occurs in child actor (`c1`), which is supervised by its parent (`p1`).
+1. Unhandled exception occurs in child actor (`c1`), which is supervised by its parent (`b1`).
 2. `c1` suspends operations.
-3. The system sends a `Failure` message from `c1` to `p1`, with the `Exception` that was raised.
-4. `p1` issues a directive to `c1` telling it what to do.
+3. The system sends a `Failure` message from `c1` to `b1`, with the `Exception` that was raised.
+4. `b1` issues a directive to `c1` telling it what to do.
 5. Life goes on, and the affected part of the system heals itself without burning down the whole house. Kittens and unicorns, handing out free ice cream and coffee to be enjoyed while relaxing on a pillowy rainbow. Yay!
 
 
