@@ -88,10 +88,6 @@ The only thing we can think of that MUST be configured procedurally is the `Hash
 
 Everything else we can think of can be configured either way, but we prefer to do all our configuration via HOCON.
 
-#### How do I use the HOCON config?
-setting up router needs a router config
-as long as the router config passed isn't "no router" then it will
-
 #### Which configuration wins: procedural, or HOCON?
 HOCON wins. This is true for all actors, not just routers.
 
