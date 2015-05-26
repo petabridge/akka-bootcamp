@@ -146,7 +146,7 @@ Here's an example of using HOCON inside `App.config`:
             loglevel = ERROR
             # this config section will be referenced as akka.actor
             actor {
-              provider = "Akka.Remote.RemoteIActorRefProvider, Akka.Remote"
+              provider = "Akka.Remote.RemoteActorRefProvider, Akka.Remote"
               debug {
                   receive = on
                   autoreceive = on
