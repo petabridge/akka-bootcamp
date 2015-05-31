@@ -397,7 +397,7 @@ Since we harped on it earlier, let's illustrate the risk of using the `typeof` `
 
 We've left a little landmine as a demonstration. You should blow it up just to see what happens.
 
-1. Open up [Completed/WinTail.sln](Completed/WinTail.sln).
+1. Open up [Completed/Program.cs](Completed/Program.cs).
 1. Find the lines containing `fakeActorProps` and `fakeActor` (should be around line 18).
 2. Uncomment these lines.
 	- Look at what we're doing here—intentionally substituting a non-actor class into a `Props` object! Ridiculous! Terrible!

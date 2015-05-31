@@ -9,6 +9,7 @@ Actors have a well-defined life cycle. Actors are created and started, and then 
 
 ### What are the stages of the actor life cycle?
 There are 5 stages of the actor life cycle in Akka.NET:
+
 1. `Starting`
 2. `Receiving`
 3. `Stopping`
