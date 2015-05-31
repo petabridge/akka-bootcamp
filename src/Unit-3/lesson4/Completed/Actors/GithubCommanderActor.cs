@@ -108,7 +108,7 @@ namespace GithubActors.Actors
 
         protected override void PreStart()
         {
-            //create a broadcast router who will ask all if them if they're available for work
+            //create a broadcast router who will ask all of them if they're available for work
             _coordinator =
                 Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()).WithRouter(FromConfig.Instance), 
                 ActorPaths.GithubCoordinatorActor.Name);
