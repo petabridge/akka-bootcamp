@@ -56,13 +56,13 @@ We will cover this in much more detail in the next lesson.
 #### Do I have to name my actors?
 You may have noticed that we passed names into the `ActorSystem` when we were creating the above actors:
 ```csharp
-// last arg to the call to ActorOf() if a name
+// last arg to the call to ActorOf() is a name
 IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()), "myFirstActor")
 ```
 
 This name is not required. It is perfectly valid to create an actor without a name, like so:
 ```csharp
-// last arg to the call to ActorOf() if a name
+// last arg to the call to ActorOf() is a name
 IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()))
 ```
 
