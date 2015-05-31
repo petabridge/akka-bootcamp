@@ -13,17 +13,17 @@ let ExitCommand = "exit"
 [<Literal>]
 let EmptyCommand = ""
 
-let consoleReaderActor (validation: ActorRef) (mailbox: Actor<_>) message = 
+let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message = 
     let doPrintInstructions () = Console.WriteLine "Please provide the URI of a log file on disk.\n"
 
     let getAndValidateInput () = 
-        let line = Console.ReadLine ()
+        let line = Console.ReadLine()
         match line.ToLower () with
-        | ExitCommand -> mailbox.Context.System.Shutdown ()
+        | ExitCommand -> mailbox.Context.System.Shutdown()
         | _ -> validation <! line
 
-    match (message.ToString ()).ToLower () with
-    | StartCommand _ -> doPrintInstructions ()
+    match (message.ToString ()).ToLower() with
+    | StartCommand _ -> doPrintInstructions()
     | _ -> ()
     getAndValidateInput ()
 
@@ -32,7 +32,7 @@ let consoleWriterActor (message: 'a) =
     
     let printInColor color message =
         Console.ForegroundColor <- color
-        Console.WriteLine (message.ToString ())
+        Console.WriteLine (message.ToString())
         Console.ResetColor ()
 
     match box message with
@@ -40,36 +40,36 @@ let consoleWriterActor (message: 'a) =
         match inputResult with
         | InputError(reason,_) -> printInColor ConsoleColor.Red reason
         | InputSuccess reason -> printInColor ConsoleColor.Green reason
-    | _ -> printInColor ConsoleColor.Black (message.ToString ())
+    | _ -> printInColor ConsoleColor.Black (message.ToString())
 
-let fileValidatorActor (consoleWriter: ActorRef) (tailCordinator: ActorRef) (mailbox: Actor<_>) message = 
+let fileValidatorActor (consoleWriter: IActorRef) (tailCordinator: IActorRef) (mailbox: Actor<_>) message = 
     let (|IsFileUri|_|) path = if File.Exists path then Some path else None
     
     match message with
     | EmptyCommand -> 
         consoleWriter <! InputError("Input was blank. Please try again.\n", ErrorType.Null)
-        mailbox.Sender () <! ContinueProcessing
+        mailbox.Sender() <! ContinueProcessing
     | IsFileUri _ -> 
         consoleWriter <! InputSuccess (sprintf "Starting processing for %s" message)
         tailCordinator <! StartTail(message, consoleWriter)
     | _ -> 
         consoleWriter <! InputError (sprintf "%s is not an existing URI on disk." message, ErrorType.Validation)
-        mailbox.Sender () <! ContinueProcessing
+        mailbox.Sender() <! ContinueProcessing
 
 type TailActor(reporter, filePath) as this =
     inherit UntypedActor()
 
     let observer = new FileObserver(this.Self, Path.GetFullPath(filePath))
-    do observer.Start ()
+    do observer.Start()
     let fileStream = new FileStream(Path.GetFullPath(filePath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
     let fileStreamReader = new StreamReader(fileStream, Encoding.UTF8)
-    let text = fileStreamReader.ReadToEnd ()
+    let text = fileStreamReader.ReadToEnd()
     do this.Self <! InitialRead(filePath, text)
     
     override this.OnReceive message =
         match message :?> FileCommand with
         | FileWrite(_) -> 
-            let text = fileStreamReader.ReadToEnd ()
+            let text = fileStreamReader.ReadToEnd()
             if not <| String.IsNullOrEmpty text then reporter <! text else ()
         | FileError(_,reason) -> reporter <! sprintf "Tail error: %s" reason
         | InitialRead(_,text) -> reporter <! text

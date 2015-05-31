@@ -156,7 +156,7 @@ You will need to do the following in `Actors.fs`:
 Go to `Program.fs` and add this to create your first actor system:
 
 ```
-let myActorSystem = System.create "MyActorSystem" (Configuration.load ()) 
+let myActorSystem = System.create "MyActorSystem" (Configuration.load()) 
 ```
     
 > 

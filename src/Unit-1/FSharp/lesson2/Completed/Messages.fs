@@ -2,12 +2,12 @@
 module Messages
 
 type ProcessCommand = 
-| ContinueProcessing
+    | ContinueProcessing
 
 type ErrorType =
-| Null
-| Validation
+    | Null
+    | Validation
 
 type InputResult =
-| InputSuccess of string
-| InputError of reason: string * errorType: ErrorType
+    | InputSuccess of string
+    | InputError of reason: string * errorType: ErrorType
