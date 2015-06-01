@@ -146,28 +146,34 @@ These are the various API calls you can make to schedule one-off messages.
 It's actually very simple. Many people expect this to be very complicated and are suspicious that there isn't more code involved. Rest assured, there's nothing magic about pub/sub with Akka.NET actors. It can literally be as simple as this:
 
 ```csharp
-public class PubActor : ReceiveActor {
-	// HashSet automatically eliminates duplicates
-	private HashSet<IActorRef> _subscribers;
+public class PubActor : ReceiveActor
+{
+  // HashSet automatically eliminates duplicates
+  private HashSet<IActorRef> _subscribers;
 
-	PubActor() {
-		_subscribers = new HashSet<IActorRef>();
+  PubActor()
+  {
+    _subscribers = new HashSet<IActorRef>();
 
-		Receive<Subscribe>(sub => {
-			_subscribers.Add(sub.IActorRef);
-		});
+    Receive<Subscribe>(sub =>
+    {
+      _subscribers.Add(sub.IActorRef);
+    });
 
-		Receive<MessageSubscribersWant>(message => {
-			// notify each subscriber
-			foreach(var sub in _subscribers) {
-				sub.Tell(message);
-			}
-		});
+    Receive<MessageSubscribersWant>(message =>
+    {
+      // notify each subscriber
+      foreach (var sub in _subscribers)
+      {
+        sub.Tell(message);
+      }
+    });
 
-		Receive<Unsubscribe>(unsub => {
-			_subscribers.Remove(unsub.IActorRef);
-		}
-	}
+    Receive<Unsubscribe>(unsub =>
+    {
+      _subscribers.Remove(unsub.IActorRef);
+    });
+  }
 }
 ```
 
