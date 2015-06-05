@@ -6,11 +6,11 @@
 # ensure on master before publishing
 if [ `git rev-parse --abbrev-ref HEAD` == "master" ]; then
    # publish Unit 1 DoThis to Dropbox
-   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-1.zip HEAD:src/Unit-1/
+   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-1.zip HEAD:src/Unit-1/DoThis/
 
    # publish Unit 2 DoThis to Dropbox
-   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-2.zip HEAD:src/Unit-2/
+   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-2.zip HEAD:src/Unit-2/DoThis/
 
    # publish Unit 3 DoThis to Dropbox
-   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-3.zip HEAD:src/Unit-3/
+   git archive -o ~/Dropbox/Petabridge/Public/Akka.NET\ Bootcamp\ Files/Unit-3.zip HEAD:src/Unit-3/DoThis/
 fi
