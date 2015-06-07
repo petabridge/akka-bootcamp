@@ -144,7 +144,7 @@ Regardless of its `RoutingStrategy`, there are a few special messages that you c
 #### `Broadcast`
 Sending a `Broadcast` message to a non-`Broadcast` router makes the router act like a `BroadcastRouter` for that single message. After the message is processed, the router will return to its normal `RoutingStrategy`.
 
-When would you use this? It doesn't come up very often, but one use case we can think of is if you a group of routees all needed to take some action in response to a global-level event.
+When would you use this? It doesn't come up very often, but one use case we can think of is if a group of routees all needed to take some action in response to a global-level event.
 
 For example, perhaps you have a group of actors that all must be alerted if a critical system goes down. In this case, you could send their router a `Broadcast` message and all the routees would be alerted.
 
@@ -303,7 +303,7 @@ protected override void PreStart()
     var c2 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "2");
     var c3 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "3");
 
-    // create a broadcast router who will ask all if them if they're available for work
+    // create a broadcast router who will ask all of them if they're available for work
     _coordinator =
         Context.ActorOf(Props.Empty.WithRouter(new BroadcastGroup(ActorPaths.GithubCoordinatorActor.Path + "1",
             ActorPaths.GithubCoordinatorActor.Path + "2", ActorPaths.GithubCoordinatorActor.Path + "3")));

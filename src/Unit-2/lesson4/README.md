@@ -366,19 +366,6 @@ public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button
     _pauseButton = pauseButton;
     Charting();
 }
-
-private void Charting()
-{
-    Receive<InitializeChart>(ic => HandleInitialize(ic));
-    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
-    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
-    Receive<Metric>(metric => HandleMetrics(metric));
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(true);
-        BecomeStacked(Paused);
-    });
-}
 ```
 
 ### Phase 3 - Update the `Main_Load` and `Pause / Resume` Click Handler in Main.cs
