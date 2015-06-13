@@ -93,7 +93,7 @@ But what if, as part of processing a message, you need to send a message to anot
 Another common case is that you may have some piece of information you want to report to multiple other actors, that perhaps each run a stats service. Using `ActorSelection`, you could send the same piece of data as a message to all of those services at once, if they shared a similar well-known naming scheme. This is one good use case for a wildcard `ActorSelection`.
 
 ### Caution: Don't pass `ActorSelection`s around
-We encourage you NOT to pass around `ActorSelection`s as pararmeters, the way you do `IActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
+We encourage you NOT to pass around `ActorSelection`s as parameters, the way you do `IActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
 
 ### How do I make an `ActorSelection`?
 Very simple: `var selection = Context.ActorSelection("/path/to/actorName")`
