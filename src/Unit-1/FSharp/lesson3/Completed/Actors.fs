@@ -5,7 +5,7 @@ open Akka.Actor
 open Akka.FSharp
 
 module Actors =
-    let consoleReaderActor (validation: ActorRef) (mailbox: Actor<_>) message = 
+    let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message = 
         let doPrintInstructions () =
             Console.WriteLine "Write whatever you want into the console!"
             Console.WriteLine "Some entries will pass validation, and some won't...\n\n"
@@ -47,7 +47,7 @@ module Actors =
         | _ -> printInColor ConsoleColor.Yellow (message.ToString ())
 
 
-    let validationActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = 
+    let validationActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = 
         let (|EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd|) (msg:string) = 
             match msg.Length, msg.Length % 2 with
             | 0,_ -> EmptyMessage
