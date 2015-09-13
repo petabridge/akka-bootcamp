@@ -1,4 +1,4 @@
-# Lesson 1.3: `IActorRef`s
+# Lesson 1.3: Using `IActorRef`s
 In this lesson, we will review/reinforce the different ways you can create actors and send them messages. This lesson is more conceptual and has less coding for you to do, but it's an essential foundation and key to understanding the code you will see down the line.
 
 In this lesson, the code has changed a bit. The change is that the `consoleReaderActor` no longer does any validation work, but instead, just passes off the messages it receives from the console to another actor for validation (the `validationActor`).
@@ -188,7 +188,7 @@ If everything is working as it should, the output you see should be identical to
 ## Great job! Onto Lesson 4!
 Awesome work! Well done on completing your this lesson. It was a big one.
 
-**Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4).**
+**Let's move onto [Lesson 4: Child Actors, Actor Hierarchies, and Supervision](../lesson4).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
