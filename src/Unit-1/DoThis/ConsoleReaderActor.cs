@@ -10,16 +10,17 @@ namespace WinTail
     class ConsoleReaderActor : UntypedActor
     {
         public const string ExitCommand = "exit";
-        private IActorRef _consoleWriterActor;
+        private readonly IActorRef consoleWriterActor;
 
         public ConsoleReaderActor(IActorRef consoleWriterActor)
         {
-            _consoleWriterActor = consoleWriterActor;
+            this.consoleWriterActor = consoleWriterActor;
         }
 
         protected override void OnReceive(object message)
         {
             var read = Console.ReadLine();
+
             if (!string.IsNullOrEmpty(read) && String.Equals(read, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
                 // shut down the system (acquire handle to system via
@@ -28,11 +29,9 @@ namespace WinTail
                 return;
             }
 
-            // send input to the console writer to process and print
-            // YOU NEED TO FILL IN HERE
+            consoleWriterActor.Tell(read);
 
-            // continue reading messages from the console
-            // YOU NEED TO FILL IN HERE
+            Self.Tell("continue");
         }
 
     }
