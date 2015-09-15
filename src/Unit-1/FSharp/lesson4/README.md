@@ -105,7 +105,7 @@ Now, let's make child actors for `a2` by creating them inside the context of `a2
 // create the children of actor a2
 // this is inside actor a2
 let b1 = spawn mailbox.context "b1" basicActor
-let b2 = spawn mailbox.context "b1" basicActor
+let b2 = spawn mailbox.context "b2" basicActor
 ```
 
 #### Actor path == actor position in hierarchy
@@ -318,10 +318,10 @@ Great! Now we're ready to create our actor classes that will form a parent/child
 
 Recall that in the hierarchy we're going for, there is a `tailCoordinatorActor` that coordinates child actors to actually monitor and tail files. For now it will only supervise one child, `tailActor`, but in the future it can easily expand to have many children, each observing/tailing a different file.
 
-#### Add `TailActor`
+#### Add `tailActor`
 Add the `tailActor` to the `Actors.fs` file. This actor is actually responsible for tailing a given file. We are going to define the actor by using an actor computation expression. It is important to remember, that the actor should point to the next recursive function call when using the actor computation expression - any other value returned will result in stopping the current actor. We need this actor to initialize the `FileObserver` to monitor the file to read any changes. `tailActor` will be created and supervised by `tailCoordinatorActor` in a moment.  
 
-For now, add the following code in `TailActor.cs`:
+For now, add the following code in `Actor.fs`:
 ```fsharp
 let tailActor (filePath:string) (reporter:IActorRef) (mailbox:Actor<_>) =
     //Monitor the file for changes
