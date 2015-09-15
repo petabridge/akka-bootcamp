@@ -52,7 +52,7 @@ Since parents supervise their children, this means that ***every actor has a sup
 Within your actor system, actors are arranged into a hierarchy. This means there are "top level" actors, which essentially report directly to the `ActorSystem` itself, and there are "child" actors, which report to other actors.
 
 The overall hierarchy looks like this (we'll go through piece by piece in a moment):
-![Petabridge Akka.NET Bootcamp Lesson 1.3 Actor Hierarchies](images//hierarchy_overview.png)
+![Petabridge Akka.NET Bootcamp Lesson 1.3 Actor Hierarchies](Images//hierarchy_overview.png)
 
 
 ### What are the levels of the hierarchy?
@@ -60,7 +60,7 @@ The overall hierarchy looks like this (we'll go through piece by piece in a mome
 The "guardians" are the root actors of the entire system.
 
 I'm referring to these three actors at the very top of the hierarchy:
-![Petabridge Akka.NET Bootcamp Lesson 1.3 Actor Hierarchies](images/guardians.png)
+![Petabridge Akka.NET Bootcamp Lesson 1.3 Actor Hierarchies](Images/guardians.png)
 
 ##### The `/` actor
 
@@ -85,7 +85,7 @@ As a user, you don't really need to worry too much about the Guardians. We just 
 
 #### The `/user` actor hierarchy
 This is the meat and potatoes of the actor hierarchy: all of the actors you define in your applications.
-![Akka: User actor hierarchy](images/user_actors.png)
+![Akka: User actor hierarchy](Images/user_actors.png)
 
 > The direct children of the `/user` actor are called "top level actors."
 
@@ -111,7 +111,7 @@ let b2 = spawn mailbox.context "b1" basicActor
 #### Actor path == actor position in hierarchy
 Every actor has an address. To send a message from one actor to another, you just have to know it's address (AKA its "ActorPath"). This is what a full actor address looks like:
 
-![Akka.NET actor address and path](images/actor_path.png)
+![Akka.NET actor address and path](Images/actor_path.png)
 
 > *The "Path" portion of an actor address is just a description of where that actor is in your actor hierarchy. Each level of the hierarchy is separated by a single slash ('/').*
 
@@ -208,7 +208,7 @@ We keep the stats in a parent actor, and push that nasty network call down into 
 
 Here's an example of how we could structure the actor hierarchy to safely accomplish the goal:
 
-![Akka: User actor hierarchy](images/error_kernel.png)
+![Akka: User actor hierarchy](Images/error_kernel.png)
 
 Recall that we could have many clones of this exact structure working in parallel, with one clone per game we are tracking. **And we wouldn't have to write any new code to scale it out!** Beautiful.
 
@@ -319,7 +319,7 @@ Great! Now we're ready to create our actor classes that will form a parent/child
 Recall that in the hierarchy we're going for, there is a `tailCoordinatorActor` that coordinates child actors to actually monitor and tail files. For now it will only supervise one child, `tailActor`, but in the future it can easily expand to have many children, each observing/tailing a different file.
 
 #### Add `TailActor`
-Add the `tailActor` to the `Actors.fs` file. This actor is actually responsible for tailing a given file. We are going to define the actor by using an actor computation expression. It is important to remember, that the actor should point to the next recursive function call when using the actor computation expression - any other value returned will result in stopping the current actor. We need this actor to initialize the `FileObserver` to monitor the file to read any changes. The `tailActor` will be responsible for cleaning up the resources at the end of the lifecycle (clean up for an actor happens at the end of its life cycle using `mailbox.Defer`). `tailActor` will be created and supervised by `tailCoordinatorActor` in a moment.  
+Add the `tailActor` to the `Actors.fs` file. This actor is actually responsible for tailing a given file. We are going to define the actor by using an actor computation expression. It is important to remember, that the actor should point to the next recursive function call when using the actor computation expression - any other value returned will result in stopping the current actor. We need this actor to initialize the `FileObserver` to monitor the file to read any changes. `tailActor` will be created and supervised by `tailCoordinatorActor` in a moment.  
 
 For now, add the following code in `TailActor.cs`:
 ```fsharp
@@ -332,12 +332,6 @@ let tailActor (filePath:string) (reporter:IActorRef) (mailbox:Actor<_>) =
     let fileStreamReader = new StreamReader(fileStream, Text.Encoding.UTF8)
     let text = fileStreamReader.ReadToEnd ()
     do mailbox.Self <! InitialRead(filePath, text)
-
-    //Ensure cleanup at end of actor lifecycle
-    mailbox.Defer <| fun () ->
-        (observer :> IDisposable).Dispose()
-        (fileStreamReader :> IDisposable).Dispose()
-        (fileStream :> IDisposable).Dispose()
 
     let rec loop() = actor {
         let! message = mailbox.Receive()
@@ -418,7 +412,7 @@ Open the text file up and put it on one side of your screen.
 #### Fire it up
 ##### Check the starting output
 Run the application and you should see a console window open up and print out the starting contents of your log file. The starting state should look like this if you're using the sample log file we provided:
-![Petabridge Akka.NET Bootcamp Actor Hierarchies](images/working_tail_1.png)
+![Petabridge Akka.NET Bootcamp Actor Hierarchies](Images/working_tail_1.png)
 
 **Leave both the console and the file open, and then...**
 
@@ -426,7 +420,7 @@ Run the application and you should see a console window open up and print out th
 Add some lines of text to the text file, save it, and watch it show up in the `tail`!
 
 It should look something like this:
-![Petabridge Akka.NET Bootcamp Actor Hierarchies](images/working_tail_2.png)
+![Petabridge Akka.NET Bootcamp Actor Hierarchies](Images/working_tail_2.png)
 
 Congrats! YOU HAVE JUST MADE A PORT OF `tail` IN .NET!
 
