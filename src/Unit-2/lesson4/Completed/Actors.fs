@@ -1,165 +1,198 @@
-﻿module Actors
+﻿namespace ChartApp
 
-open System
+open System.Linq
 open System.Collections.Generic
-open System.Diagnostics
 open System.Windows.Forms.DataVisualization.Charting
 open Akka.Actor
 open Akka.FSharp
-open System.Threading
-open System.Drawing
-open System.Windows.Forms
 
-let chartingActor (chart: Chart) (pauseButton: Button) =
-    let maxPoints = 250
-    let xPosCounter = ref 0.
-    let seriesIndex = ref Map.empty  // 'mutable' can be used with F# v4.0 http://blogs.msdn.com/b/fsharpteam/archive/2014/11/12/announcing-a-preview-of-f-4-0-and-the-visual-f-tools-in-vs-2015.aspx 
-    
-    let addSeries (series: Series) = 
-        seriesIndex := (!seriesIndex).Add (series.Name, series)
-        chart.Series.Add series
+[<AutoOpen>]
+module Messages =
+    type InitializeChart = 
+    | InitializeChart of initialSeries: Map<string, Series>
 
-    let setChartBoundaries () =
-        let allPoints = (!seriesIndex) |> Map.toList |> Seq.collect (fun (n, s) -> s.Points) |> (fun p -> HashSet<DataPoint>(p))
-        if allPoints |> Seq.length > 2 then
-            let yValues = allPoints |> Seq.collect (fun p -> p.YValues) |> Seq.toList
-            chart.ChartAreas.[0].AxisX.Maximum <- !xPosCounter
-            chart.ChartAreas.[0].AxisX.Minimum <- (!xPosCounter - float maxPoints)
-            chart.ChartAreas.[0].AxisY.Maximum <- if yValues |> List.length > 0 then Math.Ceiling(yValues |> List.max) else 1.
-            chart.ChartAreas.[0].AxisY.Minimum <- if yValues |> List.length > 0 then Math.Floor(yValues |> List.min) else 0.
-        else
-            ()
+    type CounterType =
+    | Cpu = 1
+    | Memory = 2
+    | Disk = 3
 
-    let runningHandler message =
-        match message with  
-        | InitializeChart series -> 
-            chart.Series.Clear ()
-            chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
-            chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
-            series |> Map.iter (fun k v -> 
-                                    v.Name <- k
-                                    v |> addSeries)
-        | AddSeries series when not (String.IsNullOrEmpty series.Name) && not (!seriesIndex |> Map.containsKey series.Name) -> addSeries series
-        | RemoveSeries seriesName when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
-            chart.Series.Remove (!seriesIndex).[seriesName] |> ignore
-            seriesIndex := (!seriesIndex).Remove seriesName
-        | Metric(seriesName, counterValue) when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
-            xPosCounter := !xPosCounter + 1.
-            let series = (!seriesIndex).[seriesName]
-            series.Points.AddXY (!xPosCounter, counterValue) |> ignore
-            while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-        | _ -> ()
-        setChartBoundaries ()
+    type ChartMessage = 
+    | InitializeChart of initialSeries: Map<string, Series>
+    | AddSeries of series: Series
+    | RemoveSeries of seriesName: string
+    | Metric of series: string * counterValue: float
+    | TogglePause
 
-    let pausedHandler (mailbox: Actor<_>) message =
-        match message with  
-        | Metric(seriesName, counterValue) when not (String.IsNullOrEmpty seriesName) && !seriesIndex |> Map.containsKey seriesName -> 
-            xPosCounter := !xPosCounter + 1.
-            let series = (!seriesIndex).[seriesName]
-            series.Points.AddXY (!xPosCounter, 0.) |> ignore
-            while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-            setChartBoundaries ()
-            None
-        | AddSeries(_) as m -> Some(m)
-        | RemoveSeries(_) as m -> Some(m)
-        | m -> None
+    type CounterMessage = 
+    | GatherMetrics
+    | SubscribeCounter of subscriber: IActorRef
+    | UnsubscribeCounter of subscriber: IActorRef
 
-    let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||" else "RESUME ->"
+    type CoordinationMessage =
+    | Watch of counter: CounterType
+    | Unwatch of counter: CounterType
 
-    (fun (mailbox: Actor<_>) -> 
-        let rec runningChartActor pendingMessages =
-            actor {
+    type ButtonMessage =
+    | Toggle
+
+
+/// Actors used to intialize chart data
+[<AutoOpen>]
+module Actors = 
+    open System
+    open System.Diagnostics
+    open System.Drawing
+
+    let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
+        let maxPoints = 250
+                
+        let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||" else "RESUME ->"
+
+        let setChartBoundaries (mapping:Map<string,Series>, noOfPts:int) =
+            let allPoints = mapping |> Map.toList |> Seq.collect (fun (n, s) -> s.Points) |> (fun p -> HashSet<DataPoint>(p))
+            if allPoints |> Seq.length > 2 then
+                let yValues = allPoints |> Seq.collect (fun p -> p.YValues) |> Seq.toList
+                chart.ChartAreas.[0].AxisX.Maximum <- float noOfPts
+                chart.ChartAreas.[0].AxisX.Minimum <- (float noOfPts - float maxPoints)
+                chart.ChartAreas.[0].AxisY.Maximum <- if yValues |> List.length > 0 then Math.Ceiling(yValues |> List.max) else 1.
+                chart.ChartAreas.[0].AxisY.Minimum <- if yValues |> List.length > 0 then Math.Floor(yValues |> List.min) else 0.
+            else
+                ()
+
+        let rec charting (mapping:Map<string,Series>, noOfPts:int) = 
+            actor{
                 let! message = mailbox.Receive ()
-                match message with
+                match message with  
+                | InitializeChart series -> 
+                    chart.Series.Clear ()
+                    chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
+                    chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
+                    series |> Map.iter (fun k v -> 
+                                            v.Name <- k
+                                            chart.Series.Add v)
+                    return! charting (series, noOfPts)
+                | AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not -> 
+                    let newMapping = mapping.Add (series.Name, series)
+                    chart.Series.Add series
+                    setChartBoundaries (newMapping, noOfPts)
+                    return! charting (newMapping, noOfPts)
+                | RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
+                    chart.Series.Remove mapping.[seriesName] |> ignore
+                    let newMapping = mapping.Remove seriesName
+                    setChartBoundaries (newMapping, noOfPts)
+                    return! charting (newMapping, noOfPts)
+                | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
+                    let newNoOfPts = noOfPts + 1
+                    let series = mapping.[seriesName] 
+                    series.Points.AddXY (noOfPts, counterValue) |> ignore
+                    while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
+                    setChartBoundaries (mapping, newNoOfPts)
+                    return! charting (mapping, newNoOfPts)
                 | TogglePause -> 
                     setPauseButtonText true
-                    return! pausedChartActor pendingMessages
-                | m -> 
-                    runningHandler m
-                    return! runningChartActor pendingMessages
+                    return! paused (mapping, noOfPts)
             }
-        and pausedChartActor pendingMessages =
-            actor {
+        and paused (mapping:Map<string,Series>, noOfPts:int) = 
+            actor{
                 let! message = mailbox.Receive ()
                 match message with
                 | TogglePause -> 
                     setPauseButtonText false
-                    mailbox.EnqueueFirst <| List.rev pendingMessages
-                    return! runningChartActor []
-                | m -> 
-                    let ps = m
-                             |> pausedHandler mailbox
-                             |> Option.map mailbox.GetEnvelope
-                             |> Option.fold (fun es e -> e :: es) pendingMessages
-                    return! pausedChartActor ps
+                    mailbox.UnstashAll ()
+                    return! charting (mapping, noOfPts)
+                | AddSeries series -> 
+                    mailbox.Stash ()
+                | RemoveSeries seriesName -> 
+                    mailbox.Stash ()
+                | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
+                    let newNoOfPts = noOfPts + 1
+                    let series = mapping.[seriesName]
+                    series.Points.AddXY (newNoOfPts, 0.) |> ignore
+                    while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
+                    setChartBoundaries (mapping, newNoOfPts)
+                    return! paused (mapping, newNoOfPts)
+                | _ -> ()
+                setChartBoundaries (mapping, noOfPts)
+                return! paused (mapping, noOfPts)
             }
-        runningChartActor [])
 
-type PerformanceCounterActor(seriesName: string, performanceCounterGenerator: unit -> PerformanceCounter) =
-    inherit UntypedActor()
+        charting (Map.empty<string, Series>, 0)
 
-    let mutable counter = null
-    let mutable cancelPublishing = null
-    let subscriptions = HashSet<ActorRef>()
 
-    override this.PreStart () = 
-        counter <- performanceCounterGenerator ()
-        cancelPublishing <- new CancellationTokenSource()
-        scheduleCancellableTell (TimeSpan.FromMilliseconds 250.) (TimeSpan.FromMilliseconds 250.) GatherMetrics this.Self UntypedActor.Context.System.Scheduler cancelPublishing.Token |> ignore
-        base.PreStart ()
+    let performanceCounterActor (seriesName:string)  (performanceCounterGenerator:unit -> PerformanceCounter) (mailbox:Actor<_>) =
+        let counter = performanceCounterGenerator ()
+        let cancelled = mailbox.Context.System.Scheduler.ScheduleTellRepeatedlyCancelable (TimeSpan.FromMilliseconds 250., 
+                            TimeSpan.FromMilliseconds 250.,
+                            mailbox.Self,
+                            GatherMetrics,
+                            ActorRefs.NoSender)
 
-    override this.OnReceive message = 
-        match message :?> CounterMessage with
-        | GatherMetrics -> subscriptions |> Seq.iter (fun s -> s <! Metric(seriesName, float <| counter.NextValue ()))
-        | SubscribeCounter(c,s) -> subscriptions.Add s |> ignore
-        | UnsubscribeCounter(c,s) -> subscriptions.Remove s |> ignore
+        mailbox.Defer (fun () -> 
+            cancelled.Cancel()
+            counter.Dispose () |> ignore
+        )
 
-    override this.PostStop () =
-        try
-          cancelPublishing.Cancel false
-          counter.Dispose ()
-          cancelPublishing.Dispose ()
-        with 
-        | _ -> ()
-        base.PostStop()
+        let rec loop(subscriptions) = actor {
+            let! message = mailbox.Receive ()
+            match box message :?> CounterMessage with
+            | GatherMetrics -> 
+                let msg = Metric(seriesName, float <| counter.NextValue ())
+                subscriptions |> Seq.iter (fun subscriber -> subscriber <! msg)
+                return! loop subscriptions
+            | SubscribeCounter(s) -> 
+                let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
+                return! loop (s::subscriptionsWithoutSubscriber)
+            | UnsubscribeCounter(s) -> 
+                let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
+                return! loop subscriptionsWithoutSubscriber
+        }
+        loop []
 
-let performanceCounterCoordinatorActor chartingActor =
-    let counterGenerators = Map.ofList [CounterType.Cpu, fun () -> new PerformanceCounter("Processor", "% Processor Time", "_Total", true)
-                                        CounterType.Memory, fun () -> new PerformanceCounter("Memory", "% Committed Bytes In Use", true)
-                                        CounterType.Disk, fun () -> new PerformanceCounter("LogicalDisk", "% Disk Time", "_Total", true)]
+        
+    let performanceCounterCoordinatorActor chartingActor (mailbox:Actor<_>) =
+        let counterGenerators = Map.ofList [CounterType.Cpu, fun () -> new PerformanceCounter("Processor", "% Processor Time", "_Total", true)
+                                            CounterType.Memory, fun () -> new PerformanceCounter("Memory", "% Committed Bytes In Use", true)
+                                            CounterType.Disk, fun () -> new PerformanceCounter("LogicalDisk", "% Disk Time", "_Total", true)]
     
-    let counterSeries = Map.ofList [CounterType.Cpu, fun () -> new Series(CounterType.Cpu.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkGreen)
-                                    CounterType.Memory, fun () -> new Series(CounterType.Memory.ToString (), ChartType = SeriesChartType.FastLine, Color = Color.MediumBlue)
-                                    CounterType.Disk, fun () -> new Series(CounterType.Disk.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkRed)]
+        let counterSeries = Map.ofList [CounterType.Cpu, fun () -> new Series(CounterType.Cpu.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkGreen)
+                                        CounterType.Memory, fun () -> new Series(CounterType.Memory.ToString (), ChartType = SeriesChartType.FastLine, Color = Color.MediumBlue)
+                                        CounterType.Disk, fun () -> new Series(CounterType.Disk.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkRed)]
 
-    let counterActors = ref Map.empty // 'mutable' can be used with F# v4.0 http://blogs.msdn.com/b/fsharpteam/archive/2014/11/12/announcing-a-preview-of-f-4-0-and-the-visual-f-tools-in-vs-2015.aspx 
+        let rec loop(counterActors:Map<CounterType, IActorRef>) = actor {
+            let! msg = mailbox.Receive ()
+            
+            match msg with
+            | Watch counter when counterActors |> Map.containsKey counter |> not ->
+                let counterName = counter.ToString ()
+                let actor = spawn mailbox.Context (sprintf "counterActor-%s" counterName) (performanceCounterActor counterName counterGenerators.[counter])
+                let newCounterActors = counterActors.Add (counter, actor)
+                chartingActor <! AddSeries(counterSeries.[counter] ())
+                newCounterActors.[counter] <! SubscribeCounter chartingActor
+                return! loop newCounterActors
+            | Watch counter ->
+                chartingActor <! AddSeries(counterSeries.[counter] ())
+                counterActors.[counter] <! SubscribeCounter chartingActor
+            | Unwatch counter when (Map.containsKey counter counterActors) -> 
+                chartingActor <! RemoveSeries((counterSeries.[counter] ()).Name)
+                counterActors.[counter] <! UnsubscribeCounter chartingActor
+            
+            return! loop counterActors
+        }
+        loop Map.empty
 
-    (fun (mailbox: Actor<_>) message -> 
-        match message with
-        | Watch counter when not ((!counterActors).ContainsKey counter) -> 
-            let counterName = counter.ToString ()
-            let actor = spawnObj mailbox.Context (sprintf "counterActor-%s" counterName) (<@ fun () -> new PerformanceCounterActor(counterName, counterGenerators.[counter]) @>)
-            counterActors := (!counterActors).Add (counter, actor)
-            chartingActor <! AddSeries(counterSeries.[counter] ())
-            (!counterActors).[counter] <! SubscribeCounter(counter, chartingActor)
-        | Watch counter ->
-            chartingActor <! AddSeries(counterSeries.[counter] ())
-            (!counterActors).[counter] <! SubscribeCounter(counter, chartingActor)
-        | Unwatch counter when (!counterActors).ContainsKey(counter) -> 
-            chartingActor <! RemoveSeries((counterSeries.[counter] ()).Name)
-            (!counterActors).[counter] <! UnsubscribeCounter(counter, chartingActor)
-        | _ -> ())
+        
+    let buttonToggleActor coordinatorActor (myButton: System.Windows.Forms.Button) myCounterType isToggled (mailbox: Actor<_>) =
+        let flipToggle (isOn) =
+                let isToggledOn = not isOn
+                myButton.Text <- (sprintf "%s (%s)" ((myCounterType.ToString ()).ToUpperInvariant ()) (if isToggledOn then "ON" else "OFF"))
+                isToggledOn
 
-let buttonToggleActor coordinatorActor (myButton: Button) myCounterType isToggled =
-    let isToggledOn = ref isToggled
-    
-    let flipToggle () =
-            isToggledOn := not (!isToggledOn)
-            myButton.Text <- (sprintf "%s (%s)" ((myCounterType.ToString ()).ToUpperInvariant ()) (if !isToggledOn then "ON" else "OFF"))
-
-    (fun (mailbox: Actor<_>) message ->
-        match message with
-        | Toggle when !isToggledOn -> coordinatorActor <! Unwatch(myCounterType)
-        | Toggle when not !isToggledOn -> coordinatorActor <! Watch(myCounterType)
-        | m -> mailbox.Unhandled m 
-        flipToggle ())
+        let rec loop (isToggledOn) = actor {
+            let! message = mailbox.Receive ()
+            match message with
+            | Toggle when isToggledOn -> coordinatorActor <! Unwatch(myCounterType)
+            | Toggle when not isToggledOn -> coordinatorActor <! Watch(myCounterType)
+            | m -> mailbox.Unhandled m 
+            return! loop (flipToggle isToggledOn)
+        }
+        loop isToggled

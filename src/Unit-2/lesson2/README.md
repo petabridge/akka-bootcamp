@@ -211,7 +211,7 @@ let btnMemory = new Button(Name = "btnMemory", Text = "MEMORY (OFF)", Location =
 let btnDisk = new Button(Name = "btnDisk", Text = "DISK (OFF)", Location = Point(562, 368), Size = Size(110, 41), TabIndex = 3, UseVisualStyleBackColor = true)
 ```
 
-Once you've added your buttons, *add click handlers for each button by double-clicking on the button* in the `load` function for `Form.fs` view.
+Once you've added your buttons, *add click handlers for each button* in the `load` function for `Form.fs` view.
 
 ```fsharp
 btnCpu.Click.Add (fun _ -> () )
@@ -444,7 +444,7 @@ let chartingActor (chart: Chart) (mailbox:Actor<_>) =
 				else
 						()
 
-		let rec loop(mapping:Map<string,Series>, noOfPts:int) = actor {
+		let rec charting(mapping:Map<string,Series>, noOfPts:int) = actor {
 				let! message = mailbox.Receive ()
 				match message with  
 				| InitializeChart series ->
@@ -454,26 +454,26 @@ let chartingActor (chart: Chart) (mailbox:Actor<_>) =
 						series |> Map.iter (fun k v ->
 																		v.Name <- k
 																		chart.Series.Add v)
-						return! loop(series, noOfPts)
+						return! charting(series, noOfPts)
 				| AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not ->
 						let newMapping = mapping.Add (series.Name, series)
 						chart.Series.Add series
 						setChartBoundaries (newMapping, noOfPts)
-						return! loop (newMapping, noOfPts)
+						return! charting (newMapping, noOfPts)
 				| RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
 						chart.Series.Remove mapping.[seriesName] |> ignore
 						let newMapping = mapping.Remove seriesName
 						setChartBoundaries (newMapping, noOfPts)
-						return! loop (newMapping, noOfPts)
+						return! charting (newMapping, noOfPts)
 				| Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
 						let newNoOfPts = noOfPts + 1
 						let series =   mapping.[seriesName]
 						series.Points.AddXY (noOfPts, counterValue) |> ignore
 						while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
 						setChartBoundaries (mapping, newNoOfPts)
-						return! loop (mapping, newNoOfPts)
+						return! charting (mapping, newNoOfPts)
 		}
-		loop (Map.empty<string, Series>, 0)
+		charting (Map.empty<string, Series>, 0)
 ```
 
 The following function at the top of the `chartingActor` is  adding UI management code that isn't directly related to actors (don't worry about the specifics):
@@ -504,19 +504,19 @@ Next, we've redefined our message handlers to use the new `setChartBoundaries()`
 	let newMapping = mapping.Add (series.Name, series)
 	chart.Series.Add series
 	setChartBoundaries (newMapping, noOfPts)
-	return! loop (newMapping, noOfPts)
+	return! charting (newMapping, noOfPts)
 | RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
 	chart.Series.Remove mapping.[seriesName] |> ignore
 	let newMapping = mapping.Remove seriesName
 	setChartBoundaries (newMapping, noOfPts)
-	return! loop (newMapping, noOfPts)
+	return! charting (newMapping, noOfPts)
 | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
 	let newNoOfPts = noOfPts + 1
 	let series =   mapping.[seriesName]
 	series.Points.AddXY (noOfPts, counterValue) |> ignore
 	while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
 	setChartBoundaries (mapping, newNoOfPts)
-	return! loop (mapping, newNoOfPts)
+	return! charting (mapping, newNoOfPts)
 ```
 
 ### Step 8 - Replace the `load` function in `Form.fs`

@@ -1,4 +1,4 @@
-# Lesson 2.3: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`
+# Lesson 2.3: Switching Actor Behavior at Run-time
 
 In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/docs/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
 
@@ -8,24 +8,13 @@ Let's start with a real-world scenario in which you'd want the ability to change
 ### Real-World Scenario: Authentication
 Imagine you're building a simple chat system using Akka.NET actors, and here's what your `UserActor` looks like - this is the actor that is responsible for all communication to and from a specific human user.
 
-```csharp
-public class UserActor : ReceiveActor {
-	private readonly string _userId;
-	private readonly string _chatRoomId;
+```fsharp
+let useractor (userId:string) (chatroomId:string) (mailbox:Actor<_>) msg =
+    match msg with
+    | IncomingMessage(chatroom) when chatroom = chatroomId -> // print message for user
+    | OutgoingMessage(chatroom) when chatroom = chatroomId -> // send message to chatroom
+    | _ -> ()
 
-	public UserActor(string userId, string chatRoomId) {
-		_userId = userId;
-		_chatRoomId = chatRoomId;
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// send message to chatroom
-			});
-	}
-}
 ```
 
 So we have basic chat working - yay! But&hellip; right now there's nothing to guarantee that this user is who they say they are. This system needs some authentication.
@@ -45,44 +34,6 @@ This capability allows you to do all sorts of cool stuff, like build [Finite Sta
 
 Switchable behavior is one of the most powerful and fundamental capabilities of any true actor system. It's one of the key features enabling actor reusability, and helping you to do a massive amount of work with a very small code footprint.
 
-How does switchable behavior work?
-
-#### The Behavior Stack
-Akka.NET actors have the concept of a "behavior stack". Whichever method sits at the top of the behavior stack defines the actor's current behavior. Currently, that behavior is `Authenticating()`:
-
-![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
-
-#### Use `Become` and `BecomeStacked` to adopt new behavior
-Whenever we call [`BecomeStacked`](http://api.getakka.net/docs/stable/html/33B96712.htm "Akka.NET Stable API - BecomeStacked method"), we tell the `ReceiveActor` to push a new behavior onto the stack. This new behavior dictates which `Receive` methods will be used to process any messages delivered to an actor.
-
-Here's what happens to the behavior stack when our example actor becomes `Authenticated` via `BecomeStacked`:
-
-![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
-
-> NOTE: [`Become`](http://api.getakka.net/docs/stable/html/1DBD4D33.htm "Akka.NET Stable API - Become method") will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time.
->
-> Use [`BecomeStacked`](http://api.getakka.net/docs/stable/html/33B96712.htm "Akka.NET Stable API Docs - BecomeStacked method") if you want to push behavior onto the stack, and [`UnbecomeStacked`](http://api.getakka.net/docs/stable/html/7D8311A9.htm "Akka.NET Stable API Docs - UnbecomeStacked method") if you want to revert to a previous behavior. Most users only ever need to use `Become`.
-
-
-#### Use `UnbecomeStacked` to revert to old behavior
-To make an actor revert to the previous behavior in the behavior stack, all we have to do is call `UnbecomeStacked`.
-
-Whenever we call `UnbecomeStacked`, we pop our current behavior off of the stack and replace it with the previous behavior from before (again, this new behavior will dictate which `Receive` methods are used to handle incoming messages).
-
-Here's what happens to the behavior stack when our example actor `UnbecomeStacked`s:
-
-![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
-
-
-#### What is the API to change behaviors?
-The API to change behaviors is very simple:
-
-* `Become` - Replaces the current receive loop with the specified one. Eliminates the behavior stack.
-* `BecomeStacked` - Adds the specified method to the top of the behavior stack, while maintaining the previous ones below it;
-* `UnbecomeStacked` - Reverts to the previous receive method from the stack (only works with `BecomeStacked`).
-
-The difference is that `BecomeStacked` preserves the old behavior, so you can just call `UnbecomeStacked` to go back to the previous behavior. The preference of one over the other depends on your needs. You can call `BecomeStacked` as many times as you need, and you can call `UnbecomeStacked` as many times as you called `BecomeStacked`. Additional calls to `UnbecomeStacked` won't do anything if the current behavior is the only behavior in the stack.
-
 
 ### Isn't it problematic for actors to change behaviors?
 No, actually it's safe and is a feature that gives your `ActorSystem` a ton of flexibility and code reuse.
@@ -91,21 +42,6 @@ Here are some common questions about switchable behavior:
 
 #### When is the new behavior applied?
 We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). The new message processing behavior won't be applied until the next message arrives.
-
-#### Isn't it bad that `Become` blows away the behavior stack?
-No, not really. This is the way it's most commonly used, by far. Explicitly switching from one behavior to another is the most common approach used for switching behavior. Simple, explicit switches also make it much easier to read and reason about your code.
-
-If you find you actually need to take advantage of the behavior stack—and a simple, explicit `Become(YourNewBehavior)` won't work for the situation—the behavior stack is available to you.
-
-In this lesson, we use `BecomeStacked` and `UnbecomeStacked` to demonstrate them. Usually we just use `Become`.
-
-#### How deep can the behavior stack go?
-The stack can go *really* deep, but it's not unlimited.
-
-Also, each time your actor restarts, the behavior stack is cleared and the actor starts from the initial behavior you've coded.
-
-#### What happens if you call `UnbecomeStacked` and with nothing left in the behavior stack?
-*Nothing* - `UnbecomeStacked` is a safe method and won't do anything if the current behavior is the only behavior in the stack.
 
 ### Back to the real-world example
 Okay, now that you understand switchable behavior, let's return to our real-world scenario and see how it is used. Recall that we need to add authentication to our chat system actor.
@@ -118,272 +54,174 @@ So, how could we rewrite this actor to handle chat messages differently when:
 
 Here's one way we can implement switchable message behavior in our `UserActor` to handle basic authentication:
 
-```csharp
-public class UserActor : ReceiveActor {
-	private readonly string _userId;
-	private readonly string _chatRoomId;
+```fsharp
+let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+    // start the authentication process for this user
+    mailbox.Context.ActorSelection "/user/authenticator/" <! userId
 
-	public UserActor(string userId, string chatRoomId) {
-		_userId = userId;
-		_chatRoomId = chatRoomId;
+    let rec authenticating () =
+        actor{
+            let! message = mailbox.Receive()
+            match message with
+            | AuthenticationSuccess -> return! authenticated () //switch behavior to Authenticated
+            | AuthenticationFailure -> return! unauthenticated ()  //switch behavior to Unauthenticated
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            return! authenticating ()
+        }
+    and unauthenticated () =
+        actor{
+            let! message = mailbox.Receive()
+            match message with
+            | RetryAuthentication -> return! authenticating () //swith behavior to Authenticating
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            return! authenticating ()
+        }
+    and authenticated () =
+        actor{
+            let! message = mailbox.Receive()
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //print message for user
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //send message to chatroom
+            return! authenticated ()
+        }
+    authenticating ()
 
-		// start with the Authenticating behavior
-		Authenticating();
-	}
-
-	protected override void PreStart() {
-		// start the authentication process for this user
-		Context.ActorSelection("/user/authenticator/")
-			.Tell(new AuthenticatePlease(_userId));
-	}
-
-	private void Authenticating() {
-		Receive<AuthenticationSuccess>(auth => {
-			Become(Authenticated); //switch behavior to Authenticated
-		});
-		Receive<AuthenticationFailure>(auth => {
-			Become(Unauthenticated); //switch behavior to Unauthenticated
-		});
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// can't accept message yet - not auth'd
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// can't send message yet - not auth'd
-			});
-	}
-
-	private void Unauthenticated() {
-		//switch to Authenticating
-		Receive<RetryAuthentication>(retry => Become(Authenticating));
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// have to reject message - auth failed
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// have to reject message - auth failed
-			});
-	}
-
-	private void Authenticated() {
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// send message to chatroom
-			});
-	}
-}
 ```
 
-Whoa! What's all this stuff? Let's review it.
+Whoa! What's all this stuff? Let's quickly review it.
 
-First, we took the `Receive<T>` handlers defined on our `ReceiveActor` and moved them into three separate methods. Each of these methods represents a state that will control how the actor processes messages:
+First, we took split the message handlers defined on our `userActor` into three separate functions. Each represents a state that controls how the actor processes messages:
 
-* `Authenticating()`: this behavior is used to process messages when the user is attempting to authenticate (initial behavior).
-* `Authenticated()`: this behavior is used to process messages when the authentication operation is successful; and,
-* `Unauthenticated()`: this behavior is used to process messages when the authentication operation fails.
+* `authenticating ()`: this behavior is used to process messages when the user is attempting to authenticate (initial behavior).
+* `authenticated ()`: this behavior is used to process messages when the authentication operation is successful; and,
+* `unauthenticated ()`: this behavior is used to process messages when the authentication operation fails.
 
-We called `Authenticating()` from the constructor, so our actor began in the `Authenticating()` state.
+We called `authenticating ()`, so our actor begins in the `authenticating` state.
 
-*This means that only the `Receive<T>` handlers defined in the `Authenticating()` method will be used to process messages (initially)*.
+*This means that only the handlers defined in the `authenticating` function will be used to process messages (initially)*.
 
-However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](http://getakka.net/docs/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
-
-### Can I switch behaviors in an `UntypedActor`?
-Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `BecomeStacked` and `UnbecomeStacked` via the `ActorContext`, instead of calling them directly.
-
-These are the API calls inside an `UntypedActor`:
-
-* `Context.Become(Receive rec)` - changes behavior without preservering the previous behavior on the stack;
-* `Context.BecomeStacked(Receive rec)` - pushes a new behavior on the stack or
-* `Context.UnbecomeStacked()` - pops the current behavior and switches to the previous (if applicable.)
-
-The first argument to `Context.Become` is a `Receive` delegate, which is really any method with the following signature:
-
-```csharp
-void MethodName(object someParameterName);
-```
-
-This delegate is just used to represent another method in the actor that receives a message and represents the new behavior state.
-
-Here's an example (`OtherBehavior` is the `Receive` delegate):
-
-```csharp
-public class MyActor : UntypedActor {
-	protected override void OnReceive(object message) {
-		if(message is SwitchMe) {
-			// preserve the previous behavior on the stack
-			Context.BecomeStacked(OtherBehavior);
-		}
-	}
-
-	// OtherBehavior is a Receive delegate
-	private void OtherBehavior(object message) {
-		if(message is SwitchMeBack) {
-			// switch back to previous behavior on the stack
-			Context.UnbecomeStacked();
-		}
-	}
-}
-```
-
-
-Aside from those syntactical differences, behavior switching works exactly the same way across both `UntypedActor` and `ReceiveActor`.
+However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we will switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
 
 Now, let's put behavior switching to work for us!
 
 ## Exercise
-In this lesson we're going to add the ability to pause and resume live updates to the `ChartingActor` via switchable actor behaviors.
+In this lesson we're going to add the ability to pause and resume live updates to the `chartingActor` via switchable actor behaviors.
 
-### Phase 1 - Add a New `Pause / Resume` Button to `Main.cs`
+### Phase 1 - Add a New `Pause / Resume` Button to `Form.fs`
 This is the last button you'll have to add, we promise.
-
-Go to the **[Design]** view of `Main.cs` and add a new button with the following text: `PAUSE ||`
 
 ![Add a Pause / Resume Button to Main](images/design-pauseresume-button.png)
 
-Got to the **Properties** window in Visual Studio and change the name of this button to `btnPauseResume`.
+Add the following code below the other button declarations in `Form.fs`.
 
-![Use the Properties window to rename the button to btnPauseResume](images/pauseresume-properties.png)
+```fsharp
+let btnPauseResume = new Button(Name = "btnPauseResume", Text = "PAUSE ||", Location = Point(562, 205), Size = Size(110, 41), TabIndex = 3, UseVisualStyleBackColor = true)
 
-Double click on the `btnPauseResume` to add a click handler to `Main.cs`.
+```
 
-```csharp
-private void btnPauseResume_Click(object sender, EventArgs e)
-{
+Add the new control on the form
 
-}
+```fsharp
+//module Form
+sysChart.BeginInit ()
+form.SuspendLayout ()
+sysChart.ChartAreas.Add chartArea1
+sysChart.Legends.Add legend1
+
+form.Controls.Add btnCpu
+form.Controls.Add btnMemory
+form.Controls.Add btnDisk
+form.Controls.Add btnPauseResume //new button for Pause/Resume
+
+form.Controls.Add sysChart
+sysChart.EndInit ()
+form.ResumeLayout false
+```
+
+
+Once you've added your buttons, *add click handler for the new button* in the `load` function for `Form.fs` view.
+
+```fsharp
+btnPauseResume.Click.Add (fun _ -> () )
 ```
 
 We'll fill this click handler in shortly.
 
-### Phase 2 - Add Switchable Behavior to `ChartingActor`
-We're going to add some dynamic behavior to the `ChartingActor` - but first we need to do a little cleanup.
+### Phase 2 - Add Switchable Behavior to `chartingActor`
 
-First, add a `using` reference for the Windows Forms namespace at the top of `Actors/ChartingActor.cs`.
+First, we need to add a new case to `ChartMessage` for `chartingActor`.
 
-```csharp
-// Actors/ChartingActor.cs
+```fsharp
+type ChartMessage =
+| InitializeChart of initialSeries: Map<string, Series>
+| AddSeries of series: Series
+| RemoveSeries of seriesName: string
+| Metric of series: string * counterValue: float
+| TogglePause	//add new case
 
-using System.Windows.Forms;
 ```
 
-Next we need to declare a new message type inside the `Messages` region of `ChartingActor`.
+Add a new function called `paused` to the `chartingActor`'s `Individual Message Handlers` region. The `paused` function needs to handle the following messages:
+1. The `TogglePause` message, which requires the handler to switch to the original behavior, and
+2. The `Metric` message, which requires the handler to add an empty data point on the chart.
 
-```csharp
-// Actors/ChartingActor.cs - add inside the Messages region
-/// <summary>
-/// Toggles the pausing between charts
-/// </summary>
-public class TogglePause { }
-```
-
-Next, add the following field declaration just above the `ChartingActor` constructor declarations:
-
-```csharp
-// Actors/ChartingActor.cs - just above ChartingActor's constructors
-
-private readonly Button _pauseButton;
-```
-
-Move all of the `Receive<T>` declarations from `ChartingActor`'s main constructor into a new method called `Charting()`.
-
-```csharp
-// Actors/ChartingActor.cs - just after ChartingActor's constructors
-private void Charting()
-{
-    Receive<InitializeChart>(ic => HandleInitialize(ic));
-    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
-    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
-    Receive<Metric>(metric => HandleMetrics(metric));
-
-	//new receive handler for the TogglePause message type
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(true);
-        BecomeStacked(Paused);
-    });
-}
-```
-
-Add a new method called `HandleMetricsPaused` to the `ChartingActor`'s `Individual Message Type Handlers` region.
-
-```csharp
-// Actors/ChartingActor.cs - inside Individual Message Type Handlers region
-private void HandleMetricsPaused(Metric metric)
-{
-    if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
-    {
-        var series = _seriesIndex[metric.Series];
-        series.Points.AddXY(xPosCounter++, 0.0d); //set the Y value to zero when we're paused
-        while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
-        SetChartBoundaries();
+```fsharp
+// Actors/chartingActor - inside Message Handlers region
+let rec charting (mapping:Map<string,Series>, noOfPts:int) =
+    ...
+and paused (mapping:Map<string,Series>, noOfPts:int) =
+    actor{
+        let! message = mailbox.Receive ()
+        match message with
+        | TogglePause ->
+            setPauseButtonText false
+            return! charting (mapping, noOfPts)
+        | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
+            let newNoOfPts = noOfPts + 1
+            let series = mapping.[seriesName]
+            series.Points.AddXY (newNoOfPts, 0.) |> ignore
+            while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
+            setChartBoundaries (mapping, newNoOfPts)
+            return! paused (mapping, newNoOfPts)
+        | _ -> ()
+        setChartBoundaries (mapping, noOfPts)
+        return! paused (mapping, noOfPts)
     }
-}
+
+charting (Map.empty<string, Series>, 0)
+
 ```
 
-Define a new method called `SetPauseButtonText` at the *very* bottom of the `ChartingActor` class:
+Define a new method called `setPauseButtonText` at the top of the `chartingActor` class:
 
-```csharp
-// Actors/ChartingActor.cs - add to the very bottom of the ChartingActor class
-private void SetPauseButtonText(bool paused)
-    {
-        _pauseButton.Text = string.Format("{0}", !paused ? "PAUSE ||" : "RESUME ->");
-    }
+```fsharp
+// Actors/chartingActor - add to the top of the chartingActor class
+let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||" else "RESUME ->"
 ```
 
-Add a new method called `Paused` just after the `Charting` method inside `ChartingActor`:
 
-```csharp
-// Actors/ChartingActor.cs - just after the Charting method
-private void Paused()
-{
-    Receive<Metric>(metric => HandleMetricsPaused(metric));
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(false);
-        UnbecomeStacked();
-    });
-}
+And finally, let's **update `chartingActor`'s defintion**:
+
+```fsharp
+
+let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
+    ...
+
 ```
 
-And finally, let's **replace both of `ChartingActor`'s constructors**:
+### Phase 3 - Update the `load` function and `Pause / Resume` Click Handler in `Form.fs`
+Since we changed the arguments for `chartingActor` in Phase 2, we need to fix this inside our `load` function for `Forms.fs`
 
-```csharp
-public ChartingActor(Chart chart, Button pauseButton) : this(chart, new Dictionary<string, Series>(), pauseButton)
-{
-}
-
-public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button pauseButton)
-{
-    _chart = chart;
-    _seriesIndex = seriesIndex;
-    _pauseButton = pauseButton;
-    Charting();
-}
+```fsharp
+let chartActor = spawn myActorSystem "charting" (Actors.chartingActor sysChart btnPauseResume)
 ```
 
-### Phase 3 - Update the `Main_Load` and `Pause / Resume` Click Handler in Main.cs
-Since we changed the constructor arguments for `ChartingActor` in Phase 2, we need to fix this inside our `Main_Load` event handler.
+And finally, we need to update our `btnPauseResume` click event handler to have it tell the `chartActor` to pause or resume live updates:
 
-```csharp
-//Main.cs - Main_Load event handler
-_chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart, btnPauseResume)), "charting");
-```
+```fsharp
+btnPauseResume.Click.Add (fun _ -> chartActor <! TogglePause)
 
-And finally, we need to update our `btnPauseResume` click event handler to have it tell the `ChartingActor` to pause or resume live updates:
-
-```csharp
-//Main.cs - btnPauseResume click handler
-private void btnPauseResume_Click(object sender, EventArgs e)
-{
-    _chartActor.Tell(new ChartingActor.TogglePause());
-}
 ```
 
 ### Once you're done

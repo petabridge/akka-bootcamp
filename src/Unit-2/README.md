@@ -10,9 +10,9 @@ In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET,
 
 In Unit 2 you're going to build your own version of Resource Monitor using Windows Forms, some of the data visualization tools built into .NET, and [Performance Counters](https://msdn.microsoft.com/en-us/library/system.diagnostics.performancecounter.aspx?cs-save-lang=1&cs-lang=fsharp "PerformanceCounter Class - F#").
 
-In fact, here's what the final output from lesson 5 looks like:
+In fact, here's what the final output from lesson 4 looks like:
 
-![Akka.NET Bootcamp Unit 2 Output](lesson5/images/syncharting-complete-output.gif)
+![Akka.NET Bootcamp Unit 2 Output](lesson4/images/syncharting-complete-output.gif)
 
 **You're going to build this whole thing using actors**, and you'll be surprised at how small your code footprint is when we're finished.
 
@@ -29,7 +29,7 @@ In Unit 2 you will learn:
 
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
 2. **[Lesson 2: Using the `Scheduler` to Send Recurring Messages](lesson2/)**
-3. **[Lesson 3: Switching Actor Behavior at Run-time with `Become` and `Unbecome`](lesson3/)**
+3. **[Lesson 3: Switching Actor Behavior at Run-time](lesson3/)**
 4. **[Lesson 4: Using a `Stash` to Defer Processing of Messages](lesson4/)**
 
 ## Get Started
