@@ -56,7 +56,7 @@
   <ItemGroup>
     <Compile Include="Actors.fs" />
     <Compile Include="ChartDataHelper.fs" />
-    <Compile Include="form.fs" />
+    <Compile Include="Form.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <Content Include="packages.config" />
@@ -100,7 +100,7 @@
     <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
