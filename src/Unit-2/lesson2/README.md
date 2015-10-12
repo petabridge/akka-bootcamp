@@ -179,12 +179,12 @@ let subscriber2 = spawn actorSystem "subscriber2" (actorOf2 subscriber)
 let subscriber3 = spawn actorSystem "subscriber3" (actorOf2 subscriber)
 
 publisher <! Subscribe subscriber1
-publisher  <! Msg ("hello")
+publisher <! Msg ("hello")
 publisher <! Unsubscribe subscriber1
 
 publisher <! Subscribe subscriber2
 publisher <! Subscribe subscriber3
-publisher  <! Msg ("hello again")
+publisher <! Msg ("hello again")
 
 ```
 
@@ -247,7 +247,7 @@ Now we can start adding the actors who depend on these message definitions.
 
 ### Step 3 - Create the `PerformanceCounterActor`
 
-The `performanceCounterActor` is the actor who's going to publish `PerformanceCounter` values to the `ChartingActor` using Pub/Sub and the `Scheduler`.
+The `performanceCounterActor` is the actor who's going to publish `PerformanceCounter` values to the `chartingActor` using Pub/Sub and the `Scheduler`.
 
 Type the following in `Actors.fs`:
 
@@ -292,7 +292,7 @@ Well, we've got an actor that takes an `IDisposable` object as a parameter. So w
 
 What happens when the `performanceCounterActor` needs to restart?
 
-**Every time the `peformanceCounterActor` attempts to restart it will re-use its original constructor arguments, which includes reference types**. If we re-use the same reference to the now-`Disposed` `PerformanceCounter`, the actor will crash repeatedly. Until its parent decides to just kill it altogether.
+**Every time the `peformanceCounterActor` attempts to restart it will re-use its original arguments, which includes reference types**. If we re-use the same reference to the now-`Disposed` `PerformanceCounter`, the actor will crash repeatedly. Until its parent decides to just kill it altogether.
 
 
 #### Pub / Sub Made Easy
@@ -314,7 +314,7 @@ In this lesson, `performanceCounterActor` only has one subscriber (`chartingActo
 #### How did we schedule publishing of `PeformanceCounter` data?
 Inside the `PreStart` lifecycle method, we used the `Context` object to get access to the `Scheduler`, and then we had `peformanceCounterActor` send itself a `GatherMetrics` method once every 250 milliseconds.
 
-This causes `peformanceCounterActor` to fetch data every 250ms and publish it to `ChartingActor`, giving us a live graph with a frame rate of 4 FPS.
+This causes `peformanceCounterActor` to fetch data every 250ms and publish it to `chartingActor`, giving us a live graph with a frame rate of 4 FPS.
 
 ```fsharp
 // Actors/performanceCounterActor
@@ -328,13 +328,13 @@ This causes `peformanceCounterActor` to fetch data every 250ms and publish it to
 
 ```
 
-Notice that inside the `performanceCounterActor`'s `PostStop` method, we invoke the `ICancelable` we created to cancel this recurring message:
+Notice that inside the `performanceCounterActor`'s `Defer` function, we invoke the `ICancelable` we created to cancel this recurring message:
 
 ```fsharp
 // Actors/performanceCounterActor
 // ...
    mailbox.Defer (fun () ->
-       cancelled.Cancel ()  |> ignore  // terminate the scheduled task
+       cancelled.Cancel () |> ignore  // terminate the scheduled task
        counter.Dispose () |> ignore  // stop the generator
    )
 
@@ -493,9 +493,9 @@ let setChartBoundaries (mapping:Map<string,Series>, noOfPts:int) =
 				()
 ```
 
-> **NOTE**: the `SetChartBoundaries()` method is used to make sure that the boundary area of our chart gets updated as we remove old points from the beginning of the chart as time elapses.
+> **NOTE**: the `setChartBoundaries`function is used to make sure that the boundary area of our chart gets updated as we remove old points from the beginning of the chart as time elapses.
 
-Next, we've redefined our message handlers to use the new `setChartBoundaries()` method.
+Next, we've redefined our message handlers to use the new `setChartBoundaries` function.
 
 ```fsharp
 // Actors/chartingActor - inside the Message Handlers region

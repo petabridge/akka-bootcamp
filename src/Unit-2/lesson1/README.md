@@ -1,7 +1,7 @@
 # Lesson 2.1: Using HOCON Configuration to Configure Akka.NET
-We're going to be spending most of our time in Unit 2 working with the `ChartingActor`, an actor that is responsible for actually plotting all the data on this chart:
+We're going to be spending most of our time in Unit 2 working with the `chartingActor`, an actor that is responsible for actually plotting all the data on this chart:
 
-![Pretty output](../lesson5/images/syncharting-complete-output.gif)
+![Pretty output](../lesson4/images/syncharting-complete-output.gif)
 
 BUT, if you try to build and run `SystemCharting.sln` right now (in the [/DoThis/ folder](../DoThis/)) for Unit 2 right away, you'll see the following output:
 
@@ -17,11 +17,11 @@ Cause: System.InvalidOperationException: Cross-thread operation not valid: Contr
 ### What's wrong here?
 None of the events we want to chart are getting graphed. Hmm... sounds like our events aren't getting to the UI thread. We need to find some way to dispatch and synchronize events with the UI thread so that our chart is updated!
 
-Does this mean we have to rewrite `ChartingActor` with some evil code to manually synchronize with the UI thread?
+Does this mean we have to rewrite `chartingActor` with some evil code to manually synchronize with the UI thread?
 
 Nope! We can relax.
 
-**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/docs/concepts/configuration) without updating any of the code that defines `ChartingActor`.**
+**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/docs/concepts/configuration) without updating any of the code that defines `chartingActor`.**
 
 But first, we need to understand `Dispatcher`s.
 
@@ -48,7 +48,7 @@ The `SynchronizedDispatcher` uses the *current* [SynchronizationContext](https:/
 
 > **Note:** As a general rule, actors running in the `SynchronizedDispatcher` shouldn't do much work. Avoid doing any extra work that may be done by actors running in other pools.
 
-In this lesson, we're going to use the `SynchronizedDispatcher` to ensure that the `ChartingActor` runs on the UI thread of our WinForms application. That way, the `ChartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
+In this lesson, we're going to use the `SynchronizedDispatcher` to ensure that the `chartingActor` runs on the UI thread of our WinForms application. That way, the `chartingActor` can update any UI element it wants without having to do any cross-thread marshalling - the actor's `Dispatcher` can automatically take care of that for us!
 
 ##### [`ForkJoinDispatcher`](http://api.getakka.net/docs/stable/html/F0DC1571.htm "Akka.NET Stable API Docs - ForkJoinDispatcher")
 This `Dispatcher` runs actors on top of a dedicated group of threads, for tunable concurrency.
@@ -65,11 +65,11 @@ Why? Because *running actors on the UI thread eliminates all of the normal synch
 > **Remember: [Akka.NET actors are lazy](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)**. They don't do any work when they're not receiving messages. They don't consume resources when they're inactive.
 
 #### How do `Dispatcher`s relate to our broken chart?
-As we realized before, our chart isn't updating because the actor doing the graphing (`ChartingActor`) is not synchronizing its events with the UI thread.
+As we realized before, our chart isn't updating because the actor doing the graphing (`chartingActor`) is not synchronizing its events with the UI thread.
 
-To solve this problem, all we have to do is change the `ChartingActor` to use the `CurrentSynchronizationContextDispatcher`, and it will automatically run on the UI thread for us!
+To solve this problem, all we have to do is change the `chartingActor` to use the `CurrentSynchronizationContextDispatcher`, and it will automatically run on the UI thread for us!
 
-BUT: we want to do this without touching our actual actor code. How can we deploy the `ChartingActor` so that it uses the `CurrentSynchronizationContextDispatcher` without modifying the actor itself?
+BUT: we want to do this without touching our actual actor code. How can we deploy the `chartingActor` so that it uses the `CurrentSynchronizationContextDispatcher` without modifying the actor itself?
 
 Time to meet HOCON.
 
@@ -87,7 +87,7 @@ HOCON allows you to embed easily-readable configuration inside of the otherwise 
 HOCON also lets you nest and/or chain sections of configuration, creating layers of granularity and providing you a semantically namespaced config.
 
 #### What is HOCON usually used for?
-HOCON is commonly used for tuning logging settings, enabling special modules (such as `Akka.Remote`), or configuring deployments such as the `Dispatcher` for our `ChartingActor` in this lesson.
+HOCON is commonly used for tuning logging settings, enabling special modules (such as `Akka.Remote`), or configuring deployments such as the `Dispatcher` for our `chartingActor` in this lesson.
 
 For example, let's configure an `ActorSystem` with HOCON:
 
@@ -202,13 +202,13 @@ If we request a value for a HOCON object with key "a", using the following code:
 let a = yourConfig.GetString("a");
 ```
 
-Then the internal HOCON engine will match the first HOCON file that contains a definition for key `a`. In this case, that is `f0`, which returns the value "bar".
+Then the internal HOCON engine will match the first HOCON file that contains a definition for key `a`. In this case, which returns the value "bar".
 
 ####  Why wasn't "foo" returned as the value for "a"?
-The reason is because HOCON only searches through fallback `Config` objects if a match is NOT found earlier in the `Config` chain. If the top-level `Config` object has a match for `a`, then the fallbacks won't be searched. In this case, a match for `a` was found in `f0` so the `a=foo` in `f3` was never reached.
+The reason is because HOCON only searches through fallback `Config` objects if a match is NOT found earlier in the `Config` chain. If the top-level `Config` object has a match for `a`, then the fallbacks won't be searched. In this case, a match for `a` was found in the first entry so the `a=foo` in te last entry was never reached.
 
 #### What happens when there is a HOCON key miss?
-What happens if we run the following code, given that `c` isn't defined in `f0` or `f1`?
+What happens if we run the following code, given that `c` isn't defined?
 
 ```fsharp
 let c = yourConfig.GetString("c");
@@ -216,12 +216,12 @@ let c = yourConfig.GetString("c");
 
 ![Fallback HOCON Config Behavior](images/hocon-config-fallbacks.gif)
 
-In this case `yourConfig` will fallback twice to `f2` and return "baz" as the value for key `c`.
+In this case `yourConfig` will fallback twice and return "baz" as the value for key `c`.
 
-Now that we understand HOCON, let's use it to fix the `Dispatcher` for `ChartingActor`!
+Now that we understand HOCON, let's use it to fix the `Dispatcher` for `chartingActor`!
 
 ## Exercise
-We need to configure `ChartingActor` to use the `SynchronizedDispatcher` in order to make our charting work correctly on the UI thread.
+We need to configure `chartingActor` to use the `SynchronizedDispatcher` in order to make our charting work correctly on the UI thread.
 
 ### Add Akka.NET Config Section to `App.config`
 The first thing you need to do is declare the `AkkaConfigurationSection` at the top of your `App.config`:
@@ -246,9 +246,9 @@ Next, add the content of the `AkkaConfigurationSection` to `App.config`:
           actor {
             deployment {
               # this nested section will be accessed by akka.actor.deployment
-              # used to configure our ChartingActor
+              # used to configure our chartingActor
               /charting {
-				 # causes ChartingActor to run on the UI thread for WinForms
+				 # causes chartingActor to run on the UI thread for WinForms
                 dispatcher = akka.actor.synchronized-dispatcher
               }
             }
@@ -262,9 +262,9 @@ Next, add the content of the `AkkaConfigurationSection` to `App.config`:
 
 We should point out that `akka.actor.synchronized-dispatcher` is the shorthand name built into Akka.NET's default configuration for the `CurrentSynchronizationContextDispatcher`. So you don't need to use a fully-qualified type name.
 
-You might have also noticed that the configuration section that pertains to the `ChartingActor` was declared as `/charting` - **this is because actor deployment is done by the path and name of the actor, not the actor's type**.
+You might have also noticed that the configuration section that pertains to the `chartingActor` was declared as `/charting` - **this is because actor deployment is done by the path and name of the actor, not the actor's type**.
 
-Here's how we create the `ChartingActor` inside `Main.cs`:
+Here's how we create the `chartingActor` inside `Main.cs`:
 
 ```fsharp
  let chartActor = spawn myActorSystem "charting" (actorOf (Actors.chartingActor sysChart))

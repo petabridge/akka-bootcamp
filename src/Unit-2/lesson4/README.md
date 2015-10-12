@@ -68,7 +68,7 @@ Well, when you `Unstash ()` a ***single*** message, it goes to the back of that 
 
 There is a lot more that goes into *why* this can happen, but it's well beyond the scope of this lesson.
 
-### Does a `Stash`ed message lose any data?
+### Does a `Stash`-ed message lose any data?
 Absolutely not. When you `Stash` a message, you're technically stashing the message AND the message `Envelope`, which contains all the metadata for the message (its `Sender`, etc).
 
 ### What Happens to the Messages in an Actor's `Stash` During Restarts?
@@ -77,7 +77,7 @@ An excellent question! The `Stash` is part of your actor's ephemeral state. In t
 **However, you can preserve the contents of your `Stash` during restarts by calling `mailbox.UnstashAll ()` inside your actor's `PreRestart` lifecycle method**. This will move all the stashed messages into the actor mailbox, which persists through the restart:
 
 ```fsharp
-let preRestart = Some(fun (basefn: exn * obj -> unit) -> mailbox.UnstasAll () |> ignore)
+let preRestart = Some(fun (basefn: exn * obj -> unit) -> mailbox.UnstashAll () |> ignore)
 let mySampleActor = spawnOvrd system "actor" (actorOf sampleActor) <| {defOvrd with PreRestart = preRestart}
 ```
 
