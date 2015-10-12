@@ -583,7 +583,7 @@ Here is a high-level overview of our working system at this point:
 
 ![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_3.png)
 
-**Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4).**
+**Let's move onto [Lesson 3 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson3).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).

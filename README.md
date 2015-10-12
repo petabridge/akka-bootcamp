@@ -99,7 +99,7 @@ src\Unit1\Lesson1\Completed\ - Got stuck on lesson1? This folder shows the "expe
 -- repeat for all lessons
 ````
 
-Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/lesson1)**.
+Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/FSharp/lesson1)**.
 
 ### Lesson Layout
 Each Akka.NET Bootcamp lesson contains a README which explains the following:
@@ -130,7 +130,7 @@ This course expects the following:
 
 
 ## Enough talk, let's go!
-[Let's begin!](src/Unit-1/lesson1)
+[Let's begin!](src/Unit-1/FSharp/lesson1)
 
 ## About Petabridge
 ![Petabridge logo](images/petabridge_logo.png)

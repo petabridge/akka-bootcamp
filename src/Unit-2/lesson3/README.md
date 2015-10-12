@@ -248,7 +248,7 @@ What happens if I toggle a chart on or off when the `ChartingActor` is in a paus
 
 *This is exactly the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
 
-**Let's move onto [Lesson 4 - Using `Stash` to Defer Processing of Messages](../lesson5).**
+**Let's move onto [Lesson 4 - Using `Stash` to Defer Processing of Messages](../lesson4).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
