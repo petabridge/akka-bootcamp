@@ -24,7 +24,7 @@ You will learn how to build types of applications that may have seemed impossibl
 ### Unit 1
 In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
 
-*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
+\*NIX systems have the `tail` command built-in to monitor changes to a file (such as tailing log files), whereas Windows does not. We will recreate `tail` for Windows, and use the process to learn the fundamentals.
 
 In Unit 1 you will learn:
 
@@ -44,15 +44,14 @@ In Unit 2 you will learn:
 
 1. How to use [HOCON configuration](http://getakka.net/wiki/Configuration "Akka.NET HOCON Configurations") to configure your actors via App.config and Web.config;
 1. How to configure your actor's [Dispatcher](http://getakka.net/wiki/Dispatchers) to run on the Windows Forms UI thread, so actors can make operations directly on UI elements without needing to change contexts;
-1. How to handle more sophisticated types of pattern matching using `ReceiveActor`;
 1. How to use the `Scheduler` to send recurring messages to actors;
 1. How to use the [Publish-subscribe (pub-sub) pattern](http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) between actors;
 1. How and why to switch actor's behavior at run-time; and
-2. How to `Stash` messages for deferred processing.
+1. How to `Stash` messages for deferred processing.
 
 **[Begin Unit 2](src/Unit-2)**.
 
-### Unit 3 
+### Unit 3
 In Unit 3, we will learn how to use actors for parallelism and scale-out using [Octokit](http://octokit.github.io/) and data from Github!.
 
 In Unit 3 you will learn:
