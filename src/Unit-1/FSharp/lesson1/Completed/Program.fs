@@ -2,12 +2,13 @@
 open Akka.FSharp
 open Akka.FSharp.Spawn
 open Akka.Actor
+open WinTail
 
 let printInstructions () =
     Console.WriteLine "Write whatever you want into the console!"
     Console.Write "Some lines will appear as"
-    Console.ForegroundColor <- ConsoleColor.DarkRed
-    Console.Write " red "
+    Console.ForegroundColor <- ConsoleColor.Red
+    Console.Write " red"
     Console.ResetColor ()
     Console.Write " and others will appear as"
     Console.ForegroundColor <- ConsoleColor.Green
@@ -23,6 +24,6 @@ let main argv =
     printInstructions ()
     let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
     let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
-    consoleReaderActor <! "start"
+    consoleReaderActor <! Actors.Start
     myActorSystem.AwaitTermination ()
     0

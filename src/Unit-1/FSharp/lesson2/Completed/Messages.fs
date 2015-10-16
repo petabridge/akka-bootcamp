@@ -1,13 +1,17 @@
-﻿[<AutoOpen>]
-module Messages
+﻿namespace WinTail
 
-type ProcessCommand = 
-| ContinueProcessing
+[<AutoOpen>]
+module Messages =
+    type Command = 
+    | Start
+    | Continue
+    | Message of string
+    | Exit
 
-type ErrorType =
-| Null
-| Validation
+    type ErrorType =
+    | Null
+    | Validation
 
-type InputResult =
-| InputSuccess of string
-| InputError of reason: string * errorType: ErrorType
+    type InputResult =
+    | InputSuccess of string
+    | InputError of reason: string * errorType: ErrorType

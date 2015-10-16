@@ -9,25 +9,22 @@ In this first lesson, you will learn the basics by creating a console app with y
 We will be creating two actors, one to read from the console, and one to write to it after doing some basic processing.
 
 ### What is an actor?
-An "actor" is analogous to an object from the object-oriented programming programming paradigm - it can encapsulate some state, and some processing. Actors don't do much by themselves - they exist in an "actor system" which allows actors to create other actors, and communicate with each other using "messages".
+An "actor" is analogous to the MailboxProcessor class in F# (also known as "agent"). Just like Agents, Actors are very lightweight. They have their own queue and pulls messages one at a time to process them. However, Actors can also work across process boundaries unlike agents in F# which only work in the same process boundary. Actors don't do much by themselves - they exist in an "actor system" which allows actors to create other actors, but just like agents in F# they communicate with each other using "messages".
 
-If you program in an OOP-first language like C#, it's useful to consider the actor as just an extension of the object system, and use familiar programming concepts like getting references to other actors and making method calls to send messages between actors.
+Akka.Net has some specific support for F# contained in the Akka.FSharp assembly, so make sure you reference it if you're going with F# idioms in your code.
 
-In F#, however, the primary mechanism for thinking about code is with functions and algebraic data types, so Akka.Net has some specific support for F# contained in the Akka.FSharp assembly, so make sure you reference it if you're going with F# idioms in your code.
+**Further reading:  
+[What is an Akka.NET Actor](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)?**
 
-(Note that you can program the traditional object-style actors in F# as well, due to the fact that F# is multi-paradigm - but this tutorial will discuss idiomatic F# style)
+**Further reading about F#:  
+ [F# API Support in Akka.NET](https://github.com/akkadotnet/akka.net/tree/dev/src/core/Akka.FSharp)**  
+**[F#: MailboxProcessor Class](https://en.wikibooks.org/wiki/F_Sharp_Programming/MailboxProcessor)**
 
-**Further reading: [What is an Akka.NET Actor](http://petabridge.com/blog/akkadotnet-what-is-an-actor/)?**
-
-**Further reading about F#: [F# API Support in Akka.NET](https://github.com/akkadotnet/akka.net/tree/dev/src/core/Akka.FSharp)**
-
-So in F#, Akka.NET actors are nothing more than functions. 
-
-Because the actor system can be distributed over multiple machines in a cluster, we have to define these functions in a way that is both idiomatic and type-safe; and able to be shipped to the remote machine and compiled on demand. We do that using [F# quotations](http://msdn.microsoft.com/en-us/library/dd233212.aspx) - and we'll talk in detail about that later.
+Because the actor system can be distributed over multiple machines in a cluster, we have to define these actors in a way that is both idiomatic and type-safe; and able to be shipped to the remote machine and compiled on demand. We do that using [F# quotations](http://msdn.microsoft.com/en-us/library/dd233212.aspx) - and we'll talk in detail about that later.
 
 ### How are actors defined?
 
-Since we're using a functional paradigm, we can think of an actor function as something that processes a message. Such a function would have a signature like
+We can think of an actor as a function that processes a message. Such a function would have a signature like
 
 ```
 // 'M is the type of the message
@@ -55,7 +52,7 @@ spawn actor_system "name" (actorOf2 (fn : Actor<'M> -> 'M -> unit))
 
 
 ### How do actors communicate?
-Actors communicate by sending messages to each other. Just like everything in F#, messages are immutable, strongly-typed values. For our first lesson, we are going to just send immutable strings around as messages.
+Actors communicate by sending messages to each other. Just like everything in F#, messages are immutable, strongly-typed values. For our first lesson, we are going to just send a discriminated union.
 
 The other really important thing to remember is that all these functions communicate asynchronously. There's a bunch of messaging logic under the hood that hides all of that from you, so basically you just write code that *looks* like you're calling a function, but you're actually doing a lot more!
 
@@ -104,7 +101,7 @@ open Akka.FSharp.Spawn
 open Akka.Actor
 ```
 
-### Getting all Functional
+### Getting to the code
 
 Open the `Actors.fs` file and take a look at the two actor functions there
 
@@ -121,12 +118,12 @@ This function can be consumed by ``actorOf`` directly in order to ``spawn`` an a
 The more complex function is one that is capable of sending a message to an actor
 
 ```
-let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = ...
+let consoleReaderActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = ...
 
-// this has the signature of : ActorRef -> Actor<'M> -> 'M -> unit
+// this has the signature of : IActorRef -> Actor<'M> -> 'M -> unit
 ```
 
-So we can bind the consoleWriter actor to the first parameter and get ourselves a function which can be consumed by ``actorOf2``. 
+So we can bind the consoleWriter actor to the first parameter and get ourselves a function which can be consumed by ``actorOf2``.
 
 ### Have ConsoleReaderActor Send a Message to ConsoleWriterActor
 Time to give your actors instructions!
@@ -136,30 +133,23 @@ You will need to do the following in `Actors.fs`:
 1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
 
 	```fsharp
-	consoleWriter <! line
+	consoleWriter <! input
 	```
-	
-2. Add a literal for `ContinueCommand` at the top of `Actor.fs`
+
+2. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
 
 	```fsharp
-	[<Literal>]
-	let ContinueCommand = "continue"
+	mailbox.Self <! Continue
 	```
 
-3. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
-
-	```fsharp
-	mailbox.Self <! ContinueCommand
-	```
-	
 ### Make your first `Actor System`
 Go to `Program.fs` and add this to create your first actor system:
 
 ```
-let myActorSystem = System.create "MyActorSystem" (Configuration.load ()) 
+let myActorSystem = System.create "MyActorSystem" (Configuration.load ())
 ```
-    
-> 
+
+>
 > **NOTE:** Unlike default (C#) actor system, F#-aware systems should be created using Akka.FSharp.System.create function. This function differs from it's C# equivalent by providing additional F#-specific features - i.e. serializers allowing to serialize F# quotations for remote deployment process.
 
 ### Make ConsoleReaderActor & ConsoleWriterActor
@@ -168,10 +158,10 @@ Now that you have given `ConsoleReaderActor` and `ConsoleWriterActor` something 
 Go to `Program.fs`, and add this just below where you made your `ActorSystem`:
 
 ```
-let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
+let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)  
 let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
 ```
-    
+
 We will get into the details of `spawn` later, so don't worry too much for now.  Just know that this is how you make an actor.
 
 ### Start ConsoleReaderActor
@@ -180,7 +170,7 @@ Your actor system is in place, but now you have to start the process.  Add the f
 
 ```
 // in Program.fs
-consoleReaderActor <! "start"
+consoleReaderActor <! Actors.Start
 ```
 
 ### Build and Run!
@@ -196,4 +186,12 @@ Compare your code to the code in the [Completed](Completed/) folder to see what 
 ## Great job! Onto Lesson 2!
 Awesome work! Well done on completing your first lesson.
 
-**Let's move onto [Lesson 2 - Defining and Handling Different Types of Messages](../lesson2).**
+**Let's move onto [Lesson 2: Defining and Handling Different Types of Messages](../lesson2).**
+
+## Any questions?
+**Don't be afraid to ask questions** :).
+
+Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
+
+### Problems with the code?
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

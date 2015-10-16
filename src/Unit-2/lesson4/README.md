@@ -1,410 +1,222 @@
-# Lesson 2.4: Switching Actor Behavior at Run-time with `Become` and `Unbecome`
+# Lesson 2.4: Using `Stash` to Defer Processing of Messages
 
-In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/wiki/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
+At the end of [Lesson 3](../lesson3/) we discovered a significant bug in how we implemented the **Pause / Resume** functionality on live charts, as you can see below:
+
+![Lesson 3 Output Bugs](../lesson3/images/dothis-fail4.gif)
+
+The bug is that when our `ChartingActor` changes its behavior to `Paused`, it no longer processes the `AddSeries` and `RemoveSeries` messages generated whenever a toggle button is pressed for a particular performance counter.
+
+In it's current form, it doesn't take much for the visual state of the buttons to get completely out of sync with the live chart. All you have to do is press a toggle button when the graph is paused and it's immediately out of sync.
+
+So, how can we fix this?
+
+The answer is to defer processing of `AddSeries` and `RemoveSeries` messages until the `ChartingActor` is back in its `Charting` behavior, at which time it can actually do something with those messages.
+
+The mechanism for this is the [`Stash`](http://getakka.net/docs/Stash).
 
 ## Key Concepts / Background
-Let's start with a real-world scenario in which you'd want the ability to change an actor's behavior.
+One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 3](../lesson3/).
 
-### Real-World Scenario: Authentication
-Imagine you're building a simple chat system using Akka.NET actors, and here's what your `UserActor` looks like - this is the actor that is responsible for all communication to and from a specific human user.
+### What is the `Stash`?
+The `Stash` is a stack-like data structure implemented in your actor to defer messages for later processing.
 
-```csharp
-public class UserActor : ReceiveActor {
-	private readonly string _userId;
-	private readonly string _chatRoomId;
+#### Stashing Messages
+Inside your actor's Message handler, you can call `mailbox.Stash ()` to put the current message at the top of the `Stash`.
 
-	public UserActor(string userId, string chatRoomId) {
-		_userId = userId;
-		_chatRoomId = chatRoomId;
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// send message to chatroom
-			});
-	}
-}
+You only need to stash messages that you don't want to process now - in the below visualization, our actor happily processes Message 1 but stashes messages 2 and 0.
+
+Note: calling `Stash ()` automatically stashes the current message, so you don't pass the message to the `mailbox.Stash ()` call.
+
+This is what that the full sequence of stashing a message looks like:
+
+![Stashing Messages with Akka.NET Actors](images/actors-stashing-messages.gif)
+
+Great! Now that we know how to `Stash` a message for later processing, how do we get messages back out of the `Stash`?
+
+#### Unstashing a Single Message
+We call `mailbox.Unstash ()` to pop off the message at the top of the `Stash`.
+
+**When you call `mailbox.Unstash ()`, the `Stash` will place this message *at the front of the actor's mailbox, ahead of other queued user messages*.**
+
+##### The VIP line
+Inside the mailbox, it's as if there are two separate queues for `user` messages to be processed by the actor: there's the normal message queue, and then there's the VIP line.
+
+This VIP line is reserved for messages coming from the `Stash`, and any messages in the VIP line will jump ahead of messages in the normal queue and get processed by the actor first. (On that note, there's also a "super VIP" line for `system` message, which cuts ahead of all `user` messages. But that's out of the scope of this lesson.)
+
+This is what the sequence of unstashing a message looks like:
+
+![Unstashing a Single Message with Akka.NET Actors](images/actor-unstashing-single-message.gif)
+
+#### Unstashing the Entire Stash at Once
+If we need to unstash *everything* in our actor's `Stash` all at once, we can use the `mailbox.UnstashAll ()` method to push the entire contents of the `Stash` into the front of the mailbox.
+
+Here's what calling `mailbox.UnstashAll ()` looks like:
+![Unstashing all stashed messages at once with Akka.NET Actors](images/actor-unstashing-all-messages.gif)
+
+### Do messages stay in their original order when they come out of the `Stash`?
+It depends on how you take them out of the `Stash`.
+
+#### `mailbox.UnstashAll ()` preserves FIFO message order
+When you make a call to `mailbox.UnstashAll ()`, the `Stash` will ensure that the original FIFO order of the messages in the `Stash` is preserved when they're appended to the front of your actor's mailbox. (As shown in the `mailbox.UnstashAll ()` animation.)
+
+#### `mailbox.Unstash ()` can change the message order
+If you call `mailbox.Unstash ()` repeatedly, you can change the original FIFO order of the messages.
+
+Remember that VIP line inside the mailbox, where the `Stash` puts messages when they are unstashed?
+
+Well, when you `Unstash ()` a ***single*** message, it goes to the back of that VIP line. It's still ahead of normal `user` messages, but it is behind any other messages that were previously unstashed and are ahead of it in the VIP line.
+
+There is a lot more that goes into *why* this can happen, but it's well beyond the scope of this lesson.
+
+### Does a `Stash`-ed message lose any data?
+Absolutely not. When you `Stash` a message, you're technically stashing the message AND the message `Envelope`, which contains all the metadata for the message (its `Sender`, etc).
+
+### What Happens to the Messages in an Actor's `Stash` During Restarts?
+An excellent question! The `Stash` is part of your actor's ephemeral state. In the case of a restart, the stash will be destroyed and garbage collected. This is the opposite of the actor's mailbox, which persists its messages across restarts.
+
+**However, you can preserve the contents of your `Stash` during restarts by calling `mailbox.UnstashAll ()` inside your actor's `PreRestart` lifecycle method**. This will move all the stashed messages into the actor mailbox, which persists through the restart:
+
+```fsharp
+let preRestart = Some(fun (basefn: exn * obj -> unit) -> mailbox.UnstashAll () |> ignore)
+let mySampleActor = spawnOvrd system "actor" (actorOf sampleActor) <| {defOvrd with PreRestart = preRestart}
 ```
 
-So we have basic chat working - yay! But&hellip; right now there's nothing to guarantee that this user is who they say they are. This system needs some authentication.
+### Real-World Scenario: Authentication with Buffering of Messages
+Now that you know what the `Stash` is and how it works, let's revisit the `userActor` from our chat room example and solve the problem with throwing away messages before the user was `authenticated`.
 
-How could we rewrite this actor to handle these same types of chat messages differently when:
-
-* The user is **authenticating**
-* The user is **authenticated**, or
-* The user **couldn't authenticate**?
-
-Simple: we can use switchable actor behaviors to do this!
-
-### What is switchable behavior?
-One of the core attributes of an actor in the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) is that an actor can change its behavior between messages that it processes.
-
-This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received.
-
-Switchable behavior is one of the most powerful and fundamental capabilities of any true actor system. It's one of the key features enabling actor reusability, and helping you to do a massive amount of work with a very small code footprint.
-
-How does switchable behavior work?
-
-#### The Behavior Stack
-Akka.NET actors have the concept of a "behavior stack". Whichever method sits at the top of the behavior stack defines the actor's current behavior. Currently, that behavior is `Authenticating()`:
-
-![Initial Behavior Stack for UserActor](images/behaviorstack-initialization.png)
-
-#### Use `Become` to adopt a new behavior
-Whenever we call `Become`, we tell the `ReceiveActor` to push a new behavior onto the stack. This new behavior dictates which `Receive` methods will be used to process any messages delivered to an actor.
-
-Here's what happens to the behavior stack when our example actor `Become`s `Authenticated`:
-
-![Become Authenticated - push a new behavior onto the stack](images/behaviorstack-become.gif)
-
-> NOTE: By default, `Become` will delete the old behavior off of the stack - so the stack will never have more than one behavior in it at a time. This is because most Akka.NET users don't use `Unbecome`.
->
-> To preserve the previous behavior on the stack, call `Become(Method(), false)`
-
-#### Use `Unbecome` to revert to old behavior
-To make an actor revert to the previous behavior, all we have to do is call `Unbecome`.
-
-Whenever we call `Unbecome`, we pop our current behavior off of the stack and replace it with the previous behavior from before (again, this new behavior will dictate which `Receive` methods are used to handle incoming messages).
-
-Here's what happens to the behavior stack when our example actor `Unbecome`s:
-
-![Unbecome - pop the current behavior off of the stack](images/behaviorstack-unbecome.gif)
-
-### Isn't it problematic for actors to change behaviors?
-No, actually it's safe and is a feature that gives your `ActorSystem` a ton of flexibility and code reuse.
-
-Here are some common questions about switchable behavior:
-
-#### When is the new behavior applied?
-We can safely switch actor message-processing behavior because [Akka.NET actors only process one message at a time](http://petabridge.com/blog/akkadotnet-async-actors-using-pipeto/). The new message processing behavior won't be applied until the next message arrives.
-
-#### How deep can the behavior stack go?
-The stack can go *really* deep, but it's not unlimited.
-
-Also, each time your actor restarts, the behavior stack is cleared and the actor starts from the initial behavior you've coded.
-
-#### What happens if you call `Unbecome` and with nothing left in the behavior stack?
-The answer is: *nothing* - `Unbecome` is a safe method and won't do anything unless there's more than one behavior in the stack.
+This is the `userActor` we designed in the Concepts area of lesson 3, with behavior switching for different states of authentication:
 
 
-### Back to the real-world example
-Okay, now that you understand switchable behavior, let's return to our real-world scenario and see how it is used. Recall that we need to add authentication to our chat system actor.
+```fsharp
+let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+    // start the authentication process for this user
+    mailbox.Context.ActorSelection "/user/authenticator/" <! userId
 
-So, how could we rewrite this actor to handle chat messages differently when:
+    let rec authenticating () =
+        actor{
+            let! message = mailbox.Receive()
+            match message with
+            | AuthenticationSuccess -> return! authenticated () //switch behavior to Authenticated
+            | AuthenticationFailure -> return! unauthenticated ()  //switch behavior to Unauthenticated
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            return! authenticating ()
+        }
+    and unauthenticated () =
+        actor{
+            let! message = mailbox.Receive()
+            match message with
+            | RetryAuthentication -> return! authenticating () //swith behavior to Authenticating
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            return! authenticating ()
+        }
+    and authenticated () =
+        actor{
+            let! message = mailbox.Receive()
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //print message for user
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //send message to chatroom
+            return! authenticated ()
+        }
+    authenticating ()
 
-* The user is **authenticating**
-* The user is **authenticated**, or
-* The user **couldn't authenticate**?
-
-Here's one way we can implement switchable message behavior in our `UserActor` to handle basic authentication:
-
-```csharp
-public class UserActor : ReceiveActor {
-	private readonly string _userId;
-	private readonly string _chatRoomId;
-
-	public UserActor(string userId, string chatRoomId) {
-		_userId = userId;
-		_chatRoomId = chatRoomId;
-
-		// start with the Authenticating behavior
-		Authenticating();
-	}
-
-	protected override void PreStart() {
-		// start the authentication process for this user
-		Context.ActorSelection("/user/authenticator/")
-			.Tell(new AuthenticatePlease(_userId));
-	}
-
-	private void Authenticating() {
-		Receive<AuthenticationSuccess>(auth => {
-			Become(Authenticated); //switch behavior to Authenticated
-		});
-		Receive<AuthenticationFailure>(auth => {
-			Become(Unauthenticated); //switch behavior to Unauthenticated
-		});
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// can't accept message yet - not auth'd
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// can't send message yet - not auth'd
-			});
-	}
-
-	private void Unauthenticated() {
-		//switch to Authenticating
-		Receive<RetryAuthentication>(retry => Become(Authenticating));
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// have to reject message - auth failed
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// have to reject message - auth failed
-			});
-	}
-
-	private void Authenticated() {
-		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// print message for user
-			});
-		Receive<OutgoingMessage>(inc => inc.ChatRoomId == _chatRoomId,
-			inc => {
-				// send message to chatroom
-			});
-	}
-}
 ```
 
-Whoa! What's all this stuff? Let's review it.
+When we first saw that chat room `userActor` example in lesson 3, we were focused on switching behaviors to enable authentication in the first place. But we ignored a major problem with the `userActor`: during the `authenticating` phase, we simply throw away any attempted `OutgoingMessage` and `IncomingMessage` instances.
 
-First, we took the `Receive<T>` handlers defined on our `ReceiveActor` and moved them into three separate methods. Each of these methods represents a state that will control how the actor processes messages:
+We're losing messages to/from the user for no good reason, because we didn't know how to delay message processing. **Yuck!** Let's fix it.
 
-* `Authenticating()`: this behavior is used to process messages when the user is attempting to authenticate (initial behavior).
-* `Authenticated()`: this behavior is used to process messages when the authentication operation is successful; and,
-* `Unauthenticated()`: this behavior is used to process messages when the authentication operation fails.
+The right way to deal these messages is to temporarily store them until the `userActor` enters either the `authenticated` or `unauthenticated` state. At that time, the `userActor` will be able to make an intelligent decision about what to do with messages to/from the user.
 
-We called `Authenticating()` from the constructor, so our actor began in the `Authenticating()` state.
+This is what it looks like once we update the `Authenticating` behavior of our `UserActor` to delay processing messages until it knows whether or not the user is authenticated:
 
-*This means that only the `Receive<T>` handlers defined in the `Authenticating()` method will be used to process messages (initially)*.
 
-However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](http://getakka.net/wiki/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
+```fsharp
+let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+    ...
 
-### Can I switch behaviors in an `UntypedActor`?
-Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `Become` and `Unbecome` via the `ActorContext`, instead of calling them directly.
+    let rec authenticating () =
+        actor{
+            let! message = mailbox.Receive()
+            match message with
+            | AuthenticationSuccess ->
+                mailbox.UnstashAll ()
+                return! authenticated () //switch behavior to Authenticated
+            | AuthenticationFailure ->
+                mailbox.UnstashAll ()
+                return! unauthenticated ()  //switch behavior to Unauthenticated
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  ->
+                mailbox.Stash ()
+                //can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  ->
+                mailbox.Stash ()
+                //can't send the message yet - not auth'd
+            return! authenticating ()
+        }
+    and unauthenticated () =
+        ...
+    and authenticated () =
+        ...
 
-These are the API calls inside an `UntypedActor`:
-
-* `Context.Become(Receive rec, bool discardPrevious = true)` - pushes a new behavior on the stack or
-* `Context.Unbecome()` - pops the current behavior and switches to the previous (if applicable.)
-
-The first argument to `Context.Become` is a `Receive` delegate, which is really any method with the following signature:
-
-```csharp
-void MethodName(object someParameterName);
 ```
 
-This delegate is just used to represent another method in the actor that receives a message and represents the new behavior state.
+Now any messages the `userActor` receives while it's `authenticating` will be available for processing when it switches behavior to `authenticated` or `unauthenticated`.
 
-Here's an example (`OtherBehavior` is the `Receive` delegate):
-
-```csharp
-public class MyActor : UntypedActor {
-	protected override void OnReceive(object message) {
-		if(message is SwitchMe) {
-			// preserve the previous behavior on the stack
-			Context.Become(OtherBehavior, false);
-		}
-	}
-
-	// OtherBehavior is a Receive delegate
-	private void OtherBehavior(object message) {
-		if(message is SwitchMeBack) {
-			// switch back to previous behavior on the stack
-			Context.Unbecome();
-		}
-	}
-}
-```
-
-
-Aside from those syntactical differences, behavior switching works exactly the same way across both `UntypedActor` and `ReceiveActor`.
-
-Now, let's put behavior switching to work for us!
+Excellent! Now that you understand the `Stash`, let's put it to work to fix our system graphs.
 
 ## Exercise
-In this lesson we're going to add the ability to pause and resume live updates to the `ChartingActor` via switchable actor behaviors.
+In this section, we're going to fix the **Pause / Resume** bug inside the `ChartingActor` that we noticed at the end of Lesson 4.
 
-### Phase 1 - Add a New `Pause / Resume` Button to `Main.cs`
-This is the last button you'll have to add, we promise.
+### Add `Stash` Method Calls to Message Handlers Inside `paused` Behavior
+Go to the `paused` method declared inside `chartingActor`.
 
-Go to the **[Design]** view of `Main.cs` and add a new button with the following text: `PAUSE ||`
+Update it to `Stash ()` the `AddSeries` and `RemoveSeries` messages:
 
-![Add a Pause / Resume Button to Main](images/design-pauseresume-button.png)
+```fsharp
+// Actors/chartingActor - inside the definition
+let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
+    ...
+    let rec charting (mapping:Map<string,Series>, noOfPts:int) =
+        actor{
+            ...    
+        }
+    and paused (mapping:Map<string,Series>, noOfPts:int) =
+        actor{
+            let! message = mailbox.Receive ()
+            match message with
+            | TogglePause ->
+                // ChartingActor is leaving the Paused state, put messages back
+                // into mailbox for processing under new behavior
+                setPauseButtonText false
+                mailbox.UnstashAll ()
+                return! charting (mapping, noOfPts)
+            | AddSeries series ->
+                mailbox.Stash () // while paused, we stash messages
+            | RemoveSeries seriesName ->
+                mailbox.Stash () // while paused, we stash messages
+            ...
+            setChartBoundaries (mapping, noOfPts)
+            return! paused (mapping, noOfPts)
+        }
 
-Got to the **Properties** window in Visual Studio and change the name of this button to `btnPauseResume`.
-
-![Use the Properties window to rename the button to btnPauseResume](images/pauseresume-properties.png)
-
-Double click on the `btnPauseResume` to add a click handler to `Main.cs`.
-
-```csharp
-private void btnPauseResume_Click(object sender, EventArgs e)
-{
-
-}
 ```
 
-We'll fill this click handler in shortly.
+That's it! The `chartingActor` will now save any `AddSeries` or `RemoveSeries` messages and will replay them in the order they were received as soon as it switches from the `paused` state to the `charting` state.
 
-### Phase 2 - Add Switchable Behavior to `ChartingActor`
-We're going to add some dynamic behavior to the `ChartingActor` - but first we need to do a little cleanup.
-
-First, add a `using` reference for the Windows Forms namespace at the top of `Actors/ChartingActor.cs`.
-
-```csharp
-// Actors/ChartingActor.cs
-
-using System.Windows.Forms;
-```
-
-Next we need to declare a new message type inside the `Messages` region of `ChartingActor`.
-
-```csharp
-// Actors/ChartingActor.cs - add inside the Messages region
-/// <summary>
-/// Toggles the pausing between charts
-/// </summary>
-public class TogglePause { }
-```
-
-Next, add the following field declaration just above the `ChartingActor` constructor declarations:
-
-```csharp
-// Actors/ChartingActor.cs - just above ChartingActor's constructors
-
-private readonly Button _pauseButton;
-```
-
-Move all of the `Receive<T>` declarations from `ChartingActor`'s main constructor into a new method called `Charting()`.
-
-```csharp
-// Actors/ChartingActor.cs - just after ChartingActor's constructors
-private void Charting()
-{
-    Receive<InitializeChart>(ic => HandleInitialize(ic));
-    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
-    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
-    Receive<Metric>(metric => HandleMetrics(metric));
-
-	//new receive handler for the TogglePause message type
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(true);
-        Become(Paused, false);
-    });
-}
-```
-
-Add a new method called `HandleMetricsPaused` to the `ChartingActor`'s `Individual Message Type Handlers` region.
-
-```csharp
-// Actors/ChartingActor.cs - inside Individual Message Type Handlers region
-private void HandleMetricsPaused(Metric metric)
-{
-    if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
-    {
-        var series = _seriesIndex[metric.Series];
-        series.Points.AddXY(xPosCounter++, 0.0d); //set the Y value to zero when we're paused
-        while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
-        SetChartBoundaries();
-    }
-}
-```
-
-Define a new method called `SetPauseButtonText` at the *very* bottom of the `ChartingActor` class:
-
-```csharp
-// Actors/ChartingActor.cs - add to the very bottom of the ChartingActor class
-private void SetPauseButtonText(bool paused)
-    {
-        _pauseButton.Text = string.Format("{0}", !paused ? "PAUSE ||" : "RESUME ->");
-    }
-```
-
-Add a new method called `Paused` just after the `Charting` method inside `ChartingActor`:
-
-```csharp
-// Actors/ChartingActor.cs - just after the Charting method
-private void Paused()
-{
-    Receive<Metric>(metric => HandleMetricsPaused(metric));
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(false);
-        Unbecome();
-    });
-}
-```
-
-And finally, let's **replace both of `ChartingActor`'s constructors**:
-
-```csharp
-public ChartingActor(Chart chart, Button pauseButton) : this(chart, new Dictionary<string, Series>(), pauseButton)
-{
-}
-
-public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button pauseButton)
-{
-    _chart = chart;
-    _seriesIndex = seriesIndex;
-    _pauseButton = pauseButton;
-    Charting();
-}
-
-private void Charting()
-{
-    Receive<InitializeChart>(ic => HandleInitialize(ic));
-    Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
-    Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
-    Receive<Metric>(metric => HandleMetrics(metric));
-    Receive<TogglePause>(pause =>
-    {
-        SetPauseButtonText(true);
-        Become(Paused, false);
-    });
-}
-```
-
-### Phase 3 - Update the `Main_Load` and `Pause / Resume` Click Handler in Main.cs
-Since we changed the constructor arguments for `ChartingActor` in Phase 2, we need to fix this inside our `Main_Load` event handler.
-
-```csharp
-//Main.cs - Main_Load event handler
-_chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart, btnPauseResume)), "charting");
-```
-
-And finally, we need to update our `btnPauseResume` click event handler to have it tell the `ChartingActor` to pause or resume live updates:
-
-```csharp
-//Main.cs - btnPauseResume click handler
-private void btnPauseResume_Click(object sender, EventArgs e)
-{
-    _chartActor.Tell(new ChartingActor.TogglePause());
-}
-```
+The bug should now be fixed!
 
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
 
-![Successful Lesson 4 Output](images/dothis-successful-run4.gif)
+![Successful Unit 2 Output](images/syncharting-complete-output.gif)
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
 ## Great job!
-YEAAAAAAAAAAAAAH! We have a live updating chart that we can pause over time!
 
-Here is a high-level overview of our working system at this point:
+### Wohoo! You did it! Unit 2 is complete! Now go enjoy a well-deserved break, and gear up for Unit 3!
 
-![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_4.png)
-
-***But wait a minute!***
-
-What happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
-
-![Lesson 4 Output Bugs](images/dothis-fail4.gif)
-
-### DOH!!!!!! It doesn't work!
-
-*This is exactly the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
-
-**Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
+**Ready for more? [Start Unit 3 now](../../Unit-3 "Akka.NET Bootcamp Unit 3").**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
@@ -412,4 +224,4 @@ What happens if I toggle a chart on or off when the `ChartingActor` is in a paus
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
