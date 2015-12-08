@@ -332,6 +332,10 @@ Awesome job! You've successfully used Akka.NET routers to achieve the first laye
 **Let's move onto [Lesson 2 - Using `Pool` routers to automatically create and manage pools of actors](../lesson2).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
