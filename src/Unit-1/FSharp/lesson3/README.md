@@ -90,7 +90,7 @@ We're going to move all our validation code into its own actor. It really doesn'
 Make a new class called `validationActor` and fill it with all the validation logic that is currently in `consoleReaderActor`:
 
 ```fsharp
-let validationActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message =
+let validationActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message =
     let (|EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd|) (msg:string) =
         match msg.Length, msg.Length % 2 with
         | 0,_ -> EmptyMessage
