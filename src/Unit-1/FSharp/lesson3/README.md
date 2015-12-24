@@ -148,7 +148,7 @@ We'll also need to store a reference to `validationActor` inside the `consoleRea
 Modify your version of `consoleReaderActor` to match the below:
 
 ```fsharp
-let consoleReaderActor (validation: ActorRef) (mailbox: Actor<_>) message =
+let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message =
     let doPrintInstructions () =
         Console.WriteLine "Write whatever you want into the console!"
         Console.WriteLine "Some entries will pass validation, and some won't...\n\n"
