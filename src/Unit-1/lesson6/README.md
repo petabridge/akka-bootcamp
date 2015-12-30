@@ -100,7 +100,8 @@ See all this in the constructor of `TailActor`?
 _observer = new FileObserver(Self, Path.GetFullPath(_filePath));
 _observer.Start();
 
-// open the file stream with shared read/write permissions (so file can be written to while open)
+// open the file stream with shared read/write permissions
+// (so file can be written to while open)
 _fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
     FileShare.ReadWrite);
 _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
@@ -142,9 +143,10 @@ protected override void PreStart()
     _observer = new FileObserver(Self, Path.GetFullPath(_filePath));
     _observer.Start();
 
-    // open the file stream with shared read/write permissions (so file can be written to while open)
-    _fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
-        FileShare.ReadWrite);
+    // open the file stream with shared read/write permissions
+    // (so file can be written to while open)
+    _fileStream = new FileStream(Path.GetFullPath(_filePath),
+        FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
 
     // read the initial contents of the file and send it to console as first message

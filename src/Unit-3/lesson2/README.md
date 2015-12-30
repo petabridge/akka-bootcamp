@@ -111,7 +111,8 @@ And then change the `GithubCoorindatorActor.PreStart` method from this:
 // original GithubCoordinatorActor.PreStart method from the start of the lesson
  protected override void PreStart()
 {
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
+    _githubWorker = Context.ActorOf(Props.Create(() =>
+        new GithubWorkerActor(GithubClientFactory.GetClient)));
 }
 ```
 
@@ -121,7 +122,8 @@ To this:
 // CHANGE GithubCoordinatorActor.PreStart to use this code instead
 protected override void PreStart()
 {
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient))
+    _githubWorker = Context.ActorOf(Props.Create(() =>
+        new GithubWorkerActor(GithubClientFactory.GetClient))
         .WithRouter(new RoundRobinPool(10)));
 }
 ```

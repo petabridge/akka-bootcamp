@@ -193,11 +193,13 @@ public class UserActor : ReceiveActor, IWithUnboundedStash {
 	private void Authenticating() {
 		Receive<AuthenticationSuccess>(auth => {
 			Become(Authenticated); // switch behavior to Authenticated
-			Stash.UnstashAll(); // move all stashed messages to the mailbox for processing in new behavior
+            // move all stashed messages to the mailbox for processing in new behavior
+			Stash.UnstashAll();
 		});
 		Receive<AuthenticationFailure>(auth => {
 			Become(Unauthenticated); // switch behavior to Unauthenticated
-			Stash.UnstashAll(); // move all stashed messages to the mailbox for processing in new behavior
+            // move all stashed messages to the mailbox for processing in new behavior
+			Stash.UnstashAll();
 		});
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
 			inc => {

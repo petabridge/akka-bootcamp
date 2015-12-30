@@ -231,14 +231,16 @@ private void GetAndValidateInput()
         var valid = IsValid(message);
         if (valid)
         {
-            _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you! Message was valid."));
+            _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you!
+             Message was valid."));
 
             // continue reading messages from console
             Self.Tell(new Messages.ContinueProcessing());
         }
         else
         {
-        	Self.Tell(new Messages.ValidationError("Invalid: input had odd number of characters."));
+        	Self.Tell(new Messages.ValidationError("Invalid: input had
+            odd number of characters."));
         }
     }
 }
@@ -269,8 +271,10 @@ static void Main(string[] args)
     // initialize MyActorSystem
     MyActorSystem = ActorSystem.Create("MyActorSystem");
 
-    var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleWriterActor()));
-    var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleReaderActor(consoleWriterActor)));
+    var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() =>
+    new ConsoleWriterActor()));
+    var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() =>
+    new ConsoleReaderActor(consoleWriterActor)));
 
     // tell console reader to begin
     consoleReaderActor.Tell(ConsoleReaderActor.StartCommand);

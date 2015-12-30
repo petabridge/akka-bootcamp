@@ -106,7 +106,8 @@ Suppose you defined the following router via configuration:
 But when it came time to create router1, you gave `Props` the following procedural router definition:
 
 ```csharp
-var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()).WithRouter(new RoundRobinPool(10)), "router1");
+var router1 = MyActorSystem.ActorOf(Props.Create(() =>
+  new FooActor()).WithRouter(new RoundRobinPool(10)), "router1");
 ```
 
 You'd still get a `ConsistentHashingPool` with 3 instances of `FooActor` instead of a `RoundRobinPool` with 10 instances of `FooActor`.
@@ -129,7 +130,8 @@ Here's an example:
 And if we make the following call to `ActorOf`:
 
 ```csharp
-var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()).WithRouter(FromConfig.Instance), "router1");
+var router1 = MyActorSystem.ActorOf(Props.Create(() =>
+  new FooActor()).WithRouter(FromConfig.Instance), "router1");
 ```
 
 Then we'll get a `ConsistentHashingPool` router.
@@ -206,8 +208,9 @@ protected override void PreStart()
 {
     // create a broadcast router who will ask all of them if they're available for work
     _coordinator =
-        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()).WithRouter(FromConfig.Instance),
-        ActorPaths.GithubCoordinatorActor.Name);
+        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor())
+          .WithRouter(FromConfig.Instance),
+          ActorPaths.GithubCoordinatorActor.Name);
     base.PreStart();
 }
 ```

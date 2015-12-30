@@ -272,7 +272,8 @@ You might have also noticed that the configuration section that pertains to the 
 Here's how we create the `ChartingActor` inside `Main.cs`:
 
 ```csharp
- _chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart)), "charting");
+ _chartActor = Program.ChartActors.ActorOf(Props.Create(() =>
+  new ChartingActor(sysChart)), "charting");
 ```
 
 When we call `ActorSystem.ActorOf` the `ActorOf` method will automatically look for any deployments declared in the `akka.actor.deployment` configuration section that correspond to the path of this actor. In this case, the path of this actor is `/user/charting`, which corresponds to the `akka.actor.deployment` values for `/charting` in the config section above.

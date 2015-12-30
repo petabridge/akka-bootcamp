@@ -113,8 +113,10 @@ The actor classes themselves are already defined, but you will have to make your
 Again, in `Program.cs`, add this just below where you made your `ActorSystem`:
 
 ```csharp
-var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleWriterActor()));
-var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleReaderActor(consoleWriterActor)));
+var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() =>
+new ConsoleWriterActor()));
+var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() =>
+new ConsoleReaderActor(consoleWriterActor)));
 ```
 
 We will get into the details of `Props` and `ActorRef`s in lesson 3, so don't worry about them much for now. Just know that this is how you make an actor.

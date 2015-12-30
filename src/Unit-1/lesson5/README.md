@@ -186,14 +186,16 @@ Then, let's use `ActorSelection` to communicate between `FileValidatorActor` and
 ```csharp
 // FileValidatorActor.cs
 // start coordinator
-Context.ActorSelection("akka://MyActorSystem/user/tailCoordinatorActor").Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
+Context.ActorSelection("akka://MyActorSystem/user/tailCoordinatorActor").Tell(
+    new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
 ```
 
 And finally, let's update `fileValidatorProps` in `Program.cs` to reflect the different constructor arguments:
 
 ```csharp
 // Program.Main
-Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
+Props fileValidatorActorProps = Props.Create(() =>
+    new FileValidatorActor(consoleWriterActor));
 ```
 
 ### Phase 3: Build and Run!
