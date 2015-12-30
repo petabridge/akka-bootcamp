@@ -98,7 +98,8 @@ _httpClient.GetAsync(imageUrl).ContinueWith(httpRequest =>
         try
         {
             contentStream.Wait(TimeSpan.FromSeconds(1));
-            return new ImageDownloadResult(image, response.StatusCode, contentStream.Result);
+            return new ImageDownloadResult(image,
+                response.StatusCode, contentStream.Result);
         }
         catch //timeout exceptions!
         {
