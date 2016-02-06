@@ -231,14 +231,16 @@ private void GetAndValidateInput()
         var valid = IsValid(message);
         if (valid)
         {
-            _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you! Message was valid."));
+            _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you!
+             Message was valid."));
 
             // continue reading messages from console
             Self.Tell(new Messages.ContinueProcessing());
         }
         else
         {
-        	Self.Tell(new Messages.ValidationError("Invalid: input had odd number of characters."));
+        	Self.Tell(new Messages.ValidationError("Invalid: input had
+            odd number of characters."));
         }
     }
 }
@@ -269,8 +271,10 @@ static void Main(string[] args)
     // initialize MyActorSystem
     MyActorSystem = ActorSystem.Create("MyActorSystem");
 
-    var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleWriterActor()));
-    var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleReaderActor(consoleWriterActor)));
+    var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() =>
+    new ConsoleWriterActor()));
+    var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() =>
+    new ConsoleReaderActor(consoleWriterActor)));
 
     // tell console reader to begin
     consoleReaderActor.Tell(ConsoleReaderActor.StartCommand);
@@ -329,6 +333,10 @@ Awesome work! Well done on completing this lesson.
 **Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

@@ -193,11 +193,13 @@ public class UserActor : ReceiveActor, IWithUnboundedStash {
 	private void Authenticating() {
 		Receive<AuthenticationSuccess>(auth => {
 			Become(Authenticated); // switch behavior to Authenticated
-			Stash.UnstashAll(); // move all stashed messages to the mailbox for processing in new behavior
+            // move all stashed messages to the mailbox for processing in new behavior
+			Stash.UnstashAll();
 		});
 		Receive<AuthenticationFailure>(auth => {
 			Become(Unauthenticated); // switch behavior to Unauthenticated
-			Stash.UnstashAll(); // move all stashed messages to the mailbox for processing in new behavior
+            // move all stashed messages to the mailbox for processing in new behavior
+			Stash.UnstashAll();
 		});
 		Receive<IncomingMessage>(inc => inc.ChatRoomId == _chatRoomId,
 			inc => {
@@ -280,6 +282,10 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 **Ready for more? [Start Unit 3 now](../../Unit-3 "Akka.NET Bootcamp Unit 3").**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

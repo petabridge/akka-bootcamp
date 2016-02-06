@@ -29,7 +29,8 @@ Actors form intrinsic supervision hierarchies (we cover in detail in lesson 5). 
 To make an actor, you have to create it from its context. And **you've already done this!** Remember this?
 ```csharp
 // assume we have an existing actor system, "MyActorSystem"
-IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()), "myFirstActor")
+IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()),
+"myFirstActor")
 ```
 
 As shown in the above example, you create an actor in the context of the actor that will supervise it (almost always). When you create the actor on the `ActorSystem` directly (as above), it is a top-level actor.
@@ -40,7 +41,8 @@ You make child actors the same way, except you create them from another actor, l
 // usually happens inside OnReceive or PreStart
 class MyActorClass : UntypedActor{
 	protected override void PreStart(){
-		IActorRef myFirstChildActor = Context.ActorOf(Props.Create(() => new MyChildActorClass()), "myFirstChildActor")
+		IActorRef myFirstChildActor = Context.ActorOf(Props.Create(() =>
+        new MyChildActorClass()), "myFirstChildActor")
 	}
 }
 ```
@@ -57,7 +59,8 @@ We will cover this in much more detail in the next lesson.
 You may have noticed that we passed names into the `ActorSystem` when we were creating the above actors:
 ```csharp
 // last arg to the call to ActorOf() is a name
-IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()), "myFirstActor")
+IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()),
+ "myFirstActor")
 ```
 
 This name is not required. It is perfectly valid to create an actor without a name, like so:
@@ -164,16 +167,19 @@ namespace WinTail
                 if (valid)
                 {
                     // send success to console writer
-                    _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you! Message was valid."));
+                    _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you!
+                     Message was valid."));
                 }
                 else
                 {
                     // signal that input was bad
-                    _consoleWriterActor.Tell(new Messages.ValidationError("Invalid: input had odd number of characters."));
+                    _consoleWriterActor.Tell(new Messages.ValidationError("Invalid:
+                     input had odd number of characters."));
                 }
             }
 
-            // tell sender to continue doing its thing (whatever that may be, this actor doesn't care)
+            // tell sender to continue doing its thing
+            // (whatever that may be, this actor doesn't care)
             Sender.Tell(new Messages.ContinueProcessing());
 
         }
@@ -268,7 +274,8 @@ Remember: do not try to make an actor by calling `new Actor()` outside of a `Pro
 Add this to `Main()` on the line after `consoleWriterProps`:
 ```csharp
 // Program.cs
-IActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps, "consoleWriterActor");
+IActorRef consoleWriterActor = MyActorSystem.ActorOf(consoleWriterProps,
+    "consoleWriterActor");
 ```
 
 
@@ -285,7 +292,8 @@ Add this to `Main()` on the line after `consoleReaderProps`:
 
 ```csharp
 // Program.cs
-IActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps, "consoleReaderActor");
+IActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps,
+    "consoleReaderActor");
 ```
 
 #### Calling out a special `IActorRef`: `Sender`
@@ -358,14 +366,17 @@ namespace WinTail
         private void GetAndValidateInput()
         {
             var message = Console.ReadLine();
-            if (!string.IsNullOrEmpty(message) && String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(message) &&
+            String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
-                // if user typed ExitCommand, shut down the entire actor system (allows the process to exit)
+                // if user typed ExitCommand, shut down the entire actor
+                // system (allows the process to exit)
                 Context.System.Shutdown();
                 return;
             }
 
-            // otherwise, just hand message off to validation actor (by telling its actor ref)
+            // otherwise, just hand message off to validation actor
+            // (by telling its actor ref)
             _validationActor.Tell(message);
         }
         #endregion
@@ -414,6 +425,10 @@ Awesome work! Well done on completing your this lesson. It was a big one.
 **Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

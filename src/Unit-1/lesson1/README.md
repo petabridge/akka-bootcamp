@@ -113,8 +113,10 @@ The actor classes themselves are already defined, but you will have to make your
 Again, in `Program.cs`, add this just below where you made your `ActorSystem`:
 
 ```csharp
-var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleWriterActor()));
-var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() => new ConsoleReaderActor(consoleWriterActor)));
+var consoleWriterActor = MyActorSystem.ActorOf(Props.Create(() =>
+new ConsoleWriterActor()));
+var consoleReaderActor = MyActorSystem.ActorOf(Props.Create(() =>
+new ConsoleReaderActor(consoleWriterActor)));
 ```
 
 We will get into the details of `Props` and `ActorRef`s in lesson 3, so don't worry about them much for now. Just know that this is how you make an actor.
@@ -160,6 +162,10 @@ Awesome work! Well done on completing your first lesson.
 **Let's move onto [Lesson 2 - Defining and Handling Different Types of Messages](../lesson2).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

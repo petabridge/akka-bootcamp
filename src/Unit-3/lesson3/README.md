@@ -106,7 +106,8 @@ Suppose you defined the following router via configuration:
 But when it came time to create router1, you gave `Props` the following procedural router definition:
 
 ```csharp
-var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()).WithRouter(new RoundRobinPool(10)), "router1");
+var router1 = MyActorSystem.ActorOf(Props.Create(() =>
+  new FooActor()).WithRouter(new RoundRobinPool(10)), "router1");
 ```
 
 You'd still get a `ConsistentHashingPool` with 3 instances of `FooActor` instead of a `RoundRobinPool` with 10 instances of `FooActor`.
@@ -129,7 +130,8 @@ Here's an example:
 And if we make the following call to `ActorOf`:
 
 ```csharp
-var router1 = MyActorSystem.ActorOf(Props.Create(() => new FooActor()).WithRouter(FromConfig.Instance), "router1");
+var router1 = MyActorSystem.ActorOf(Props.Create(() =>
+  new FooActor()).WithRouter(FromConfig.Instance), "router1");
 ```
 
 Then we'll get a `ConsistentHashingPool` router.
@@ -206,8 +208,9 @@ protected override void PreStart()
 {
     // create a broadcast router who will ask all of them if they're available for work
     _coordinator =
-        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()).WithRouter(FromConfig.Instance),
-        ActorPaths.GithubCoordinatorActor.Name);
+        Context.ActorOf(Props.Create(() => new GithubCoordinatorActor())
+          .WithRouter(FromConfig.Instance),
+          ActorPaths.GithubCoordinatorActor.Name);
     base.PreStart();
 }
 ```
@@ -225,6 +228,10 @@ We've been able to leverage routers for parallelism both via explicit programmat
 **And now it's time to achieve maximum parallelism using the TPL in the next lesson: [Lesson 4 - How to perform work asynchronously inside your actors using `PipeTo`](../lesson4)**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

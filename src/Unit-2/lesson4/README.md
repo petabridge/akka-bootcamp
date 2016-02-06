@@ -320,7 +320,8 @@ private void HandleMetricsPaused(Metric metric)
     if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
     {
         var series = _seriesIndex[metric.Series];
-        series.Points.AddXY(xPosCounter++, 0.0d); //set the Y value to zero when we're paused
+        // set the Y value to zero when we're paused
+        series.Points.AddXY(xPosCounter++, 0.0d);
         while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
         SetChartBoundaries();
     }
@@ -355,11 +356,13 @@ private void Paused()
 And finally, let's **replace both of `ChartingActor`'s constructors**:
 
 ```csharp
-public ChartingActor(Chart chart, Button pauseButton) : this(chart, new Dictionary<string, Series>(), pauseButton)
+public ChartingActor(Chart chart, Button pauseButton) :
+    this(chart, new Dictionary<string, Series>(), pauseButton)
 {
 }
 
-public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button pauseButton)
+public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex,
+    Button pauseButton)
 {
     _chart = chart;
     _seriesIndex = seriesIndex;
@@ -372,8 +375,9 @@ public ChartingActor(Chart chart, Dictionary<string, Series> seriesIndex, Button
 Since we changed the constructor arguments for `ChartingActor` in Phase 2, we need to fix this inside our `Main_Load` event handler.
 
 ```csharp
-//Main.cs - Main_Load event handler
-_chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart, btnPauseResume)), "charting");
+// Main.cs - Main_Load event handler
+_chartActor = Program.ChartActors.ActorOf(Props.Create(() => new ChartingActor(sysChart,
+    btnPauseResume)), "charting");
 ```
 
 And finally, we need to update our `btnPauseResume` click event handler to have it tell the `ChartingActor` to pause or resume live updates:
@@ -413,6 +417,10 @@ What happens if I toggle a chart on or off when the `ChartingActor` is in a paus
 **Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

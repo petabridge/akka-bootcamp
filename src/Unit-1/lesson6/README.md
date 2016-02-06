@@ -100,7 +100,8 @@ See all this in the constructor of `TailActor`?
 _observer = new FileObserver(Self, Path.GetFullPath(_filePath));
 _observer.Start();
 
-// open the file stream with shared read/write permissions (so file can be written to while open)
+// open the file stream with shared read/write permissions
+// (so file can be written to while open)
 _fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
     FileShare.ReadWrite);
 _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
@@ -142,9 +143,10 @@ protected override void PreStart()
     _observer = new FileObserver(Self, Path.GetFullPath(_filePath));
     _observer.Start();
 
-    // open the file stream with shared read/write permissions (so file can be written to while open)
-    _fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
-        FileShare.ReadWrite);
+    // open the file stream with shared read/write permissions
+    // (so file can be written to while open)
+    _fileStream = new FileStream(Path.GetFullPath(_filePath),
+        FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
 
     // read the initial contents of the file and send it to console as first message
@@ -187,6 +189,10 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 **Ready for more? [Start Unit 2 now](../../Unit-2 "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

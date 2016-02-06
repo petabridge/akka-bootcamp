@@ -260,7 +260,8 @@ namespace WinTail
         private readonly IActorRef _consoleWriterActor;
         private readonly IActorRef _tailCoordinatorActor;
 
-        public FileValidatorActor(IActorRef consoleWriterActor, IActorRef tailCoordinatorActor)
+        public FileValidatorActor(IActorRef consoleWriterActor,
+            IActorRef tailCoordinatorActor)
         {
             _consoleWriterActor = consoleWriterActor;
             _tailCoordinatorActor = tailCoordinatorActor;
@@ -272,9 +273,11 @@ namespace WinTail
             if (string.IsNullOrEmpty(msg))
             {
                 // signal that the user needs to supply an input
-                _consoleWriterActor.Tell(new Messages.NullInputError("Input was blank. Please try again.\n"));
+                _consoleWriterActor.Tell(new Messages.NullInputError("Input was blank.
+                Please try again.\n"));
 
-                // tell sender to continue doing its thing (whatever that may be, this actor doesn't care)
+                // tell sender to continue doing its thing (whatever that may be,
+                // this actor doesn't care)
                 Sender.Tell(new Messages.ContinueProcessing());
             }
             else
@@ -283,17 +286,21 @@ namespace WinTail
                 if (valid)
                 {
                     // signal successful input
-                    _consoleWriterActor.Tell(new Messages.InputSuccess(string.Format("Starting processing for {0}", msg)));
+                    _consoleWriterActor.Tell(new Messages.InputSuccess(
+                        string.Format("Starting processing for {0}", msg)));
 
                     // start coordinator
-                    _tailCoordinatorActor.Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
+                    _tailCoordinatorActor.Tell(new TailCoordinatorActor.StartTail(msg,
+                        _consoleWriterActor));
                 }
                 else
                 {
                     // signal that input was bad
-                    _consoleWriterActor.Tell(new Messages.ValidationError(string.Format("{0} is not an existing URI on disk.", msg)));
+                    _consoleWriterActor.Tell(new Messages.ValidationError(
+                        string.Format("{0} is not an existing URI on disk.", msg)));
 
-                    // tell sender to continue doing its thing (whatever that may be, this actor doesn't care)
+                    // tell sender to continue doing its thing (whatever that
+                    // may be, this actor doesn't care)
                     Sender.Tell(new Messages.ContinueProcessing());
                 }
             }
@@ -346,7 +353,8 @@ using Akka.Actor;
 namespace WinTail
 {
     /// <summary>
-    /// Turns <see cref="FileSystemWatcher"/> events about a specific file into messages for <see cref="TailActor"/>.
+    /// Turns <see cref="FileSystemWatcher"/> events about a specific file into
+    /// messages for <see cref="TailActor"/>.
     /// </summary>
     public class FileObserver : IDisposable
     {
@@ -370,12 +378,14 @@ namespace WinTail
         public void Start()
         {
             // Need this for Mono 3.12.0 workaround
-            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled"); // uncomment this line if you're running on Mono!
+            // uncomment next line if you're running on Mono!
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
 
             // make watcher to observe our specific file
             _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
 
-            // watch our file for changes to the file name, or new messages being written to file
+            // watch our file for changes to the file name,
+            // or new messages being written to file
             _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
             // assign callbacks for event types
@@ -401,7 +411,9 @@ namespace WinTail
         /// <param name="e"></param>
         void OnFileError(object sender, ErrorEventArgs e)
         {
-            _tailActor.Tell(new TailActor.FileError(_fileNameOnly, e.GetException().Message), ActorRefs.NoSender);
+            _tailActor.Tell(new TailActor.FileError(_fileNameOnly,
+                e.GetException().Message),
+                ActorRefs.NoSender);
         }
 
         /// <summary>
@@ -414,7 +426,8 @@ namespace WinTail
             if (e.ChangeType == WatcherChangeTypes.Changed)
             {
                 // here we use a special ActorRefs.NoSender
-                // since this event can happen many times, this is a little microoptimization
+                // since this event can happen many times,
+                // this is a little microoptimization
                 _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
             }
         }
@@ -483,8 +496,6 @@ namespace WinTail
         }
     }
 }
-<<<<<<< HEAD
-=======
 ```
 
 #### Create `IActorRef` for `TailCoordinatorActor`
@@ -499,7 +510,6 @@ IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "ta
 // pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
 Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
 IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
->>>>>>> origin/master
 ```
 
 #### Add `TailActor`
@@ -516,7 +526,8 @@ using Akka.Actor;
 namespace WinTail
 {
     /// <summary>
-    /// Monitors the file at <see cref="_filePath"/> for changes and sends file updates to console.
+    /// Monitors the file at <see cref="_filePath"/> for changes and sends
+    /// file updates to console.
     /// </summary>
     public class TailActor : UntypedActor
     {
@@ -583,12 +594,13 @@ namespace WinTail
             _observer = new FileObserver(Self, Path.GetFullPath(_filePath));
             _observer.Start();
 
-            // open the file stream with shared read/write permissions (so file can be written to while open)
-            _fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
-                FileShare.ReadWrite);
+            // open the file stream with shared read/write permissions
+            // (so file can be written to while open)
+            _fileStream = new FileStream(Path.GetFullPath(_filePath),
+                FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
 
-            // read the initial contents of the file and send it to console as first message
+            // read the initial contents of the file and send it to console as first msg
             var text = _fileStreamReader.ReadToEnd();
             Self.Tell(new InitialRead(_filePath, text));
         }
@@ -726,6 +738,10 @@ The current message being processed by an actor when it is halted (regardless of
 
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

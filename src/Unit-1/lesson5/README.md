@@ -186,14 +186,16 @@ Then, let's use `ActorSelection` to communicate between `FileValidatorActor` and
 ```csharp
 // FileValidatorActor.cs
 // start coordinator
-Context.ActorSelection("akka://MyActorSystem/user/tailCoordinatorActor").Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
+Context.ActorSelection("akka://MyActorSystem/user/tailCoordinatorActor").Tell(
+    new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
 ```
 
 And finally, let's update `fileValidatorProps` in `Program.cs` to reflect the different constructor arguments:
 
 ```csharp
 // Program.Main
-Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
+Props fileValidatorActorProps = Props.Create(() =>
+    new FileValidatorActor(consoleWriterActor));
 ```
 
 ### Phase 3: Build and Run!
@@ -241,6 +243,10 @@ Awesome work! Well done on completing this lesson! We're on the home stretch of 
 
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).

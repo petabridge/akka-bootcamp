@@ -46,3 +46,5 @@ Here is a demonstration of how to set it up:
 To get started, [go to the /DoThis/ folder](DoThis/) and open `WinTail.sln`.
 
 And then go to [Lesson 1](lesson1/).
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)

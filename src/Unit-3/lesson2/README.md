@@ -111,7 +111,8 @@ And then change the `GithubCoorindatorActor.PreStart` method from this:
 // original GithubCoordinatorActor.PreStart method from the start of the lesson
  protected override void PreStart()
 {
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
+    _githubWorker = Context.ActorOf(Props.Create(() =>
+        new GithubWorkerActor(GithubClientFactory.GetClient)));
 }
 ```
 
@@ -121,7 +122,8 @@ To this:
 // CHANGE GithubCoordinatorActor.PreStart to use this code instead
 protected override void PreStart()
 {
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient))
+    _githubWorker = Context.ActorOf(Props.Create(() =>
+        new GithubWorkerActor(GithubClientFactory.GetClient))
         .WithRouter(new RoundRobinPool(10)));
 }
 ```
@@ -147,6 +149,10 @@ Now that we've seen how both `Group` and `Pool` routers work, it's easy for us t
 **Let's move onto [How to use HOCON to configure your routers](../lesson3).**
 
 ## Any questions?
+
+[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+
+
 **Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
