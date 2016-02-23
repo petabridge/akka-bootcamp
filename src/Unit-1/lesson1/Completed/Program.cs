@@ -1,5 +1,6 @@
 ﻿using System;
 using Akka.Actor;
+using System.Threading.Tasks;
 
 namespace WinTail
 {
@@ -9,6 +10,11 @@ namespace WinTail
 
 
         static void Main(string[] args)
+        {
+            AsyncMain().Wait();
+        }
+
+        private static async Task AsyncMain()
         {
             // make an actor system 
             MyActorSystem = ActorSystem.Create("MyActorSystem");
@@ -26,7 +32,12 @@ namespace WinTail
             consoleReaderActor.Tell("start");
 
             // blocks the main thread from exiting until the actor system is shut down
-            MyActorSystem.AwaitTermination();
+            //MyActorSystem.AwaitTermination();
+            await MyActorSystem.WhenTerminated;
+
+            // This prevents the app from exiting
+            // before the async work is done
+            Console.ReadLine();
         }
 
         private static void PrintInstructions()
