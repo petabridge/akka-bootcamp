@@ -324,7 +324,7 @@ Nice work, again. After having completed this lesson you should have a much bett
 
 ## Any questions?
 
-[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
 
 
 **Don't be afraid to ask questions** :).
