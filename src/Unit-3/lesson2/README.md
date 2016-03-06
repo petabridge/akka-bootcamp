@@ -150,7 +150,7 @@ Now that we've seen how both `Group` and `Pool` routers work, it's easy for us t
 
 ## Any questions?
 
-[![Get Akka.NET training material & updates at https://www.getdrip.com/forms/3869566/submissions/new](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://www.getdrip.com/forms/3869566/submissions/new)
+[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
 
 
 **Don't be afraid to ask questions** :).
