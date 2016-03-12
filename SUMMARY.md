@@ -15,3 +15,8 @@
   4. [Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/)
   5. [Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)
 4. [Unit 3: Advanced Akka.NET](src/Unit-3/README.md)
+  1. [Lesson 1:  Using `Group` routers to divide work among your actors](lesson1/)
+  2. [Lesson 2: Using `Pool` routers to automatically create and manage pools of actors](lesson2/)
+  3. [Lesson 3: How to use HOCON to configure your routers](lesson3/)
+  4. [Lesson 4: How to perform work asynchronously inside your actors using `PipeTo`](lesson4/)
+  5. [Lesson 5: How to prevent deadlocks with `ReceiveTimeout`](lesson5/)
