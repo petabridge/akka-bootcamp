@@ -35,7 +35,7 @@ In Unit 1 you will learn:
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
-**[Begin Unit 1](src/Unit-1)**.
+**[Begin Unit 1](src/Unit-1/README.md)**.
 
 ### Unit 2
 In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
@@ -50,7 +50,7 @@ In Unit 2 you will learn:
 1. How and why to switch actor's behavior at run-time; and
 2. How to `Stash` messages for deferred processing.
 
-**[Begin Unit 2](src/Unit-2)**.
+**[Begin Unit 2](src/Unit-2/README.md)**.
 
 ### Unit 3
 In Unit 3, we will learn how to use actors for parallelism and scale-out using [Octokit](http://octokit.github.io/) and data from Github repos!
@@ -64,7 +64,7 @@ In Unit 3 you will learn:
 5. How to use `Pool` routers to automatically create and manage pools of actors; and
 6. How to use HOCON to configure your routers.
 
-**[Begin Unit 3](src/Unit-3)**.
+**[Begin Unit 3](src/Unit-3/README.md)**.
 
 ## How to get started
 
@@ -78,7 +78,7 @@ Thus, if you want to follow the bootcamp we recommend doing the following:
 
 1. Sign up for [Github](https://github.com/), if you haven't already.
 2. [Fork this repository](https://github.com/petabridge/akka-bootcamp/fork) and clone your fork to your local machine.
-3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMes](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
+3. As you go through the project, keep a web browser tab open to the [Akka.NET Bootcamp ReadMe](https://github.com/petabridge/akka-bootcamp/) so you can read all of the instructions clearly and easily.
 
 ### Bootcamp Structure
 
@@ -100,7 +100,7 @@ src\Unit1\Lesson1\Completed\ - Got stuck on lesson1? This folder shows the "expe
 -- repeat for all lessons
 ````
 
-Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/lesson1)**.
+Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/lesson1/README.md)**.
 
 ### Lesson Layout
 Each Akka.NET Bootcamp lesson contains a README which explains the following:
@@ -113,7 +113,7 @@ Each Akka.NET Bootcamp lesson contains a README which explains the following:
 
 A few things to bear in mind when you're following the step-by-step instructions:
 
-1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. [Kinesthetic learning](http://en.wikipedia.org/wiki/Kinesthetic_learning) FTW!
+1. **Don't just copy and paste the code shown in the lesson's README**. You'll retain and learn all of the built-in Akka.NET functions if you type out the code as it's shown. 
 2. **You might be required to fill in some blanks during individual lessons.** Part of helping you learn Akka.NET involves leaving some parts of the exercise up to you - if you ever feel lost, always check the contents of the `/Completed` folder for that lesson.
 3. **Don't be afraid to ask questions**. You can [reach the Petabridge and Akka.NET teams in our Gitter chat](https://gitter.im/petabridge/akka-bootcamp) here.
 
@@ -131,9 +131,7 @@ This course expects the following:
 
 
 ## Enough talk, let's go!
-[Let's begin!](src/Unit-1/lesson1)
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
+[Let's begin!](src/Unit-1/lesson1/README.md)
 
 
 ## About Petabridge
@@ -144,4 +142,4 @@ This course expects the following:
 **[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](http://petabridge.com/)!
 
 ---
-Copyright 2015 Petabridge, LLC
+Copyright 2015-2016 Petabridge, LLC
