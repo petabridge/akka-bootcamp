@@ -6,7 +6,7 @@
   2. [Lesson 2 - Defining and Handling Messages](lesson2/)
   3. [Lesson 3: Using `Props` and `IActorRef`s](lesson3/)
   4. [Lesson 4: Child Actors, Hierarchies, and Supervision](lesson4/)
-  5. [Lesson 5: Looking up actors by address with `ActorSelection`](lesson5/)
+  5. [Lesson 5: Looking up Actors by Address with `ActorSelection`](lesson5/)
   6. [Lesson 6: The Actor Lifecycle](lesson6/)
-3.
+3. [Unit 2: Intermediate Akka.NET](src/Unit-2/README.md)
 
