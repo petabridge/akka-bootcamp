@@ -9,4 +9,9 @@
   5. [Lesson 5: Looking up Actors by Address with `ActorSelection`](lesson5/)
   6. [Lesson 6: The Actor Lifecycle](lesson6/)
 3. [Unit 2: Intermediate Akka.NET](src/Unit-2/README.md)
-
+  1. [Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)
+  2. [Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)
+  3. [Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/)
+  4. [Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/)
+  5. [Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)
+4. [Unit 3: Advanced Akka.NET](src/Unit-3/README.md)
