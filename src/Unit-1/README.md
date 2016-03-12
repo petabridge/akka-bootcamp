@@ -34,17 +34,15 @@ Here is a demonstration of how to set it up:
 
 ## Table of Contents
 
-1. **[Lesson 1 - Actors and the `ActorSystem`](lesson1/)**
-2. **[Lesson 2 - Defining and Handling Messages](lesson2/)**
-3. **[Lesson 3: Using `Props` and `IActorRef`s](lesson3/)**
-4. **[Lesson 4: Child Actors, Hierarchies, and Supervision](lesson4/)**
-5. **[Lesson 5: Looking up actors by address with `ActorSelection`](lesson5/)**
-6. **[Lesson 6: The Actor Lifecycle](lesson6/)**
+1. **[Lesson 1 - Actors and the `ActorSystem`](src/Unit-1/lesson1/README.md)**
+2. **[Lesson 2 - Defining and Handling Messages](src/Unit-1/lesson2/README.md)**
+3. **[Lesson 3: Using `Props` and `IActorRef`s](src/Unit-1/lesson3/README.md)**
+4. **[Lesson 4: Child Actors, Hierarchies, and Supervision](src/Unit-1/lesson4/README.md)**
+5. **[Lesson 5: Looking up actors by address with `ActorSelection`](src/Unit-1/lesson5/README.md)**
+6. **[Lesson 6: The Actor Lifecycle](src/Unit-1/lesson6/README.md)**
 
 ## Get Started
 
 To get started, [go to the /DoThis/ folder](DoThis/) and open `WinTail.sln`.
 
-And then go to [Lesson 1](lesson1/).
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
+And then go to [Lesson 1](src/Unit-1/lesson1/README.md).
