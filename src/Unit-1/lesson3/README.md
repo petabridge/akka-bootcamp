@@ -8,19 +8,19 @@ In this lesson, the code has changed a bit. The change is that the `ConsoleReade
 #### What is an `IActorRef`?
 An [`IActorRef`](http://api.getakka.net/docs/stable/html/56C46846.htm "Akka.NET Stable API Docs - IActorRef") is a reference or handle to an actor. The purpose of an `IActorRef` is to support sending messages to an actor through the `ActorSystem`. You never talk directly to an actor—you send messages to its `IActorRef` and the `ActorSystem` takes care of delivering those messages for you.
 
-#### WTF? I don't actually talk to my actors? Why not?
+#### I don't actually talk to my actors? Why not?
 You do talk to them, just not directly :) You have to talk to them via the intermediary of the `ActorSystem`.
 
 Here are two of the reasons why it is an advantage to send messages to an `IActorRef` and let the underlying `ActorSystem` do the work of getting the messages to the actual actor.
   - It gives you better information to work with and messaging semantics. The `ActorSystem` wraps all messages in an `Envelope` that contains metadata about the message. This metadata is automatically unpacked and made available in the context of your actor.
   - It allows "location transparency": this is a fancy way of saying that you don't have to worry about which process or machine your actor lives in. Keeping track of all this is the system's job. This is essential for allowing remote actors, which is how you can scale an actor system up to handle massive amounts of data (e.g. have it work on multiple machines in a cluster). More on this later.
 
-#### How do I know my message got delivered to the actor?
+#### How do I know my message was delivered to the actor?
 For now, this is not something you should worry about. The underlying `ActorSystem` of Akka.NET itself provides mechanisms to guarantee this, but `GuaranteedDeliveryActors` are an advanced topic.
 
-For now, just trust that delivering messages is the `ActorSystem`s job, not yours. Trust, baby. :)
+For now, just trust that delivering messages is the `ActorSystem`s job, not yours.
 
-#### Okay, fine, I'll let the system deliver my messages. So how do I get an `IActorRef`?
+#### So how do I get an `IActorRef`?
 There are two ways to get an `IActorRef`.
 
 ##### 1) Create the actor
@@ -30,19 +30,19 @@ To make an actor, you have to create it from its context. And **you've already d
 ```csharp
 // assume we have an existing actor system, "MyActorSystem"
 IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()),
-"myFirstActor")
+"myFirstActor");
 ```
 
 As shown in the above example, you create an actor in the context of the actor that will supervise it (almost always). When you create the actor on the `ActorSystem` directly (as above), it is a top-level actor.
 
 You make child actors the same way, except you create them from another actor, like so:
 ```csharp
-// have to create the child actor somewhere inside myFirstActor
+// have to create the child actor somewhere inside MyActorClass
 // usually happens inside OnReceive or PreStart
 class MyActorClass : UntypedActor{
 	protected override void PreStart(){
 		IActorRef myFirstChildActor = Context.ActorOf(Props.Create(() =>
-        new MyChildActorClass()), "myFirstChildActor")
+        new MyChildActorClass()), "myFirstChildActor");
 	}
 }
 ```
@@ -69,12 +69,13 @@ This name is not required. It is perfectly valid to create an actor without a na
 IActorRef myFirstActor = MyActorSystem.ActorOf(Props.Create(() => new MyActorClass()))
 ```
 
-That said, **the best practice is to name your actors**. Why? Because the name of your actor is used in log messages and in identifying actors. Get in the habit, and your future self will thank you when you have to debug something and it has a nice label on it :)
+That said, **the best practice is to name your actors**. Why? Because the name of your actor is used in log messages and in identifying actors. Get in the habit, and your future self will thank you when you have to debug something and it has a nice label on it.
 
-#### Are there different types of `IActorRef`s?
-Actually, yes. The most common, by far, is just a plain-old `IActorRef` or handle to an actor, as above.
+#### What's `Context` Used for?
 
-However, there are also some other `IActorRef`s available to you within the context of an actor. As we said, all actors have a context. That context holds metadata, which includes information  about the current message being processed. That information includes things like the `Parent` or `Children` of the current actor, as well as the `Sender` of the current message.
+All actors exist within a context, which you can acccess by the `Context` property built into every actor. 
+
+The `Context` holds metadata about the current state of the actor, such as the `Sender` of the current message and things like current actors `Parent` or `Children`.
 
 `Parent`, `Children`, and `Sender` all provide `IActorRef`s that you can use.
 
@@ -159,7 +160,8 @@ namespace WinTail
             if (string.IsNullOrEmpty(msg))
             {
                 // signal that the user needs to supply an input
-                _consoleWriterActor.Tell(new Messages.NullInputError("No input received."));
+                _consoleWriterActor.Tell(
+                  new Messages.NullInputError("No input received."));
             }
             else
             {
@@ -186,7 +188,7 @@ namespace WinTail
 
         /// <summary>
         /// Determines if the message received is valid.
-        /// Currently, arbitrarily checks if number of chars in message received is even.
+        /// Checks if number of chars in message received is even.
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
@@ -206,7 +208,7 @@ Again, we do not recommend using the `typeof` syntax. For practice, use both of 
 
 > **Remember**: do NOT try to create `Props` by calling `new Props(...)`.
 >
-> When you do that, kittens die, unicorns vanish, Mordor wins and all manner of badness happens. Let's just not.
+> When you do that, kittens die, unicorns vanish, Mordor wins and all manner of badness happens. Just don't do it.
 
 In this section, we're going to split out the `Props` objects onto their own lines for easier reading. In practice, we usually inline them into the call to `ActorOf`.
 
@@ -243,14 +245,15 @@ Props consoleWriterProps = Props.Create(typeof (ConsoleWriterActor));
 
 Here you can see we're using the typeof syntax, just to show you what it's like. But again, *we do not recommend using the `typeof` syntax in practice*.
 
-Going forward, we'll only use the lambda and generic syntaxes for `Props`.
+Going forward, we'll only use the lambda and generic syntax for `Props`.
 
 #### Make `validationActorProps`
 Add this just to `Main()` also:
 
 ```csharp
 // Program.cs
-Props validationActorProps = Props.Create(() => new ValidationActor(consoleWriterActor));
+Props validationActorProps = Props.Create(
+    () => new ValidationActor(consoleWriterActor));
 ```
 
 As you can see, here we're using the lambda syntax.
@@ -265,7 +268,7 @@ Props consoleReaderProps = Props.Create<ConsoleReaderActor>(validationActor);
 
 This is the generic syntax. `Props` accepts the actor class as a generic type argument, and then we pass in whatever the actor's constructor needs.
 
-### Phase 3: Making `IActorRef`s using various `Props`
+### Phase 3: Making `IActorRef`s using `Props`
 Great! Now that we've got `Props` for all the actors we want, let's go make some actors!
 
 Remember: do not try to make an actor by calling `new Actor()` outside of a `Props` object and/or outside the context of the `ActorSystem` or another `IActorRef`. Mordor and all that, remember?
@@ -284,7 +287,8 @@ Add this to `Main()` on the line after `validationActorProps`:
 
 ```csharp
 // Program.cs
-IActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, "validationActor");
+IActorRef validationActor = MyActorSystem.ActorOf(validationActorProps, 
+    "validationActor");
 ```
 
 #### Make a new `IActorRef` for `consoleReaderActor`
@@ -300,13 +304,14 @@ IActorRef consoleReaderActor = MyActorSystem.ActorOf(consoleReaderProps,
 You may not have noticed it, but we actually are using a special `IActorRef` now: `Sender`. Go look for this in `ValidationActor.cs`:
 
 ```csharp
-// tell sender to continue doing its thing (whatever that may be, this actor doesn't care)
+// tell sender to continue doing its thing 
+// (whatever that may be, this actor doesn't care)
 Sender.Tell(new Messages.ContinueProcessing());
 ```
 
 This is the special `Sender` handle that is made available within an actors `Context` when it is processing a message. The `Context` always makes this reference available, along with some other metadata (more on that later).
 
-### Phase 4: A bit of cleanup
+### Phase 4: Cleanup
 Just a bit of cleanup since we've changed our class structure. Then we can run our app again!
 
 #### Update `ConsoleReaderActor`
@@ -354,7 +359,7 @@ namespace WinTail
         private void DoPrintInstructions()
         {
             Console.WriteLine("Write whatever you want into the console!");
-            Console.WriteLine("Some entries will pass validation, and some won't...\n\n");
+            Console.WriteLine("Some entries will pass validation; some won't...\n\n");
             Console.WriteLine("Type 'exit' to quit this application at any time.\n");
         }
 
@@ -417,19 +422,14 @@ We've left a little landmine as a demonstration. You should blow it up just to s
 1. Run the solution.
 1. Try to shield yourself from everything melting down when your program reaches that line of code.
 
-Okay, so what was the point of that? Contrived as that example was, it should show you that *using the `typeof` syntax for `Props` has no type safety and is best avoided unless you have a damn good reason to use it.*
+Okay, so what was the point of that? Contrived as that example was, it should show you that *using the `typeof` syntax for `Props` has no type safety and is best avoided unless you have a good reason to use it.*
 
 ## Great job! Onto Lesson 4!
 Awesome work! Well done on completing your this lesson. It was a big one.
 
-**Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4).**
+**Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4/README.md).**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

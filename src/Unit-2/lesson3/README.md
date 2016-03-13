@@ -113,8 +113,11 @@ var someMessage = new FetchFeed() {Url = ...};
 // cancellable recurring message send created automatically
 var cancellation =  system
    .Scheduler
-   .ScheduleTellRepeatedlyCancelable(TimeSpan.FromMinutes(30), TimeSpan.FromMinutes(30)
-                 someActor, someMessage, ActorRefs.Nobody);
+   .ScheduleTellRepeatedlyCancelable(TimeSpan.FromMinutes(30), 
+                 TimeSpan.FromMinutes(30)
+                 someActor, 
+                 someMessage, 
+                 ActorRefs.Nobody);
 
 // here we actually cancel the message and prevent it from being delivered
 cancellation.Cancel();
@@ -307,7 +310,8 @@ namespace ChartApp.Actors
     }
 
     /// <summary>
-    /// Unsubscribes <see cref="Subscriber"/> from receiving updates for a given counter
+    /// Unsubscribes <see cref="Subscriber"/> from receiving updates 
+    /// for a given counter
     /// </summary>
     public class UnsubscribeCounter
     {
@@ -372,9 +376,13 @@ namespace ChartApp.Actors
         {
             //create a new instance of the performance counter
             _counter = _performanceCounterGenerator();
-            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMilliseconds(250),
-                TimeSpan.FromMilliseconds(250), Self,
-                new GatherMetrics(), Self, _cancelPublishing);
+            Context.System.Scheduler.ScheduleTellRepeatedly(
+                TimeSpan.FromMilliseconds(250),
+                TimeSpan.FromMilliseconds(250), 
+                Self,
+                new GatherMetrics(), 
+                Self, 
+                _cancelPublishing);
         }
 
         protected override void PostStop()
@@ -555,7 +563,8 @@ namespace ChartApp.Actors
         #region Message types
 
         /// <summary>
-        /// Subscribe the <see cref="ChartingActor"/> to updates for <see cref="Counter"/>.
+        /// Subscribe the <see cref="ChartingActor"/> to 
+        /// updates for <see cref="Counter"/>.
         /// </summary>
         public class Watch
         {
@@ -568,7 +577,8 @@ namespace ChartApp.Actors
         }
 
         /// <summary>
-        /// Unsubscribe the <see cref="ChartingActor"/> to updates for <see cref="Counter"/>
+        /// Unsubscribe the <see cref="ChartingActor"/> to 
+        /// updates for <see cref="Counter"/>
         /// </summary>
         public class Unwatch
         {
@@ -589,12 +599,12 @@ namespace ChartApp.Actors
         private static readonly Dictionary<CounterType, Func<PerformanceCounter>>
             CounterGenerators = new Dictionary<CounterType, Func<PerformanceCounter>>()
         {
-            {CounterType.Cpu, () => new PerformanceCounter("Processor", "% Processor Time",
-                "_Total", true)},
-            {CounterType.Memory, () => new PerformanceCounter("Memory", "% Committed Bytes
-                In Use", true)},
-            {CounterType.Disk, () => new PerformanceCounter("LogicalDisk", "% Disk Time",
-                "_Total", true)},
+            {CounterType.Cpu, () => new PerformanceCounter("Processor", 
+                "% Processor Time", "_Total", true)},
+            {CounterType.Memory, () => new PerformanceCounter("Memory", 
+                "% Committed Bytes In Use", true)},
+            {CounterType.Disk, () => new PerformanceCounter("LogicalDisk",
+                "% Disk Time", "_Total", true)},
         };
 
         /// <summary>
@@ -605,14 +615,17 @@ namespace ChartApp.Actors
 			new Dictionary<CounterType, Func<Series>>()
         {
             {CounterType.Cpu, () =>
-			new Series(CounterType.Cpu.ToString()){ ChartType = SeriesChartType.SplineArea,
-			 Color = Color.DarkGreen}},
+			new Series(CounterType.Cpu.ToString()){ 
+                 ChartType = SeriesChartType.SplineArea,
+                 Color = Color.DarkGreen}},
             {CounterType.Memory, () =>
-			new Series(CounterType.Memory.ToString()){ ChartType = SeriesChartType.FastLine,
-			Color = Color.MediumBlue}},
+			new Series(CounterType.Memory.ToString()){ 
+                ChartType = SeriesChartType.FastLine,
+                Color = Color.MediumBlue}},
             {CounterType.Disk, () =>
-			new Series(CounterType.Disk.ToString()){ ChartType = SeriesChartType.SplineArea,
-			Color = Color.DarkRed}},
+			new Series(CounterType.Disk.ToString()){ 
+                ChartType = SeriesChartType.SplineArea,
+                Color = Color.DarkRed}},
         };
 
         private Dictionary<CounterType, IActorRef> _counterActors;
@@ -895,7 +908,8 @@ private void HandleRemoveSeries(RemoveSeries series)
 
 private void HandleMetrics(Metric metric)
 {
-    if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
+    if (!string.IsNullOrEmpty(metric.Series) && 
+        _seriesIndex.ContainsKey(metric.Series))
     {
         var series = _seriesIndex[metric.Series];
         series.Points.AddXY(xPosCounter++, metric.CounterValue);
@@ -908,7 +922,8 @@ private void HandleMetrics(Metric metric)
 And finally, add these `Receive<T>` handlers to the constructor for `ChartingActor`:
 
 ```csharp
-// Actors/ChartingActor.cs - add these below the original Receive<T> handlers in the ctor
+// Actors/ChartingActor.cs - add these below the original Receive<T>
+// handlers in the ctor
 Receive<RemoveSeries>(removeSeries => HandleRemoveSeries(removeSeries));
 Receive<Metric>(metric => HandleMetrics(metric));
 ```
@@ -940,8 +955,9 @@ private void Main_Load(object sender, EventArgs e)
 
     // CPU button toggle actor
     _toggleActors[CounterType.Cpu] = Program.ChartActors.ActorOf(
-        Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnCpu, CounterType.Cpu,
-            false)).WithDispatcher("akka.actor.synchronized-dispatcher"));
+        Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnCpu, 
+        CounterType.Cpu, false))
+        .WithDispatcher("akka.actor.synchronized-dispatcher"));
 
     // MEMORY button toggle actor
     _toggleActors[CounterType.Memory] = Program.ChartActors.ActorOf(
@@ -951,8 +967,9 @@ private void Main_Load(object sender, EventArgs e)
 
     // DISK button toggle actor
     _toggleActors[CounterType.Disk] = Program.ChartActors.ActorOf(
-       Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnDisk, CounterType.Disk,
-        false)).WithDispatcher("akka.actor.synchronized-dispatcher"));
+       Props.Create(() => new ButtonToggleActor(_coordinatorActor, btnDisk,
+       CounterType.Disk, false))
+       .WithDispatcher("akka.actor.synchronized-dispatcher"));
 
     // Set the CPU toggle to ON so we start getting some data
     _toggleActors[CounterType.Cpu].Tell(new ButtonToggleActor.Toggle());
@@ -994,7 +1011,8 @@ private void btnDisk_Click(object sender, EventArgs e)
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
 
-![Successful Lesson 3 Output](images/dothis-successful-run3.gif)
+![Successful Lesson 3 Output (animated gif)](images/dothis-successful-run3.gif)
+> NOTE: for those of you following along in the eBook, this is an animated GIF of the live charting function working. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson3/images/dothis-successful-run3.gif).
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
@@ -1009,14 +1027,9 @@ Here is a high-level overview of our working system at this point:
 
 ![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_3.png)
 
-**Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4).**
+**Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson4/README.md).**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

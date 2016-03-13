@@ -1,6 +1,4 @@
 # Lesson 1.6: The Actor Lifecycle
-Wow! Look at you--made it all the way to the end of Unit 1! Congratulations. Seriously. We appreciate and commend you on your dedication to learning and growing as a developer.
-
 This last lesson will wrap up our "fundamentals series" on working with actors, and it ends with a critical concept: actor life cycle.
 
 ## Key concepts / background
@@ -21,17 +19,17 @@ There are 5 stages of the actor life cycle in Akka.NET:
 Let's take them in turn.
 
 #### `Starting`
-The actor is waking up! This is the initial state of the actor, when it is being initialized by the `ActorSystem`.
+This is the initial state of the actor, when it is being initialized by the `ActorSystem`.
 
 #### `Receiving`
 The actor is now available to process messages. Its `Mailbox` (more on that later) will begin delivering messages into the `OnReceive` method of the actor for processing.
 
 #### `Stopping`
-During this phase, the actor is cleaning up its state. What happens during this phase depends on whether the actor is being terminated, or restarted.
+During this phase, the actor is cleaning up its state. What happens during this phase depends on whether the actor is being terminated or restarted.
 
 If the actor is being restarted, it's common to save state or messages during this phase to be processed once the actor is back in its Receiving state after the restart.
 
-If the actor is being terminated, all the messages in its `Mailbox` will be sent to the `DeadLetters` mailbox of the `ActorSystem`. `DeadLetters` is a store of undeliverable messages, usually undeliverable because an actor is dead.
+If the actor is being terminated, all the messages in its `Mailbox` will be sent to the `DeadLetters` mailbox of the `ActorSystem`. `DeadLetters` is a store of undeliverable messages, usually because an actor is dead.
 
 #### `Terminated`
 The actor is dead. Any messages sent to its former `IActorRef` will now go to `DeadLetters` instead. The actor cannot be restarted, but a new actor can be created at its former address (which will have a new `IActorRef` but an identical `ActorPath`).
@@ -46,7 +44,7 @@ So, how can you link into the actor life cycle? Here are the 4 places you can ho
 `PreStart` logic gets run before the actor can begin receiving messages and is a good place to put initialization logic. Gets called during restarts too.
 
 #### `PreRestart`
-If your actor accidentally fails (i.e. throws an unhandled Exception) the actor's parent will restart the actor. `PreRestart` is where you can hook in to do cleanup before the actor restarts, or to save the current message for reprocessing later.
+If your actor fails (i.e. throws an unhandled Exception) the actor's parent will restart the actor. `PreRestart` is where you can hook in to do cleanup before the actor restarts, or to save the current message for reprocessing later.
 
 #### `PostStop`
 `PostStop` is called once the actor has stopped and is no longer receiving messages. This is a good place to include clean-up logic. PostStop also gets called during `PreRestart`, but you can override `PreRestart` and simply not call `base.PreRestart` if you want to avoid this behavior during restarts.
@@ -102,8 +100,8 @@ _observer.Start();
 
 // open the file stream with shared read/write permissions
 // (so file can be written to while open)
-_fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, FileAccess.Read,
-    FileShare.ReadWrite);
+_fileStream = new FileStream(Path.GetFullPath(_filePath), FileMode.Open, 
+    FileAccess.Read, FileShare.ReadWrite);
 _fileStreamReader = new StreamReader(_fileStream, Encoding.UTF8);
 
 // read the initial contents of the file and send it to console as first message
@@ -115,7 +113,7 @@ While it works, initialization logic really belongs in the `PreStart()` method.
 
 Time to use your first life cycle method!
 
-Pull all of the above init logic out of the `TailActor` constructor and move it into `PreStart()`. We'll also need to change `_observer`, `_fileStream`, and `_fileStreamReader` to non-readonly fields since they're moving out of the constructor.
+Pull all of the above initialization logic out of the `TailActor` constructor and move it into `PreStart()`. We'll also need to change `_observer`, `_fileStream`, and `_fileStreamReader` to non-readonly fields since they're moving out of the constructor.
 
 The top of `TailActor.cs` should now look like this
 
@@ -165,7 +163,8 @@ Add this to `TailActor`:
 ```csharp
 // TailActor.cs
 /// <summary>
-/// Cleanup OS handles for <see cref="_fileStreamReader"/> and <see cref="FileObserver"/>.
+/// Cleanup OS handles for <see cref="_fileStreamReader"/> 
+/// and <see cref="FileObserver"/>.
 /// </summary>
 protected override void PostStop()
 {
@@ -186,14 +185,9 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ## Great job!
 ### WOW! YOU WIN! Phenomenal work finishing Unit 1.
 
-**Ready for more? [Start Unit 2 now](../../Unit-2 "Akka.NET Bootcamp Unit 2").**
+**Ready for more? [Start Unit 2 now](../../Unit-2/README.md "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

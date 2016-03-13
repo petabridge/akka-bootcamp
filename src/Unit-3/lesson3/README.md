@@ -1,12 +1,12 @@
 # Lesson 3.3: How to use HOCON to configure your routers
 Awesome, look at you go! By now, you understand the massive increases in throughput that routers can give you, and what the different types of routers are.
 
-Now we need to show you how to configure and deploy them :)
+Now we need to show you how to configure and deploy them.
 
 ## Key Concepts / Background
 ### HOCON for `Router`s
 #### Quick review of HOCON
-We first learned about HOCON in [Lesson 2.1](../../Unit-2/lesson1/).
+We first learned about HOCON in [Lesson 2.1](../../Unit-2/lesson1/README.md).
 
 To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/docs/concepts/hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
@@ -164,8 +164,10 @@ We'll add our configuration section first, before we modify the code inside `Git
 Open `App.config` and add the following inside the `akka.actor.deployment` section:
 
 ```xml
-<!-- inside App.config, in the akka.actor.deployment section with all of the other HOCON -->
-<!-- you can add this immediately after the /authenticator deployment specification -->
+<!-- inside App.config, in the akka.actor.deployment 
+      section with all of the other HOCON -->
+<!-- you can add this immediately after the 
+      /authenticator deployment specification -->
 /commander/coordinator{
   router = broadcast-pool
   nr-of-instances = 3
@@ -189,7 +191,8 @@ private void BecomeAsking()
 {
     _canAcceptJobSender = Sender;
     // block, but ask the router for the number of routees. Avoids magic numbers.
-    pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees()).Result.Members.Count();
+    pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees())
+      .Result.Members.Count();
     Become(Asking);
 }
 ```
@@ -206,7 +209,8 @@ Finally, replace the `GithubCommanderActor`'s `PreStart` method with the followi
 // replace GithubCommanderActor's PreStart method with this
 protected override void PreStart()
 {
-    // create a broadcast router who will ask all of them if they're available for work
+    // create a broadcast router who will ask all 
+    // of them if they're available for work
     _coordinator =
         Context.ActorOf(Props.Create(() => new GithubCoordinatorActor())
           .WithRouter(FromConfig.Instance),
@@ -225,15 +229,9 @@ Effectively you've just made the number of concurrent jobs `GithubActors.sln` ca
 ## Great job!
 We've been able to leverage routers for parallelism both via explicit programmatic deployments and via configuration.
 
-**And now it's time to achieve maximum parallelism using the TPL in the next lesson: [Lesson 4 - How to perform work asynchronously inside your actors using `PipeTo`](../lesson4)**
+**And now it's time to achieve maximum parallelism using the TPL in the next lesson: [Lesson 4 - How to perform work asynchronously inside your actors using `PipeTo`](../lesson4/README.md)**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
-
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?

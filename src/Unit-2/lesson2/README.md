@@ -315,19 +315,16 @@ Build and run `SystemCharting.sln` and you should see the following:
 
 ![Successful Lesson 2 Output](images/dothis-successful-run2.gif)
 
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson2/images/dothis-successful-run2.gif).
+
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
 ## Great job!
 Nice work, again. After having completed this lesson you should have a much better understanding of pattern matching in Akka.NET and an appreciation for how `ReceiveActor` is different than `UntypedActor`.
 
-**Let's move onto [Lesson 3 - Using the `Scheduler` to Send Recurring Messages](../lesson3).**
+**Let's move onto [Lesson 3 - Using the `Scheduler` to Send Recurring Messages](../lesson3/README.md).**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

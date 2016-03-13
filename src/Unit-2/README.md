@@ -2,7 +2,7 @@
 
 ![Akka.NET logo](../../images/akka_net_logo.png)
 
-In **[Unit 1](../Unit-1)**, we learned some of the fundamentals of Akka.NET and the Actor Model.
+In **[Unit 1](../Unit-1/README.md)**, we learned some of the fundamentals of Akka.NET and the Actor Model.
 
 In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET, such as pattern matching, basic Akka.NET configuration, scheduled messages, and much more!
 
@@ -13,6 +13,8 @@ In Unit 2 you're going to build your own version of Resource Monitor using Windo
 In fact, here's what the final output from lesson 5 looks like:
 
 ![Akka.NET Bootcamp Unit 2 Output](lesson5/images/syncharting-complete-output.gif)
+
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/blob/master/src/Unit-2/lesson5/images/syncharting-complete-output.gif).
 
 **You're going to build this whole thing using actors**, and you'll be surprised at how small your code footprint is when we're done.
 
@@ -28,16 +30,14 @@ In Unit 2 you will learn:
 
 ## Table of Contents
 
-1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
-2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/)**
-3. **[Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/)**
-4. **[Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/)**
-5. **[Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/)**
+1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/README.md)**
+2. **[Lesson 2: Using `ReceiveActor` for Better Message Handling](lesson2/README.md)**
+3. **[Lesson 3: Using the `Scheduler` to Send Recurring Messages](lesson3/README.md)**
+4. **[Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/README.md)**
+5. **[Lesson 5: Using a `Stash` to Defer Processing of Messages](lesson5/README.md)**
 
 ## Get Started
 
 To get started, [go to the /DoThis/ folder](DoThis/) and open `SystemCharting.sln`.
 
-And then go to [Lesson 1](lesson1/).
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
+And then go to [Lesson 1](lesson1/README.md).

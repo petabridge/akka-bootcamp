@@ -95,8 +95,8 @@ src\Unit1\README.MD - table of contents and instructions for the module
 src\Unit1\DoThis\ - contains the .SLN and project files that you will use through all lessons
 -- lesson 1
 src\Unit1\Lesson1\README.MD - README explaining lesson1
-src\Unit1\Lesson1\DoThis\ - C# classes, images, text files, and other junk you'll need to complete lesson1
-src\Unit1\Lesson1\Completed\ - Got stuck on lesson1? This folder shows the "expected" output for the lesson
+src\Unit1\Lesson1\DoThis\ - C# classes, etc...
+src\Unit1\Lesson1\Completed\ - "Expected" output after completing lesson
 -- repeat for all lessons
 ````
 
