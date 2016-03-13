@@ -197,7 +197,7 @@ Phew! That was a LOT of new information. Now let's put it to use and make someth
 If you build and run `GithubActors.sln`, you'll notice that we can only process one GitHub repository at a time right now:
 
 ![GithubActors without parallelism](images/lesson1-before.gif)
-
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson1/images/lesson1-before.gif).
 
 The current state of our actor hierarchy for processing GitHub repositories currently looks like this:
 
@@ -306,7 +306,8 @@ protected override void PreStart()
     var c3 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()),
         ActorPaths.GithubCoordinatorActor.Name + "3");
 
-    // create a broadcast router who will ask all of them if they're available for work
+    // create a broadcast router who will ask all of them 
+    // if they're available for work
     _coordinator =
         Context.ActorOf(Props.Empty.WithRouter(
             new BroadcastGroup(ActorPaths.GithubCoordinatorActor.Path + "1",
@@ -323,6 +324,7 @@ And with that, you're all set!
 You should be able to run `GithubActors.sln` now and see that you can launch up to three jobs in parallel - a big improvement that didn't take very much code!
 
 ![GithubActors without parallelism](images/lesson1-after.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson1/images/lesson1-after.gif).
 
 As a result of the changes you made, the actor hierarchy for GithubActors now looks like this:
 
@@ -334,15 +336,9 @@ Now we have 3 separate `GithubCoordinatorActor` instances who are all available 
 
 Awesome job! You've successfully used Akka.NET routers to achieve the first layer of parallelism we're going to add to our GitHub scraper!
 
-**Let's move onto [Lesson 2 - Using `Pool` routers to automatically create and manage pools of actors](../lesson2).**
+**Let's move onto [Lesson 2 - Using `Pool` routers to automatically create and manage pools of actors](../lesson2/README.md).**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
-
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?

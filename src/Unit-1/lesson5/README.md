@@ -1,10 +1,4 @@
 # Lesson 1.5: Looking up Actors by Address with `ActorSelection`
-Welcome to lesson 5! Wow, we've come a long way together. First, just **take a quick moment to appreciate that, and give yourself credit for investing your time and energy into your craft**.
-
-Mmm, that was nice.
-
-Okay, let's get on with it!
-
 In this lesson, we're going to learn how to decouple our actors from each other a bit and a new way of communicating between actors: [`ActorSelection`](http://api.getakka.net/docs/stable/html/CC0731A6.htm "Akka.NET Stable API Docs - ActorSelection class"). This lesson is shorter than the previous ones, now that we've laid down a solid conceptual foundation.
 
 ## Key concepts / background
@@ -57,48 +51,20 @@ Since you don't have to couple everything together to make it work, this will sp
 
 #### In a nutshell: `ActorSelection` makes your system much more adaptable to change and also enables it to be more powerful.
 
-### Okay, got it. So when do I actually use `ActorSelection`?
-#### Talking to top-level actors
-The most common case we're aware of for using `ActorSelection` is to send messages to top-level actors with well known names.
+### When should I use `ActorSelection`?
+Petabridge published a detailed post on this subject aptly titled "[When Should I Use `ActorSelection`?](https://petabridge.com/blog/when-should-I-use-actor-selection/)" - read that for the long version.
 
-For example, let's imagine you have a top level actor that handles all authentication for your system. Other actors can send a message to that actor to find out if a user is authenticated or has permission to carry out a certain operation. Let's call this actor `AuthenticationActor`.
-
-Since this is a top-level actor, we now know thanks to our knowledge of hierarchies that its `ActorPath` is going to be `/user/AuthenticationActor`. Using this well-known address, **ANY** actor in the entire system can easily talk to it without needing to previously have its `IActorRef`, as in this example:
-
-```csharp
-// send username to AuthenticationActor for authentication
-// this is an "absolute" actor selection, since it starts at top-level /user/
-Context.ActorSelection("akka://MyActorSystem/user/AuthenticationActor").Tell(username);
-```
-
-> NOTE: `ActorSelection`s can be either absolute or relative. An absolute `ActorSelection` includes the root `/user/` actor in the path. However, an `ActorSelection` could also be relative, such as `Context.ActorSelection("../validationActor")`.
-
-#### Doing elastic processing of large data streams
-A very common extension of the well-known actor pattern is talking to routers ([docs](http://getakka.net/docs/Routing)). Routers are a more advanced topic we go in-depth on in unit 2.
-
-As a quick example, imagine that you had a system that needed to process a large data stream in real time. Let's say for fun that you had a very popular consumer app that had peak usage once or twice a day, like a social app that people love to use on their breaks at work. Each user is generating a flurry of activity that has to be processed and rolled up in realtime. For the sake of this example, imagine that you had an actor running per user tracking the user's activity, and feeding that data to other parts of the system.
-
-(*Remember: actors are cheap! It's totally reasonable from an overhead POV to create actors for every user. Last we checked, Akka.NET could run between 2.5-3 million actors per gig of RAM.*)
-
-There's a lot of data coming in, and you want to make sure the system stays responsive under high loads. What do you do? One good option is to create a router (or job coordinator, as some call it) and have that coordinator manage a pool of workers that do the processing. This pool of workers can then elastically expand/contract to meet the changing processing demands of the system on the fly.
-
-As all these per-user actors are being created and shutting down when users leave the app, how do you consistently feed the data to the right place? You send the data to the `ActorSelection`s for all the coordinators you need to hand off processing to.
-
-#### When not just replying
-A very commonly used `IActorRef` is `Sender`, which is the `IActorRef` made available to every actor context and is a handle to the sender of the message currently being processed. In an earlier lesson, we used this inside `FileValidatorActor`'s `OnReceive` method to easily send a confirmation message back to the sender of the message that was being validated by `FileValidatorActor`.
-
-But what if, as part of processing a message, you need to send a message to another actor who is not the `Sender` of your current message? `ActorSelection` FTW.
-
-#### Reporting to multiple endpoints at once
-Another common case is that you may have some piece of information you want to report to multiple other actors, that perhaps each run a stats service. Using `ActorSelection`, you could send the same piece of data as a message to all of those services at once, if they shared a similar well-known naming scheme. This is one good use case for a wildcard `ActorSelection`.
+Short version: avoid using `ActorSelection` if you can, but sometimes it's the only way to get into communication with another actor for which you don't currently have an `IActorRef`.
 
 ### Caution: Don't pass `ActorSelection`s around
 We encourage you NOT to pass around `ActorSelection`s as pararmeters, the way you do `IActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
 
 ### How do I make an `ActorSelection`?
-Very simple: `var selection = Context.ActorSelection("/path/to/actorName")`
+Very simple: `var selection = Context.ActorSelection("/path/to/actorName");`
 
-> NOTE: **the path to an actor includes the name you assign to an actor when you instantiate it, NOT its class name. If you don't assign a name to an actor when you create it, the system will auto-generate a unique name for you**. For example:
+> NOTE: **the path to an actor includes the name you assign to an actor when you instantiate it, NOT its class name. If you don't assign a name to an actor when you create it, the system will auto-generate a unique name for you**. 
+
+For example:
 
 ```csharp
 class FooActor : UntypedActor {}
@@ -239,15 +205,10 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 Awesome work! Well done on completing this lesson! We're on the home stretch of Unit 1, and you're doing awesome.
 
 
-**Let's move onto [Lesson 6 - The Actor Lifecycle](../lesson6).**
+**Let's move onto [Lesson 6 - The Actor Lifecycle](../lesson6/README.md).**
 
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

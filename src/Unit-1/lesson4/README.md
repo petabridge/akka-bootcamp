@@ -327,7 +327,8 @@ You'll also want to make sure to update the `Props` instance in `Main` that refe
 
 ```csharp
 // Program.cs
-Props validationActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor));
+Props validationActorProps = Props.Create(
+  () => new FileValidatorActor(consoleWriterActor));
 ```
 
 #### Update `DoPrintInstructions`
@@ -548,7 +549,8 @@ namespace WinTail
         #region Message types
 
         /// <summary>
-        /// Signal that the file has changed, and we need to read the next line of the file.
+        /// Signal that the file has changed, and we need to 
+        /// read the next line of the file.
         /// </summary>
         public class FileWrite
         {
@@ -665,7 +667,8 @@ protected override void OnReceive(object message)
 		// here we are creating our first parent/child relationship!
 		// the TailActor instance created here is a child
 		// of this instance of TailCoordinatorActor
-        Context.ActorOf(Props.Create(() => new TailActor(msg.ReporterActor, msg.FilePath)));
+        Context.ActorOf(Props.Create(
+          () => new TailActor(msg.ReporterActor, msg.FilePath)));
     }
 
 }
@@ -736,7 +739,7 @@ Here is a high-level overview of our working system!
 
 ![Akka.NET Unit 1 Tail System Diagram](Images/system_overview.png)
 
-**Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5).**
+**Let's move onto [Lesson 5 - Looking up Actors by Address with `ActorSelection`](../lesson5/README.md).**
 
 ---
 ## Supervision FAQ
@@ -754,11 +757,6 @@ The current message being processed by an actor when it is halted (regardless of
 
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

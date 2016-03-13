@@ -25,6 +25,7 @@ Why? To answer that, we need to review how actors process messages.
 Actors process the contents of their mailbox one message at a time. It looks like this:
 
 ![Animation - Akka.NET actors processing messages in their mailbox](images/how-akkadotnet-actors-receive-messages.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson4/images/how-akkadotnet-actors-receive-messages.gif).
 
 Why is maintaining this behavior critical?
 
@@ -42,7 +43,8 @@ That being said, it's still possible to take advantage of `async` methods and me
 The [`PipeTo` pattern](https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Actor/PipeToSupport.cs) is a simple [extension method](https://msdn.microsoft.com/en-us/library/bb383977.aspx) built into Akka.NET that you can append to any `Task<T>` object.
 
 ```csharp
-public static Task PipeTo<T>(this Task<T> taskToPipe, ICanTell recipient, IActorRef sender = null)
+public static Task PipeTo<T>(this Task<T> taskToPipe, 
+  ICanTell recipient, IActorRef sender = null)
 ```
 
 ### `Task`s are just another source of messages
@@ -63,7 +65,8 @@ Most of the time, you're going to want to have your actors pipe the results of a
 // time to kick off the feed parsing process, and send the results to this same actor
 Receive<BeginProcessFeed>(feed =>
 {
-    SendMessage(string.Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
+    SendMessage(string
+      .Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
     _feedFactory.CreateFeedAsync(feed.FeedUri).PipeTo(Self);
 });
 ```
@@ -73,6 +76,7 @@ Receive<BeginProcessFeed>(feed =>
 Whenever you kick off a `Task<T>` and use `PipeTo` to deliver the results to some `IActorRef` or `ActorSelection`, here's how your actor is really processing its mailbox.
 
 ![Animation - Akka.NET actors processing messages asynchronously in their mailbox using PipeTo](images/how-akkadotnet-actors-receive-messages-async-pipeto.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson4/images/how-akkadotnet-actors-receive-messages-async-pipeto.gif).
 
 In this case we're using `PipeTo` to send the results back to itself, but you can just as easily send these results to different actor.
 
@@ -109,7 +113,6 @@ _httpClient.GetAsync(imageUrl).ContinueWith(httpRequest =>
 
     return new ImageDownloadResult(image, response.StatusCode);
 },
-  TaskContinuationOptions.AttachedToParent &
   TaskContinuationOptions.ExecuteSynchronously)
  .PipeTo(Self);
 ```
@@ -120,29 +123,7 @@ So in this case, we're downloading an image via a [HttpClient](https://msdn.micr
 
 So we do the HTTP code handling inside a `ContinueWith` block and use that to return an `ImageDownloadResult` message that will be piped to the actor using the `PipeTo` block. Pretty easy!
 
-### Why is `await` an Anti-pattern inside actors?
-
-#### `await` is not magic, and breaks the core message processing guarantees
-While `await` is a powerful and convenient construct, it isn't magic. It's just syntactic sugar for TPL continuation. If this is confusing or unfamiliar, we highly recommend reviewing [Stephen Cleary's excellent Async/Await primer](http://blog.stephencleary.com/2012/02/async-and-await.html).
-
-`Await` does two key things which break the core message processing guarantees of Akka.NET:
-
-1. Exits the containing `async` function, while
-2. Sets a continuation point in the containing method where the asynchronous `Task` (the `awaitable`) will return to and continue executing once it is done with its async work.
-
-These actions by `await` have two negative effects:
-
-First, `await` makes it harder to reason about exactly what is happening and on which thread. `ContinueWith` (which `await` is just syntactic sugar for anyway) makes it explicit and clear what is happening, and on which thread it's happening.
-
-As we've discussed, an actor's mailbox pushes messages into the actor's `OnReceive` method as soon as the previous iteration of the `OnReceive` function exits. Whenever you `await` an `async` operation inside the `OnReceive` method, *you prematurely exit* the `OnReceive` method and the mailbox will push a new message into it, which is generally not what is intended.
-
-Second, `await` breaks the "actors process one message at a time" guarantee. By the time the `await`ed `Task` returns and starts referencing things in the `ActorContext`, that context will have changed because the actor has moved on from the original message that `await`ed. Variables such as the `Sender` of the previous message may be different, or the actor might even be shutting down when the `await` call returns to the previous context.
-
-***So don't use `await` inside your actors.*** `Await` is evil inside an actor. `Await` is just syntactic sugar anyway. Use `ContinueWith` instead, and pair it with `PipeTo`.
-
-This will turn the results of `async` operations into messages that get delivered to your actor's mailbox and you can take advantage of `Task` and other TPL methods just as you did before, and you'll enjoy nicely parallel processing!
-
-#### Update: Akka.NET v1.0 now supports `async` / `await` inside `ReceiveActor`
+#### UAkka.NET supports `async` / `await` inside `ReceiveActor`
 
 Per the [Akka.NET v1.0 release notes](https://github.com/akkadotnet/akka.net/releases/tag/v1.0), native support for `async` and `await` is now available inside `ReceiveActor`s.
 
@@ -162,7 +143,7 @@ public class MyActor : ReceiveActor
 
 There's some magic under the hood that takes care of this.
 
-However, the `PipeTo` pattern is still the preferred way to perform async operations inside an actor, as it is more explicit and clearly states what is going on.
+However, the `PipeTo` pattern is still the preferred way to perform async operations inside an actor, as it is more explicit and clearly states what is going on and `await` suspends the actors' mailbox between continuations in order to honor the actor's "one message at a time" guarantee.
 
 ### Do I need to worry about closing over (closures) my actor's internal state when using `PipeTo`?
 **Yes**, you need to close over *any state whose value might change between messages* that you need to use inside your `ContinueWith` or `PipeTo` calls.
@@ -182,7 +163,8 @@ Receive<BeginProcessFeed>(feed =>
     // close over the current value of Sender, since it changes between
     // messages and accessing by property later would give different value
     var senderClosure = Sender;
-    SendMessage(string.Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
+    SendMessage(string
+      .Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
 
     // send result of this async task back to the sender of the current message
     _feedFactory.CreateFeedAsync(feed.FeedUri).PipeTo(senderClosure);
@@ -210,6 +192,7 @@ We're going to leverage the full power of the TPL and allow each of our `GithubW
 Take note - this the current speed of our GitHub scraper at the end of lesson 2:
 
 ![GtihubActors at the end of lesson 2](../lesson2/images/lesson2-after.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson2/images/lesson2-after.gif).
 
 ### Phase 1 - Replace `GithubWorkerActor.InitialReceives`
 
@@ -227,14 +210,15 @@ private void InitialReceives()
 
         // close over the Sender in an instance variable
         var sender = Sender;
-        _gitHubClient.Activity.Starring.GetAllForUser(starrer).ContinueWith<object>(tr =>
-        {
-            // query faulted
-            if (tr.IsFaulted || tr.IsCanceled)
-                return query.NextTry();
-            // query succeeded
-            return new StarredReposForUser(starrer, tr.Result);
-        }).PipeTo(sender);
+        _gitHubClient.Activity.Starring.GetAllForUser(starrer)
+          .ContinueWith<object>(tr =>
+          {
+              // query faulted
+              if (tr.IsFaulted || tr.IsCanceled)
+                  return query.NextTry();
+              // query succeeded
+              return new StarredReposForUser(starrer, tr.Result);
+          }).PipeTo(sender);
 
     });
 
@@ -268,6 +252,7 @@ That's it!
 Build and run `GithubActors.sln` - the performance should be *really fast* now.
 
 ![GithubActors performance after lesson 4](images/lesson4-after.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson4/images/lesson4-after.gif).
 
 **At the start of the lesson, it took us 4 seconds to download our first 4 users** for https://github.com/petabridge/akka-bootcamp. **At the end of the lesson we downloaded 22 users in 4 seconds**. All of this without adding any new actors or doing anything other than just letting the TPL work in concert via `PipeTo`.
 
@@ -277,18 +262,12 @@ Build and run `GithubActors.sln` - the performance should be *really fast* now.
 
 Awesome - now you can use `Task<T>` instances in combination with your actors for maximum concurrency! Hooray!
 
-**Now it's time to move onto the final lesson: [Lesson 5 - How to prevent deadlocks with `ReceiveTimeout`](../lesson5).**
+**Now it's time to move onto the final lesson: [Lesson 5 - How to prevent deadlocks with `ReceiveTimeout`](../lesson5/README.md).**
 
 ## Further reading
 See our [full Akka.NET `PipeTo` sample](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/).
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
-
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?

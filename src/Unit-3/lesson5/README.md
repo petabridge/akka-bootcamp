@@ -108,7 +108,8 @@ private void BecomeAsking()
 {
     _canAcceptJobSender = Sender;
     // block, but ask the router for the number of routees. Avoids magic numbers.
-    pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees()).Result.Members.Count();
+    pendingJobReplies = _coordinator.Ask<Routees>(new GetRoutees())
+      .Result.Members.Count();
     Become(Asking);
 
     // send ourselves a ReceiveTimeout message if no message within 3 seonds
@@ -154,6 +155,7 @@ And that's it!
 Build and run `GithubActors.sln`, and you should see the following output if you try querying the [Akka.NET GitHub Repository](https://github.com/akkadotnet/akka.net) (go give them a star while you're at it!)
 
 ![Lesson 5 live run](images/lesson5-live-run.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson5/images/lesson5-live-run.gif).
 
 And here's what the final output looks like - sadly, for a different repo since hit the GitHub API rate limit with Akka.NET :(
 
@@ -161,8 +163,6 @@ And here's what the final output looks like - sadly, for a different repo since 
 
 ## Great job!
 Wow! You made it, awesome!
-
-We're really proud of you, and want to express our gratitude for sticking with us all the way through. Thank you, and kudos to you. Your dedication to your craft inspires us.
 
 ## Sharing is caring: [click here to Tweet about Bootcamp!](http://ctt.ec/L_Xe0) (you can edit first)
 
@@ -177,16 +177,10 @@ We work with companies all the time to **implement production systems and do adv
 
 We'd love to help you, too.
 
-Gratefully,<br>
-Aaron & Andrew<br>
-Petabridge co-founders
+Gratefully,
+The Petabridge Team.
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

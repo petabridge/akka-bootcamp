@@ -1,8 +1,9 @@
 # Lesson 2.5: Using `Stash` to Defer Processing of Messages
 
-At the end of [Lesson 4](../lesson4/) we discovered a significant bug in how we implemented the **Pause / Resume** functionality on live charts, as you can see below:
+At the end of [Lesson 4](../lesson4/README.md) we discovered a significant bug in how we implemented the **Pause / Resume** functionality on live charts, as you can see below:
 
 ![Lesson 4 Output Bugs](../lesson4/images/dothis-fail4.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson4/images/dothis-fail4.gif).
 
 The bug is that when our `ChartingActor` changes its behavior to `Paused`, it no longer processes the `AddSeries` and `RemoveSeries` messages generated whenever a toggle button is pressed for a particular performance counter.
 
@@ -15,7 +16,7 @@ The answer is to defer processing of `AddSeries` and `RemoveSeries` messages unt
 The mechanism for this is the [`Stash`](http://getakka.net/docs/Stash).
 
 ## Key Concepts / Background
-One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/).
+One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/README.md).
 
 ### What is the `Stash`?
 The `Stash` is a stack-like data structure implemented in your actor to defer messages for later processing.
@@ -58,6 +59,7 @@ Note: calling `Stash()` automatically stashes the current message, so you don't 
 This is what that the full sequence of stashing a message looks like:
 
 ![Stashing Messages with Akka.NET Actors](images/actors-stashing-messages.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson5/images/actors-stashing-messages.gif).
 
 Great! Now that we know how to `Stash` a message for later processing, how do we get messages back out of the `Stash`?
 
@@ -74,12 +76,14 @@ This VIP line is reserved for messages coming from the `Stash`, and any messages
 This is what the sequence of unstashing a message looks like:
 
 ![Unstashing a Single Message with Akka.NET Actors](images/actor-unstashing-single-message.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson5/images/actor-unstashing-single-message.gif).
 
 #### Unstashing the Entire Stash at Once
 If we need to unstash *everything* in our actor's `Stash` all at once, we can use the `Stash.UnstashAll()` method to push the entire contents of the `Stash` into the front of the mailbox.
 
 Here's what calling `Stash.UnstashAll()` looks like:
 ![Unstashing all stashed messages at once with Akka.NET Actors](images/actor-unstashing-all-messages.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson5/images/actor-unstashing-all-messages.gif).
 
 ### Do messages stay in their original order when they come out of the `Stash`?
 It depends on how you take them out of the `Stash`.
@@ -272,6 +276,7 @@ The bug should now be fixed!
 Build and run `SystemCharting.sln` and you should see the following:
 
 ![Successful Unit 2 Output](images/syncharting-complete-output.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson5/images/syncharting-complete-output.gif).
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
@@ -279,14 +284,9 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 
 ### Wohoo! You did it! Unit 2 is complete! Now go enjoy a well-deserved break, and gear up for Unit 3!
 
-**Ready for more? [Start Unit 3 now](../../Unit-3 "Akka.NET Bootcamp Unit 3").**
+**Ready for more? [Start Unit 3 now](../../Unit-3/README.md "Akka.NET Bootcamp Unit 3").**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

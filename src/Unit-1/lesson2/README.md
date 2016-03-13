@@ -330,14 +330,9 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ##  Great job! Onto Lesson 3!
 Awesome work! Well done on completing this lesson.
 
-**Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3).**
+**Let's move onto [Lesson 3 - `Props` and `IActorRef`s](../lesson3/README.md).**
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 

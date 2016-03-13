@@ -2,6 +2,7 @@
 We're going to be spending most of our time in Unit 2 working with the `ChartingActor`, an actor that is responsible for actually plotting all the data on this chart:
 
 ![Pretty output](../lesson5/images/syncharting-complete-output.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/blob/master/src/Unit-2/lesson5/images/syncharting-complete-output.gif).
 
 BUT, if you try to build and run `SystemCharting.sln` right now (in the [/DoThis/ folder](../DoThis/)) for Unit 2 right away, you'll see the following output:
 
@@ -187,6 +188,7 @@ Although this isn't a concept we leverage explicitly in Unit 2, it's a powerful 
 HOCON supports the concept of "fallback" configurations - it's easiest to explain this concept visually.
 
 ![Normal HOCON Config Behavior](images/hocon-config-normally.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson1/images/hocon-config-normally.gif).
 
 To create something that looks like the diagram above, we have to create a `Config` object that has three fallbacks chained behind it using syntax like this:
 
@@ -220,6 +222,7 @@ var c = yourConfig.GetString("c");
 ```
 
 ![Fallback HOCON Config Behavior](images/hocon-config-fallbacks.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-2/lesson1/images/hocon-config-fallbacks.gif).
 
 In this case `yourConfig` will fallback twice to `f2` and return "baz" as the value for key `c`.
 
@@ -235,7 +238,7 @@ The first thing you need to do is declare the `AkkaConfigurationSection` at the 
 <!-- in App.config file -->
 <!-- add this right after the opening <configuration> tag -->
 <configSections>
-    <section name="akka" type="Akka.Configuration.Hocon.AkkaConfigurationSection, Akka" />
+ <section name="akka" type="Akka.Configuration.Hocon.AkkaConfigurationSection, Akka" />
 </configSections>
 ```
 
@@ -294,17 +297,12 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 ## Great job!
 Nice work on completing your first lesson in Unit 2! We covered a lot of concepts and hopefully you're going to walk away from this with an appreciation for just how powerful Akka.NET's configuration model truly is.
 
-**Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2).**
+**Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2/README.md).**
 
 ## Further reading
 As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/docs/HOCON).
 
 ## Any questions?
-
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](https://s3.amazonaws.com/petabridge/public/github_button_grok.png)](https://petabridge.com/bootcamp/signup)
-
-
-**Don't be afraid to ask questions** :).
 
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
