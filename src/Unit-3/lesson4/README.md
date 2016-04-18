@@ -123,7 +123,7 @@ So in this case, we're downloading an image via a [HttpClient](https://msdn.micr
 
 So we do the HTTP code handling inside a `ContinueWith` block and use that to return an `ImageDownloadResult` message that will be piped to the actor using the `PipeTo` block. Pretty easy!
 
-#### UAkka.NET supports `async` / `await` inside `ReceiveActor`
+#### Akka.NET supports `async` / `await` inside `ReceiveActor`
 
 Per the [Akka.NET v1.0 release notes](https://github.com/akkadotnet/akka.net/releases/tag/v1.0), native support for `async` and `await` is now available inside `ReceiveActor`s.
 
