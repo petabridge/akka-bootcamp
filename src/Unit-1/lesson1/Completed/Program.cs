@@ -26,7 +26,7 @@ namespace WinTail
             consoleReaderActor.Tell("start");
 
             // blocks the main thread from exiting until the actor system is shut down
-            MyActorSystem.AwaitTermination();
+            MyActorSystem.WhenTerminated.Wait();
         }
 
         private static void PrintInstructions()
