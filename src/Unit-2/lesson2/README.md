@@ -272,7 +272,7 @@ private void HandleAddSeries(AddSeries series)
 }
 ```
 
-And now let's modify the constructor of the `ChartingActor` to set a `Recieve<T>` hook for `InitializeChart` and `AddSeries`.
+And now let's modify the constructor of the `ChartingActor` to set a `Receive<T>` hook for `InitializeChart` and `AddSeries`.
 
 ```csharp
 // Actors/ChartingActor.cs in the ChartingActor constructor

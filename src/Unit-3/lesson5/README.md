@@ -3,7 +3,7 @@ Wow, look at you! Here we are on our last lesson of Bootcamp together. We want t
 
 In this lesson, we'll be going over how to handle timeouts within actors and prevent deadlocks, where one actor is waiting for another indefinitely.
 
-This lesson will show you how to prevent deadlocks by using a `RecieveTimeout`.
+This lesson will show you how to prevent deadlocks by using a `ReceiveTimeout`.
 
 ## Key Concepts / Background
 ### What is `ReceiveTimeout`?

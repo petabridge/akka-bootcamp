@@ -196,7 +196,7 @@ Take note - this the current speed of our GitHub scraper at the end of lesson 2:
 
 ### Phase 1 - Replace `GithubWorkerActor.InitialReceives`
 
-Open up `Actors/GithubWorkerActor.cs`and replace the `InitialRecieves` method with the following code:
+Open up `Actors/GithubWorkerActor.cs`and replace the `InitialReceives` method with the following code:
 
 ```csharp
 private void InitialReceives()
