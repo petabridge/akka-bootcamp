@@ -200,6 +200,19 @@ Define a new method called `setPauseButtonText` at the top of the `chartingActor
 let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||" else "RESUME ->"
 ```
 
+Then handle the `TogglePause` case in the `charting` function by adding the following to the bottom of the `actor` computation expression:
+
+```fsharp
+let rec charting (mapping : Map<string, Series>, noOfPts : int) =
+    actor{
+        let! message = mailbox.Receive()
+        match message with
+          ...
+          | TogglePause ->
+            setPauseButtonText true
+            return! paused (mapping, noOfPts)
+    }
+```
 
 And finally, let's **update `chartingActor`'s defintion**:
 
