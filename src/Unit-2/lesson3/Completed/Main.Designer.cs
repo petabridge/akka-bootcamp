@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.sysChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btnCpu = new System.Windows.Forms.Button();
             this.btnMemory = new System.Windows.Forms.Button();
@@ -40,23 +40,24 @@
             // 
             // sysChart
             // 
-            chartArea1.Name = "ChartArea1";
-            this.sysChart.ChartAreas.Add(chartArea1);
+            chartArea2.Name = "ChartArea1";
+            this.sysChart.ChartAreas.Add(chartArea2);
             this.sysChart.Dock = System.Windows.Forms.DockStyle.Fill;
-            legend1.Name = "Legend1";
-            this.sysChart.Legends.Add(legend1);
+            legend2.Name = "Legend1";
+            this.sysChart.Legends.Add(legend2);
             this.sysChart.Location = new System.Drawing.Point(0, 0);
             this.sysChart.Name = "sysChart";
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            this.sysChart.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.sysChart.Series.Add(series2);
             this.sysChart.Size = new System.Drawing.Size(684, 446);
             this.sysChart.TabIndex = 0;
             this.sysChart.Text = "sysChart";
             // 
             // btnCpu
             // 
+            this.btnCpu.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCpu.Location = new System.Drawing.Point(562, 274);
             this.btnCpu.Name = "btnCpu";
             this.btnCpu.Size = new System.Drawing.Size(110, 41);
@@ -67,6 +68,7 @@
             // 
             // btnMemory
             // 
+            this.btnMemory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnMemory.Location = new System.Drawing.Point(562, 321);
             this.btnMemory.Name = "btnMemory";
             this.btnMemory.Size = new System.Drawing.Size(110, 41);
@@ -77,6 +79,7 @@
             // 
             // btnDisk
             // 
+            this.btnDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDisk.Location = new System.Drawing.Point(562, 368);
             this.btnDisk.Name = "btnDisk";
             this.btnDisk.Size = new System.Drawing.Size(110, 41);

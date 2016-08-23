@@ -208,7 +208,8 @@ namespace ChartApp.Actors
             var area = _chart.ChartAreas[0];
 
             area.AxisY.Minimum = minAxisY;
-            area.AxisY.Maximum = maxAxisY;
+            area.AxisY.Maximum = Math.Max(1.0d, maxAxisY);
+
 
             if (allPoints.Count > 2)
             {
