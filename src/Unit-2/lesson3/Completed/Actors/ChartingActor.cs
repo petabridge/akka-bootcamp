@@ -160,7 +160,7 @@ namespace ChartApp.Actors
                 area.AxisX.Minimum = minAxisX;
                 area.AxisX.Maximum = maxAxisX;
                 area.AxisY.Minimum = minAxisY;
-                area.AxisY.Maximum = maxAxisY;
+                area.AxisY.Maximum = Math.Max(1.0d, maxAxisY);
             }
         }
     }
