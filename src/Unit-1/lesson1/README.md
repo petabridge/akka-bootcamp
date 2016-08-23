@@ -152,6 +152,8 @@ Once you've made your edits, press `F5` to compile and run the sample in Visual 
 You should see something like this, when it is working correctly:
 ![Petabridge Akka.NET Bootcamp Lesson 1.1 Correct Output](Images/example.png)
 
+> **N.B.** In Akka.NET 1.0.8 and later, you'll receive a warning about the JSON.NET serializer being deprecated in a future released of Akka.NET (1.5). This is true and you can [learn how to start using the beta of the Wire serializer package here](http://getakka.net/docs/Serialization#how-to-setup-wire-as-default-serializer). This is mainly meant to be a warning for Akka.NET users running Akka.Persistence or Akka.Remote, which both depend on the default serializer.
+
 
 ### Once you're done
 Compare your code to the code in the [Completed](Completed/) folder to see what the instructors included in their samples.

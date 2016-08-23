@@ -54,7 +54,7 @@ namespace ChartApp
             _chartActor.Tell(PoisonPill.Instance);
 
             //shut down the ActorSystem
-            Program.ChartActors.Shutdown();
+            Program.ChartActors.Terminate();
         }
 
         #endregion

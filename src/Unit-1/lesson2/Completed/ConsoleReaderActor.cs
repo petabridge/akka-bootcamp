@@ -5,7 +5,7 @@ namespace WinTail
 {
     /// <summary>
     /// Actor responsible for reading FROM the console. 
-    /// Also responsible for calling <see cref="ActorSystem.Shutdown"/>.
+    /// Also responsible for calling <see cref="ActorSystem.Terminate"/>.
     /// </summary>
     class ConsoleReaderActor : UntypedActor
     {
@@ -58,7 +58,7 @@ namespace WinTail
             else if (String.Equals(message, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
                 // shut down the entire actor system (allows the process to exit)
-                Context.System.Shutdown();
+                Context.System.Terminate();
             }
             else
             {

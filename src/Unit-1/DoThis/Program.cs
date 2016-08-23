@@ -25,7 +25,7 @@ namespace WinTail
             //YOU NEED TO FILL IN HERE
 
             // blocks the main thread from exiting until the actor system is shut down
-            MyActorSystem.AwaitTermination();
+            MyActorSystem.WhenTerminated.Wait();
         }
 
         private static void PrintInstructions()

@@ -63,6 +63,8 @@ You will then get a second window, where you enter the URL of the repo you want 
 ![Unit 3 GithubScraper App Live Run](lesson5/images/lesson5-live-run.gif)
 > NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/master/src/Unit-3/lesson5/images/lesson5-live-run.gif).
 
+> N.B. When working with the Github API, choose a repository that has a smaller number of followers - you might run out of API tokens rather quickly otherwise. If you run out of API tokens, repeat the steps above to get another OAuth token.
+
 ## Get Started
 To get started, [go to the /DoThis/ folder](DoThis/) and open `GithubActors.sln`.
 

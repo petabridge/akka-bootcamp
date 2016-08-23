@@ -183,7 +183,6 @@ That's it! Hit `F5` to run the solution and it should work exactly the same as b
 Compare your code to the solution in the [Completed](Completed/) folder to see what the instructors included in their samples.
 
 ## Great job!
-### WOW! YOU WIN! Phenomenal work finishing Unit 1.
 
 **Ready for more? [Start Unit 2 now](../../Unit-2/README.md "Akka.NET Bootcamp Unit 2").**
 

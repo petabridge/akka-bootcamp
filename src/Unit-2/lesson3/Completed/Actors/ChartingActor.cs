@@ -137,6 +137,7 @@ namespace ChartApp.Actors
             if (!string.IsNullOrEmpty(metric.Series) && _seriesIndex.ContainsKey(metric.Series))
             {
                 var series = _seriesIndex[metric.Series];
+                if (series.Points == null) return; // means we're shutting down
                 series.Points.AddXY(xPosCounter++, metric.CounterValue);
                 while(series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
                 SetChartBoundaries();
@@ -154,13 +155,20 @@ namespace ChartApp.Actors
             minAxisX = xPosCounter - MaxPoints;
             maxAxisY = yValues.Count > 0 ? Math.Ceiling(yValues.Max()) : 1.0d;
             minAxisY = yValues.Count > 0 ? Math.Floor(yValues.Min()) : 0.0d;
+            
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+             if (minAxisY == maxAxisY)
+                maxAxisY++;
+
+            var area = _chart.ChartAreas[0];
+
+            area.AxisY.Minimum = minAxisY;
+            area.AxisY.Maximum = maxAxisY;
+
             if (allPoints.Count > 2)
             {
-                var area = _chart.ChartAreas[0];
                 area.AxisX.Minimum = minAxisX;
                 area.AxisX.Maximum = maxAxisX;
-                area.AxisY.Minimum = minAxisY;
-                area.AxisY.Maximum = maxAxisY;
             }
         }
     }

@@ -132,7 +132,7 @@ public class MyActor : ReceiveActor
 {
        public MyActor()
        {
-             Receive<SomeMessage>(async some => {
+             ReceiveAsync<SomeMessage>(async some => {
                     //we can now safely use await inside this receive handler
                     await SomeAsyncIO(some.Data);
                     Sender.Tell(new EverythingIsAllOK());
