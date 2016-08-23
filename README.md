@@ -139,7 +139,7 @@ This course expects the following:
 
 [Petabridge](http://petabridge.com/) is a company dedicated to making it easier for .NET developers to build distributed applications.
 
-**[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](http://petabridge.com/)!
+**[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](http://eepurl.com/bSlGWr)!
 
 ---
 Copyright 2015-2016 Petabridge, LLC
