@@ -87,7 +87,7 @@ Before we can get into the meat of this lesson `IActorRef`s, we have to do a bit
 We're going to move all our validation code into its own actor. It really doesn't belong in the `consoleReaderActor`. Validation deserves to have its own actor.
 
 #### Create `validationActor`
-Make a new class called `validationActor` and fill it with all the validation logic that is currently in `consoleReaderActor`:
+Make a new function called `validationActor` and fill it with all the validation logic that is currently in `consoleReaderActor`:
 
 ```fsharp
 let validationActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message =
