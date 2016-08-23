@@ -11,7 +11,7 @@ module Actors =
         | "exit" -> Exit
         | _ -> Message(str)
 
-    let consoleReaderActor (consoleWriter: ActorRef) (mailbox: Actor<_>) message = 
+    let consoleReaderActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = 
         let (|EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd|) (msg:string) = 
             match msg.Length, msg.Length % 2 with
             | 0,_ -> EmptyMessage
