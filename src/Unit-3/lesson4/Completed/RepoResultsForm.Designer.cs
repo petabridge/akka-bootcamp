@@ -36,7 +36,7 @@
             this.RepoName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.URL = new System.Windows.Forms.DataGridViewLinkColumn();
             this.Shared = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Watchers = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Issues = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Stars = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Forks = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dgUsers)).BeginInit();
@@ -52,7 +52,7 @@
             this.RepoName,
             this.URL,
             this.Shared,
-            this.Watchers,
+            this.Issues,
             this.Stars,
             this.Forks});
             this.dgUsers.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -106,10 +106,10 @@
             this.Shared.HeaderText = "SharedStars";
             this.Shared.Name = "Shared";
             // 
-            // Watchers
+            // Issues
             // 
-            this.Watchers.HeaderText = "Watchers";
-            this.Watchers.Name = "Watchers";
+            this.Issues.HeaderText = "Open Issues";
+            this.Issues.Name = "Issues";
             // 
             // Stars
             // 
@@ -150,7 +150,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn RepoName;
         private System.Windows.Forms.DataGridViewLinkColumn URL;
         private System.Windows.Forms.DataGridViewTextBoxColumn Shared;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Watchers;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Issues;
         private System.Windows.Forms.DataGridViewTextBoxColumn Stars;
         private System.Windows.Forms.DataGridViewTextBoxColumn Forks;
     }

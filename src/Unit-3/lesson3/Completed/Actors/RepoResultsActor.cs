@@ -58,7 +58,7 @@ namespace GithubActors.Actors
                     row.Cells[1].Value = repo.Name;
                     row.Cells[2].Value = repo.HtmlUrl;
                     row.Cells[3].Value = similarRepo.SharedStarrers;
-                    row.Cells[4].Value = repo.SubscribersCount;
+                    row.Cells[4].Value = repo.OpenIssuesCount;
                     row.Cells[5].Value = repo.StargazersCount;
                     row.Cells[6].Value = repo.ForksCount;
                     _userDg.Rows.Add(row);
