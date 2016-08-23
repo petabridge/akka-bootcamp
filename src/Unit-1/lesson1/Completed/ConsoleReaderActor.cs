@@ -24,7 +24,8 @@ namespace WinTail
             {
                 // shut down the system (acquire handle to system via
                 // this actors context)
-                Context.System.Shutdown();
+                //Context.System.Shutdown();
+                Context.System.Terminate();
                 return;
             }
 
