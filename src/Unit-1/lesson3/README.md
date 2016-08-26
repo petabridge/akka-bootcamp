@@ -376,7 +376,7 @@ namespace WinTail
             {
                 // if user typed ExitCommand, shut down the entire actor
                 // system (allows the process to exit)
-                Context.System.Shutdown();
+                Context.System.Terminate();
                 return;
             }
 
