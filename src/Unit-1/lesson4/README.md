@@ -234,9 +234,7 @@ Recall that we could have many clones of this exact structure working in paralle
 > You may also hear people use the term "error kernel," which refers to how much of the system is affected by the failure. You may also hear "error kernel pattern," which is just fancy shorthand for the approach I just explained where we push dangerous behavior to child actors to isolate/protect the parent.
 
 ## Exercise
-To start off, we need to do some upgrading of our system. We are going to add in the components which will enable our actor system to actually monitor a file for changes. We have most of the classes we need, but there are a few pieces of utility code that we need to add.
-
-We're almost done! We really just need to add the `TailCoordinatorActor`, `TailActor`, and the `FileObserver`.
+To start off, we need to do some upgrading of our system. We are going to add in the components which will enable our actor system to actually monitor a file for changes. We have most of the classes we need, but there are a few pieces of utility code that we need to add: the `TailCoordinatorActor`, `TailActor`, and the `FileObserver`. 
 
 The goal of this exercise is to show you how to make a parent/child actor relationship.
 
@@ -305,9 +303,6 @@ namespace WinTail
                     Sender.Tell(new Messages.ContinueProcessing());
                 }
             }
-
-
-
         }
 
         /// <summary>
@@ -399,7 +394,6 @@ namespace WinTail
 
             // start watching
             _watcher.EnableRaisingEvents = true;
-
         }
 
         /// <summary>
@@ -436,9 +430,7 @@ namespace WinTail
                 // this is a little microoptimization
                 _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
             }
-
         }
-
     }
 }
 ```
@@ -463,6 +455,7 @@ namespace WinTail
     public class TailCoordinatorActor : UntypedActor
     {
         #region Message types
+        
         /// <summary>
         /// Start tailing the file at user-specified path.
         /// </summary>
@@ -491,7 +484,7 @@ namespace WinTail
 
             public string FilePath { get; private set; }
         }
-
+        
         #endregion
 
         protected override void OnReceive(object message)
@@ -501,13 +494,9 @@ namespace WinTail
                 var msg = message as StartTail;
                 // YOU NEED TO FILL IN HERE
             }
-
         }
     }
 }
-
-
-
 ```
 
 #### Create `IActorRef` for `TailCoordinatorActor`
@@ -670,7 +659,6 @@ protected override void OnReceive(object message)
         Context.ActorOf(Props.Create(
           () => new TailActor(msg.ReporterActor, msg.FilePath)));
     }
-
 }
 ```
 
