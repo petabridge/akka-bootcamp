@@ -25,17 +25,8 @@ An `ActorSelection` will also match two different `IActorRef`s with the same nam
 We think of `ActorSelection` as both a process and an object: the process of looking actor(s) up by `ActorPath`, and the object returned from that lookup, which allows us to send messages to the actor(s) matched by the expression we looked up.
 
 ### Why should I care about `ActorSelection`?
-Always a great question, glad you asked! There are a number of benefits that `ActorSelection` gives you.
+In general, you should always try to use `IActorRef`s instead. But there are a couple of scenarios where `ActorSelection` are the right tool for the job and we cover those in more detail here: "[When Should I Use ActorSelection](https://petabridge.com/blog/when-should-I-use-actor-selection/)."
 
-#### Location transparency
-What [location transparency](http://getakka.net/docs/concepts/location-transparency) actually means is that whenever you send a message to an actor, you don't need to know where they are within an actor system, which might span hundreds of computers. You don't care if your actors are all in one process or spread across 100 machines around the world. You just have to know that actors' address (its `ActorPath`).
-
-Think of it like calling someone's cell phone number - you don't need to know that your friend Bob is in Seattle, Washington, USA in order to place a call to them. You just need to dial Bob's cell phone number and your cellular network provider will take care of the rest.
-
-The location transparency (enabled by `ActorSelection`) is essential for creating scalable systems that can handle high-availability requirements. We'll go into this more in Units 2 & 3.
-
-#### Loose coupling
-Since you don't have to constantly be holding on to `IActorRef`s to store and pass around, your actors don't get tightly coupled to each other. Just like in object-oriented programming, this is a Very Good Thing. It means the components of your system stay loose and easily adaptable / reusable. It lowers the cost of maintaining your codebase.
 
 #### Dynamic behavior
 Dynamic behavior is an advanced concept that we dive into in the beginning of Unit 2, but for now just be aware that the behavior of a given actor can be very flexible. This lets actors easily represent things like Finite State Machines so a small code footprint can easily handle complex situations.
