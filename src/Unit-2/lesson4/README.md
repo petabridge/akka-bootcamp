@@ -202,7 +202,7 @@ Yes, but the syntax is a little different inside an `UntypedActor`. To switch be
 
 These are the API calls inside an `UntypedActor`:
 
-* `Context.Become(Receive rec)` - changes behavior without preservering the previous behavior on the stack;
+* `Context.Become(Receive rec)` - changes behavior without preserving the previous behavior on the stack;
 * `Context.BecomeStacked(Receive rec)` - pushes a new behavior on the stack or
 * `Context.UnbecomeStacked()` - pops the current behavior and switches to the previous (if applicable.)
 
