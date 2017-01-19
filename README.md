@@ -1,6 +1,6 @@
 # Akka.NET Bootcamp
 
-WWelcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in C# and F#") Bootcamp! This is a free, self-directed learning course brought to you by the folks at [Petabridge](http://petabridge.com/ "Petabridge - Akka.NET Training, Consulting, and Support").
+Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in C# and F#") Bootcamp! This is a free, self-directed learning course brought to you by the folks at [Petabridge](http://petabridge.com/ "Petabridge - Akka.NET Training, Consulting, and Support").
 
 [![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](images/grok.png)](https://petabridge.com/bootcamp/signup)
 

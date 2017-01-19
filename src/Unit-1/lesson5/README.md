@@ -48,7 +48,7 @@ Petabridge published a detailed post on this subject aptly titled "[When Should 
 Short version: avoid using `ActorSelection` if you can, but sometimes it's the only way to get into communication with another actor for which you don't currently have an `IActorRef`.
 
 ### Caution: Don't pass `ActorSelection`s around
-We encourage you NOT to pass around `ActorSelection`s as pararmeters, the way you do `IActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
+We encourage you NOT to pass around `ActorSelection`s as parameters, the way you do `IActorRef`s. The reason for this is that `ActorSelection`s can be relative instead of absolute, in which case it wouldn't produce the intended effects when passed to an actor with a different location in the hierarchy.
 
 ### How do I make an `ActorSelection`?
 Very simple: `var selection = Context.ActorSelection("/path/to/actorName");`
