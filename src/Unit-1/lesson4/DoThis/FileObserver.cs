@@ -10,7 +10,6 @@ namespace buildup
     public class FileObserver : IDisposable
     {
         private readonly IActorRef _tailActor;
-        private readonly string _absoluteFilePath;
         private FileSystemWatcher _watcher;
         private readonly string _fileDir;
         private readonly string _fileNameOnly;
@@ -18,7 +17,6 @@ namespace buildup
         public FileObserver(IActorRef tailActor, string absoluteFilePath)
         {
             _tailActor = tailActor;
-            _absoluteFilePath = absoluteFilePath;
             _fileDir = Path.GetDirectoryName(absoluteFilePath);
             _fileNameOnly = Path.GetFileName(absoluteFilePath);
         }
