@@ -205,7 +205,6 @@ public class MyActor : UntypedActor
                 else return Directive.Restart;
             });
     }
-
     ...
 }
 ```
@@ -506,14 +505,11 @@ In `Main()`, create a new `IActorRef` for `TailCoordinatorActor` and then pass i
 // Program.Main
 // make tailCoordinatorActor
 Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
-IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps,
-    "tailCoordinatorActor");
+IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps, "tailCoordinatorActor");
 
 // pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
-Props fileValidatorActorProps = Props.Create(() =>
-new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
-IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps,
-    "validationActor");
+Props fileValidatorActorProps = Props.Create(() => new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
+IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps, "validationActor");
 ```
 
 #### Add `TailActor`
@@ -622,7 +618,6 @@ namespace WinTail
                 {
                     _reporterActor.Tell(text);
                 }
-
             }
             else if (message is FileError)
             {
