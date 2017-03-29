@@ -88,7 +88,7 @@ Think of [`Props`](http://api.getakka.net/docs/stable/html/CA4B795B.htm "Akka.NE
 
 Right now, `Props` probably feels like overkill. (If so, no worries.) But here's the deal.
 
-The most basic `Props`, like we've seen, seem to only include the ingredients needed to make an actor—it's class and required args to its constructor.
+The most basic `Props`, like we've seen, seem to only include the ingredients needed to make an actor—its class and required args to its constructor.
 
 BUT, what you haven't seen yet is that `Props` get extended to contain deployment information and other configuration details that are needed to do remote work. For example, `Props` are serializable, so they can be used to remotely create and deploy entire groups of actors on another machine somewhere on the network!
 
