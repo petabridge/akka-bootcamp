@@ -1,7 +1,5 @@
 # Akka.NET Bootcamp - Unit 2: Intermediate Akka.NET
 
-![Akka.NET logo](../../images/akka_net_logo.png)
-
 In **[Unit 1](../Unit-1/README.md)**, we learned some of the fundamentals of Akka.NET and the Actor Model.
 
 In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET, such as pattern matching, basic Akka.NET configuration, scheduled messages, and much more!
