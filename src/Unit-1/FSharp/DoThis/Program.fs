@@ -22,7 +22,7 @@ let printInstructions () =
 let main argv = 
     // initialize an actor system
     // YOU NEED TO FILL IN HERE
-    
+        
     printInstructions ()
     
     // make your first actors using the 'spawn' function
@@ -31,5 +31,5 @@ let main argv =
     // tell the consoleReader actor to begin
     // YOU NEED TO FILL IN HERE
 
-    myActorSystem.AwaitTermination ()
+    myActorSystem.WhenTerminated.Wait ()
     0
