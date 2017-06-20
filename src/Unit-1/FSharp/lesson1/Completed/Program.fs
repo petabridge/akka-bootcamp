@@ -25,5 +25,5 @@ let main argv =
     let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
     let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
     consoleReaderActor <! Actors.Start
-    myActorSystem.AwaitTermination ()
+    myActorSystem.WhenTerminated.Wait ()
     0

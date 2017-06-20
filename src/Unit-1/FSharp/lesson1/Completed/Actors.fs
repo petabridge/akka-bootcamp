@@ -20,7 +20,7 @@ module Actors =
     let consoleReaderActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = 
         let line = Console.ReadLine ()
         match line with
-        | Exit -> mailbox.Context.System.Shutdown ()
+        | Exit -> mailbox.Context.System.Terminate () |> ignore
         | Message(input) -> 
             consoleWriter <! input
             mailbox.Self  <! Continue
