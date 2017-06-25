@@ -62,11 +62,11 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Akka">
-      <HintPath>packages\Akka.0.8.0\lib\net45\Akka.dll</HintPath>
+      <HintPath>packages\Akka.1.2.0\lib\net45\Akka.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Akka.FSharp">
-      <HintPath>packages\Akka.FSharp.0.8.0\lib\net45\Akka.FSharp.dll</HintPath>
+      <HintPath>packages\Akka.FSharp.1.2.0\lib\net45\Akka.FSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack">
@@ -78,7 +78,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="FsPickler">
-      <HintPath>packages\FsPickler.0.9.11\lib\net45\FsPickler.dll</HintPath>
+      <HintPath>packages\FsPickler.1.3.7\lib\net45\FsPickler.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
@@ -86,12 +86,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

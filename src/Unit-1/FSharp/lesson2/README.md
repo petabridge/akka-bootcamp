@@ -1,30 +1,30 @@
 # Lesson 1.2: Defining and Handling Messages
-In this lesson, you will make your own message types and learn how to control processing flow within your actors, based on your custom messages. Doing so will teach you the fundamentals of communicating in a message- and event-driven manner within your actor system.
+In this lesson, you will make your own message types and learn how to control the processing flow within your actors, based on your custom messages. Doing so will teach you the fundamentals of communicating in a message- and event-driven manner within your actor system.
 
-This lesson picks where Lesson 1 left off, and continues extending our budding systems of console actors. In addition to defining our own messages, we'll also add some simple validation for the input we enter and take action based on the results of that validation.
+This lesson picks up where Lesson 1 left off, and continues extending our budding systems of console actors. In addition to defining our own messages, we'll also add some simple validation for the input we enter and take action based on the results of that validation.
 
 ## Key concepts / background
 ### What is a message?
-You can make your own custom messages and leverage the F# type system to represent messages adopting algebraic data types.
+You can leverage the F# type system by using algebraic data types to represent custom messages for your actors.
 
-F# has a very rich and powerful type system. It has built in support for Tuple, Discriminated Union and Record-Type. Each of these structured representations of your model can be used semantically to represent the message.
+F# has a very rich and powerful type system. It has built in support for *Tuples*, *Discriminated Unions* and *Record Types*. Each of these structured representations of your model can be used semantically to represent the message.
 
 ```fsharp
- // this is a tuple that could be used as an Actor Message
+ // this is a Tuple that could be used as an Actor Message
  let tuple = (42, “some text”, true)
  ```
 
-Tuples are useful but have some disadvantages. First of all, the pairs in a tuple are not labeled, and this can lead to confusion about which element is in which place. Second, Tuples are predefined and this makes it hard to differentiate between them.
+*Tuples* are useful but have some disadvantages. First of all, the elements in a tuple are not labeled, and this can lead to confusion about which element is in which place. Second, Tuples are predefined and this makes it hard to differentiate between them.
 
 ```fsharp
- // this is a Record-Type that could be used as Actor Message
+ // this is a Record Type that could be used as an Actor Message
  type Person = { name:string; age:int }
  ```
 
- A Record-Type has labeled elements and can be used as well. Record-types provides out of the box structural equality.
+ A *Record Type* has labeled elements and can be used as well. Record types provides structural equality out-of-the-box.
 
 ```fsharp
- // this is a Discrimination Union that could be used as Actor Message
+ // this is a Discriminated Union that could be used as an Actor Message
  type InputResult =
  | InputSuccess of string
  | InputError of reason: string * errorType: ErrorType
@@ -34,11 +34,11 @@ Tuples are useful but have some disadvantages. First of all, the pairs in a tupl
 
 
 ### How do I send an actor a message?
-As you saw in the first lesson, you can send the actor (known as "tell") the message.
-Akka.Fsharp Api provide a convenient and dedicated infix operator ` <! ` to send message.
+As you saw in the first lesson, you can send (or "tell") messages to the actors defined in your system.
+Akka.Fsharp Api provide a convenient and dedicated infix operator `<!` to send messages to a given actor.
 
 ### How do I handle a message?
-This is entirely up to you, regardless of Akka.NET. you can handle (or not handle) a message as you choose within an actor.
+This is entirely up to you, regardless of Akka.NET. You can handle (or ignore) a message any way you want within an actor.
 
 You can use pattern matching to verify and compare the message type with a logical structure. Pattern matching is also able to deconstruct the type received as message and extract the encapsulated state.
 ```fsharp
@@ -55,10 +55,12 @@ You can use pattern matching to verify and compare the message type with a logic
  | _ -> ()
 ```
 
+The `box` function above boxes your message to an `Object` so the pattern matching can compare to a type using the `:?` operator. In the example above, we try to map the message either against a `string` or an `InputResult`.
+
 ### What happens if my actor receives a message it doesn't know how to handle?
 Actors ignore messages they don't know how to handle. Whether or not this ignored message is logged as such depends on the type of actor.
 
-Using Akka.Fsharp Api, we can create Actor using an imperative or a functional style as described in Lesson 1.1. 	Either implementation of an Actor, unhandled messages are not logged as unhandled unless you manually mark them as such, for example:
+Using Akka.Fsharp Api, we can create Actor using an imperative or a functional style as described in Lesson 1.1. In both cases, unhandled messages are not logged as such unless you manually mark them using `Unhandled`, as shown below:
 
 ```fsharp
 // Functional implementation of an Actor
@@ -81,9 +83,9 @@ type MyActor() =
         | _ -> x.Unhandled message
 ```
 
-In the previous example, we have used pattern matching to detect the message type. In F# pattern matching are exhaustive matching, and the compiler will warm you if one or more matching are missing. The last of the branch matching we used the underscore pattern, this pattern is a wildcard that collect and match all the missing matching. The wildcard (\_) pattern is very useful in the Akka.NET Actors ecosystem to be able to handle the unhandled messages.
+In the previous example, we use pattern matching to detect the message type. In F#, pattern matching is exhaustive, meaning that the compiler will warm you if one or more matchings are missing. In the last branch, we use the underscore pattern as a wildcard that collects and matches all the missing cases. The wildcard pattern `\_` is very useful in the Akka.NET Actors ecosystem to be able to handle unhandled messages.
 
-However, in a `ReceiveActor`—which we cover in Unit 2—unhandled messages are automatically sent to `Unhandled` so the logging is done for you.
+However, in an actor of type `ReceiveActor` (which we cover in Unit 2), unhandled messages are automatically sent to `Unhandled` so the logging is done for you.
 
 ### How do my actors respond to messages?
 This is up to you - you can respond by simply processing the message, replying to the `Sender`, forwarding the message onto another actor, or doing nothing at all.
@@ -94,38 +96,41 @@ This is up to you - you can respond by simply processing the message, replying t
 In this exercise, we will introduce some basic validation into our system. We will then use custom message types to signal the results of that validation back to the user.
 
 ### Phase 1: Define your own message types
-#### Add a new type called `Messages` and the corresponding file, `Messages.fs`
-We will use the discriminate union type to represent and define system-level messages to signal events. The pattern we'll be using is to turn events into messages. That is, when an event occurs, we will send an appropriate message defined as discriminated union to the actor(s) that need to know about it, and then listen/respond to that message as needed in the receiving actors.
+#### Add a new module called `Messages` in the corresponding file, `Messages.fs`
+We will use a discriminated union type to represent and define system-level messages to signal events. The pattern we'll be using is to turn events into messages. That is, when an event occurs, we will send an appropriate message defined as a discriminated union to the actor(s) that need to know about it, and then listen/respond to that message as needed in the receiving actors.
 
-#### Make `InputResult` message
-Define a discrimination union type `InputResult ` in the file `Messages.fs`.
-The reason behind the use of a discrimination union is because this message can have two different outcome and types.
-The discrimination union has two cases. The first is the `InputResult` carrying the state of the result as string type. This message type is used to signal that the user's input was good and passed validation.
-The second case is `InputError` carrying the state of the error type and the reason for the failure, This message is used to signal invalid input occurring.
-To describe and distinguish between different error cases signaled by the `InputError` message utilize discrimination union `ErrorType`.
+Note: `Messages.fs` must be added above the other F# file in the solution.
+
+#### Create the `InputResult` message
+Define a discriminated union type called `InputResult` in `Messages.fs`.
+The reason behind the use of a discriminated union is because this message can have two different outcomes.
+The first outcome is represented by the `InputSuccess` case, carrying the state of the result as a `string` type. This message type is used to signal that the user input was correct and passed validation.
+The second case is `InputError`, carrying the state of the error type and the reason for the failure. This message is used to signal that the user input is invalid.
+In order to distinguish between the different possible errors made by the user, `InputError` uses another discriminated union called `ErrorType`.
 
 ```fsharp
 // in Messages.fs
-// User provided blank input.
+// The user didn't provide any input, or the input was not valid.
 type ErrorType =
 | Null
 | Validation
 
-// Discrimination union for signaling that user input was valid or invalid.
+// Discriminated union to determine whether or not the user input was valid.
 type InputResult =
 | InputSuccess of string
 | InputError of reason: string * errorType: ErrorType
 ```
-> **NOTE:** You can compare your final `Messages.fs` to [Messages.fs](Completed/Messages.fs) to make sure you're set up right before we go on.
+> **NOTE:** You can compare your final `Messages.fs` to [Messages.fs](Completed/Messages.fs) to make sure you're set up before we go on with the rest of the exercise.
 
 ### Phase 2: Turn events into messages and send them
 Great! Now that we've got messages types set up to wrap our events, let's use them in `consoleReaderActor` and `consoleWriterActor`.
 
-#### Update ` Actors `
+#### Update `Actors.fs`
 Replace the pattern matching logic used to handle messages in `consoleReaderActor` as follows. Notice that we're now listening for our custom `InputError` messages, and taking action when we get an error.
 
 ```fsharp
-// in consoleReaderActor
+// in Actors.fs
+// consoleReaderActor
   match box message with
   | :? Command as command ->
       match command with
@@ -133,69 +138,78 @@ Replace the pattern matching logic used to handle messages in `consoleReaderActo
       | _ -> ()
   | :? InputResult as inputResult ->
       match inputResult with
-      | InputError(_,_) as error -> consoleWriter <! error
+      | InputError(_, _) as error -> consoleWriter <! error
       | _ -> ()
   | _ -> ()
+
   getAndValidateInput ()
  ```
 
-While we're at it, let's add few new functions `doPrintInstructions()`, `getAndValidateInput()` and `EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd` Active Pattern to `consoleReaderActor`.
-For the implementation of `getAndValidateInput()` we are using pattern matching to determinate the input receive.
+While we're at it, let's add a couple of helper functions to `Actors.fs`:
+- `EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd` Active Pattern
+- `doPrintInstructions ()`
+- `getAndValidateInput ()` (inside `consoleReaderActor`)
+
+For the implementation of `getAndValidateInput ()` we use pattern matching to determine the input received from the console.
 These are internal functions that our `consoleReaderActor` will use to get input from the console and determine if it is valid. (Currently, "valid" just means that the input had an even number of characters. It's an arbitrary placeholder.)
 
 ```fsharp
-// in top of Actors.fs before consoleReaderActor
+// At the top of Actors.fs, before consoleReaderActor
+// Active pattern matching to determine the charateristics of the message (empty, even length, or odd length)
 let (|EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd|) (msg:string) =
     match msg.Length, msg.Length % 2 with
-    | 0,_ -> EmptyMessage
-    | _,0 -> MessageLengthIsEven
-    | _,_ -> MessageLengthIsOdd
+    | 0, _ -> EmptyMessage
+    | _, 0 -> MessageLengthIsEven
+    | _, _ -> MessageLengthIsOdd
 
-// in consoleReaderActor,
+// At the top of Actors.fs, before consoleReaderActor
+// Print instructions to the console
 let doPrintInstructions () =
     Console.WriteLine "Write whatever you want into the console!"
     Console.WriteLine "Some entries will pass validation, and some won't...\n\n"
     Console.WriteLine "Type 'exit' to quit this application at any time.\n"
 
-// Reads input from console, validates it, then signals appropriate response
-// (continue processing, error, success, etc.).
+// Inside consoleReaderActor
+// Read and validate the input from the console, then signal the appropriate action (success and continue processing, or error)
 let getAndValidateInput () =
     let line = Console.ReadLine()
     match line with
-    | Exit -> mailbox.Context.System.Shutdown ()
+    | Exit -> mailbox.Context.System.Terminate () |> ignore
     | Message(input) ->
         match input with
         | EmptyMessage ->
             mailbox.Self <! InputError ("No input received.", ErrorType.Null)
         | MessageLengthIsEven ->
-            consoleWriter <! InputSuccess ("Thank you! Message was valid.")
+            consoleWriter <! InputSuccess ("Thank you! The message was valid.")
             mailbox.Self  <! Continue
         | _ ->
-            mailbox.Self <! InputError ("Invalid: input had odd number of characters.", ErrorType.Validation)
+            mailbox.Self <! InputError ("The message is invalid (odd number of characters)!", ErrorType.Validation)
 ```
 
-#### Update `Program`
-Remove the definition and call to `printInstructions()` from `Program.fs`. As a quick checkpoint, your `main` should now look like this:
+#### Update `Program.fs`
+Remove the definition and call to `printInstructions ()` from `Program.fs`. As a quick checkpoint, your `main` should now look like this:
 ```fsharp
 let main argv =
     let myActorSystem = System.create "MyActorSystem" (Configuration.load ())
     let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)
     let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
+
     consoleReaderActor <! Start
-    myActorSystem.AwaitTermination ()
+    myActorSystem.WhenTerminated.Wait ()
     0
 ```
 
-Not much has changed here, just a bit of cleanup.
+We don't need `printInstructions ()` here anymore, as we've just added `doPrintInstructions ()` in `Actors.fs` in the previous step.
 
-#### Update `consoleWriterActor`
+#### Update `consoleWriterActor` in `Actors.fs`
 Now, let's get `consoleWriterActor` to handle these new types of messages.
 
-We are adding a helper function `printInColor` that will output messages in the console using different ForegroundColor.
-Change the pattern matching inside the mailbox of `consoleWriterActor` as follows:
+We are adding a helper function `printInColor` that will output messages in the console using a different `ForegroundColor`.
+Change the pattern matching inside the mailbox of `consoleWriterActor` to the following:
 
 ```fsharp
-// in consoleWriterActor.fs
+// in Actors.fs
+// consoleWriterActor
 let printInColor color message =
     Console.ForegroundColor <- color
     Console.WriteLine (message.ToString ())
@@ -204,17 +218,18 @@ let printInColor color message =
 match box message with
 | :? InputResult as inputResult ->
     match inputResult with
-    | InputError (reason,_) -> printInColor ConsoleColor.Red reason
+    | InputError (reason, _) -> printInColor ConsoleColor.Red reason
     | InputSuccess reason -> printInColor ConsoleColor.Green reason
 | _ -> printInColor ConsoleColor.Yellow (message.ToString ())
 ```
 
-As you can see here, we are making `consoleWriterActor` pattern match against the type of message it receives, and take different actions according to what type of message it receives.
+As you can see here, we are making `consoleWriterActor` pattern match against the type of message it receives, and take different actions accordingly.
 
 ### Phase 3: Build and run!
 You should now have everything you need in place to be able to build and run. Give it a try!
 
 If everything is working as it should, you will see an output like this:
+
 ![Petabridge Akka.NET Bootcamp Lesson 1.2 Correct Output](Images/working_lesson2.jpg)
 
 ### Once you're done
