@@ -138,7 +138,7 @@ Then, let's update the call for message validation inside `consoleReaderActor` s
 let getAndValidateInput () =
     let line = Console.ReadLine()
     match line with
-    | Exit -> mailbox.Context.System.Shutdown ()
+    | Exit -> mailbox.Context.System.Terminate () |> ignore
     | _ -> select "/user/validationActor" mailbox.Context.System <! line
 ```
 
@@ -159,7 +159,7 @@ let fileValidatorActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message =
 
 Then, let's use `ActorSelection` to communicate between `fileValidatorActor` and `tailCoordinatorActor`! Update `fileValidatorActor` like this:
 ```fsharp
-select "user/tailCoordinatorActor" mailbox.Context.System <! StartTail(message, consoleWriter)
+select "/user/tailCoordinatorActor" mailbox.Context.System <! StartTail(message, consoleWriter)
 ```
 
 And finally, let's update `fileValidator` in `Program.fs` to reflect the different constructor arguments:
