@@ -6,7 +6,7 @@ In this lesson, the code has changed a bit. The change is that the `consoleReade
 ## Key concepts / background
 ### `IActorRef`s
 #### What is an `IActorRef`?
-An `IActorRef` is a reference or handle to an actor. The purpose of an `IActorRef` is to support sending messages to an actor through the `ActorSystem`. You never talk directly to an actor—you send messages to its `IActorRef` and the `ActorSystem` takes care of delivering those messages for you.
+An `IActorRef` is a reference or handle to an actor. The purpose of an `IActorRef` is to support sending messages to an actor through the `ActorSystem`. You never talk directly to an actor — you send messages to its `IActorRef` and the `ActorSystem` takes care of delivering those messages for you.
 
 #### WTF? I don't actually talk to my actors? Why not?
 You do talk to them, just not directly :) You have to talk to them via the intermediary of the `ActorSystem`.
@@ -24,7 +24,7 @@ For now, just trust that delivering messages is the `ActorSystem`s job, not your
 There are two ways to get an `IActorRef`.
 
 ##### 1) Create the actor
-Actors form intrinsic supervision hierarchies (we cover in detail in lesson 5). This means there are "top level" actors, which essentially report directly to the `ActorSystem` itself, and there are "child" actors, which report to other actors.
+Actors form intrinsic supervision hierarchies (we cover those in detail in lesson 4). This means there are "top level" actors, which essentially report directly to the `ActorSystem` itself, and there are "child" actors, which report to other actors.
 
 To make an actor, you have to create it from its context. We have been using the ``actorOf`` and ``actorOf2`` functions provided by Akka.FSharp, which are shorthand functions that define our actor behavior. And **you've already done this!** Remember this?
 ```fsharp
@@ -32,7 +32,7 @@ To make an actor, you have to create it from its context. We have been using the
 let myFirstActor = spawn myActorSystem "myFirstActor" (actorOf firstActor)
 ```
 
-Without the use of the shorthand functions ``actorOf`` and ``actorOf2``, you can define the actor by using an actor computation expression. The expression is expected to be represented as self-invoking recursive function. It is important to remember, that each actor returning point should point to the next recursive function call - any other value returned will result in stopping the current actor
+Without the use of the shorthand functions ``actorOf`` and ``actorOf2``, you can define the actor by using an `actor` computation expression. The expression is expected to be represented as self-invoking recursive function. It is important to remember that each actor returning point should point to the next recursive function call - any other value returned will result in the current actor being stopped.
 ```fsharp
 let firstActor (mailbox:Actor<_>) =
   let rec loop() = actor {
@@ -50,7 +50,7 @@ As shown in the examples above, you create an actor in the context of the actor 
 
 You make child actors the same way, except you create them from another actor, like so:
 ```fsharp
-// have to create the child actor somewhere inside myFirstActor
+// you have to create the child actor somewhere inside myFirstActor
 let firstActor (mailbox:Actor<_>) =
   let myFirstChildActor = spawn mailbox.Context "myFirstChildActor" (actorOf firstChildActor)
 
@@ -93,14 +93,15 @@ Make a new function called `validationActor` and fill it with all the validation
 let validationActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message =
     let (|EmptyMessage|MessageLengthIsEven|MessageLengthIsOdd|) (msg:string) =
         match msg.Length, msg.Length % 2 with
-        | 0,_ -> EmptyMessage
-        | _,0 -> MessageLengthIsEven
-        | _,_ -> MessageLengthIsOdd
+        | 0, _ -> EmptyMessage
+        | _, 0 -> MessageLengthIsEven
+        | _, _ -> MessageLengthIsOdd
 
     match message with
     | EmptyMessage ->  consoleWriter <! InputError ("No input received.", ErrorType.Null)
-    | MessageLengthIsEven -> consoleWriter <! InputSuccess ("Thank you! Message was valid.")
-    | _ -> consoleWriter <! InputError ("Invalid: input had odd number of characters.", ErrorType.Validation)
+    | MessageLengthIsEven -> consoleWriter <! InputSuccess ("Thank you! The message was valid.")
+    | _ -> consoleWriter <! InputError ("The message is invalid (odd number of characters)!", ErrorType.Validation)
+
     mailbox.Sender ()  <! Continue
 ```
 
@@ -123,7 +124,7 @@ let main argv =
     consoleReaderActor <! Start
 
     // blocks the main thread from exiting until the actor system is shut down
-    myActorSystem.AwaitTermination ()
+    myActorSystem.WhenTerminated.Wait ()
     0
 ```
 
@@ -143,9 +144,7 @@ Just a bit of cleanup since we've changed our class structure. Then we can run o
 #### Update `consoleReaderActor`
 Now that `validationActor` is doing our validation work, we should really slim down `consoleReaderActor`. Let's clean it up and have it just hand the message off to the `validationActor` for validation.
 
-We'll also need to store a reference to `validationActor` inside the `consoleReaderActor`, and we don't need a reference to the the `consoleWriterActor` anymore, so let's do some cleanup.
-
-Modify your version of `consoleReaderActor` to match the below:
+We'll also need to store a reference to `validationActor` inside the `consoleReaderActor`, and we don't need a reference to the the `consoleWriterActor` anymore. Modify your version of `consoleReaderActor` to match the below:
 
 ```fsharp
 let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message =
@@ -160,7 +159,7 @@ let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message =
         | _ -> Message(str)
 
     let getAndValidateInput () =
-        let line = Console.ReadLine()
+        let line = Console.ReadLine ()
         match line with
         | Exit -> mailbox.Context.System.Shutdown ()
         | _ -> validation <! line
@@ -171,6 +170,7 @@ let consoleReaderActor (validation: IActorRef) (mailbox: Actor<_>) message =
         | Start -> doPrintInstructions ()
         | _ -> ()
     | _ -> ()
+    
     getAndValidateInput ()
 ```
 
