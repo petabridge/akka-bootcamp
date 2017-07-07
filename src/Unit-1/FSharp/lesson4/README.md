@@ -215,7 +215,8 @@ Recall that we could have many clones of this exact structure working in paralle
 > You may also hear people use the term "error kernel," which refers to how much of the system is affected by the failure. You may also hear "error kernel pattern," which is just fancy shorthand for the approach I just explained where we push dangerous behavior to child actors to isolate/protect the parent.
 
 ## Exercise
-To start off, we need to do some upgrading of our system. We are going to add in the components which will enable our actor system to actually monitor a file for changes. We have most of the code we need, but there are a few pieces of utility code that we need to add.
+
+It's time to implement our `tail` functionality! To start off, we need to do some upgrading of our system. We are going to add in the components which will enable our actor system to actually monitor a file for changes. We have most of the code we need, but there are a few pieces of utility code that we need to add.
 
 The goal of this exercise is to show you how to make a parent/child actor relationship.
 
@@ -225,7 +226,7 @@ The goal of this exercise is to show you how to make a parent/child actor relati
 We will need a new message for the `tailCoordinatorActor` to start monitoring the file for changes. The `tailActor` will be responsible for reading the contents of the file and sending them to another actor to display the contents. Go to `Messages.fs` and add the following lines to the end of the file:  
 
 ```fsharp
-//Messages to start and stop observering file content for any changes
+//Messages to start and stop observing file content for any changes
 type TailCommand =
 | StartTail of filePath: string * reporterActor: IActorRef  //File to observe, actor to display contents
 | StopTail of filePath: string                             
@@ -242,7 +243,7 @@ Great! We have our new messages in place.
 Since we're shifting to actually looking at files now, go ahead and replace `validationActor` with this code for `fileValidatorActor`:
 
 ```fsharp
-let fileValidatorActor (consoleWriter: IActorRef) (tailCordinator: IActorRef) (mailbox: Actor<_>) message =
+let fileValidatorActor (consoleWriter: IActorRef) (tailCoordinator: IActorRef) (mailbox: Actor<_>) message =
     let (|IsFileUri|_|) path = if File.Exists path then Some path else None
 
     let (|EmptyMessage|Message|) (msg:string) =
@@ -255,19 +256,11 @@ let fileValidatorActor (consoleWriter: IActorRef) (tailCordinator: IActorRef) (m
         consoleWriter <! InputError("Input was blank. Please try again.\n", ErrorType.Null)
         mailbox.Sender () <! Continue
     | IsFileUri _ ->
-        consoleWriter <! InputSuccess (sprintf "Starting processing for %s" message)
-        tailCordinator <! StartTail(message, consoleWriter)
+        consoleWriter <! InputSuccess(sprintf "Starting processing for %s" message)
+        tailCoordinator <! StartTail(message, consoleWriter)
     | _ ->
         consoleWriter <! InputError (sprintf "%s is not an existing URI on disk." message, ErrorType.Validation)
         mailbox.Sender () <! Continue
-
-```
-
-
-You'll also want to make sure to update the  `Main` that references the class:
-
-```fsharp
-let tailCoordinatorActor = spawn myActorSystem "tailCoordinatorActor" (actorOf2 Actors.tailCoordinatorActor)
 
 ```
 
@@ -319,7 +312,7 @@ Great! Now we're ready to create our actor classes that will form a parent/child
 Recall that in the hierarchy we're going for, there is a `tailCoordinatorActor` that coordinates child actors to actually monitor and tail files. For now it will only supervise one child, `tailActor`, but in the future it can easily expand to have many children, each observing/tailing a different file.
 
 #### Add `tailActor`
-Add the `tailActor` to the `Actors.fs` file. This actor is actually responsible for tailing a given file. We are going to define the actor by using an actor computation expression. It is important to remember, that the actor should point to the next recursive function call when using the actor computation expression - any other value returned will result in stopping the current actor. We need this actor to initialize the `FileObserver` to monitor the file to read any changes. `tailActor` will be created and supervised by `tailCoordinatorActor` in a moment.  
+Add the `tailActor` to the `Actors.fs` file. This actor is actually responsible for tailing a given file. We are going to define the actor by using an actor computation expression. It is important to remember that the actor should point to the next recursive function call when using the actor computation expression - any other value returned will result in the current actor being stopped. We need this actor to initialize the `FileObserver` to monitor the file to read any changes. `tailActor` will be created and supervised by `tailCoordinatorActor` in a moment.  
 
 For now, add the following code in `Actor.fs`:
 ```fsharp
@@ -362,13 +355,14 @@ let tailCoordinatorActor (mailbox:Actor<_>) message =
 In `Main()`, create a new `IActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
 
 ```fsharp
-// main
-// make tailCoordinatorActor
+// in Program.fs
 
 let tailCoordinatorActor = spawnOpt myActorSystem "tailCoordinatorActor" (actorOf2 Actors.tailCoordinatorActor) [ SpawnOption.SupervisorStrategy(strategy ()) ]
 // pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
 let fileValidatorActor = spawn myActorSystem "validationActor" (actorOf2 (Actors.fileValidatorActor consoleWriterActor tailCoordinatorActor))
 ```
+
+The `strategy()` function used to configure the `SupervisorStrategy` is currently missing! Don't worry, we'll add it to our main function in just a minute.
 
 #### Add `TailActor` as a child of `TailCoordinatorActor`
 Quick review: `tailActor` is to be a child of `tailCoordinatorActor` and will therefore be supervised by `tailCoordinatorActor`. This also means that `tailActor` must be created in the context of `tailCoordinatorActor`. Go to `tailCoordinatorActor` and add the following code to create your first child actor!
@@ -441,7 +435,7 @@ Here is a high-level overview of our working system!
 ### How long do child actors have to wait for their supervisor?
 This is a common question we get: What if there are a bunch of messages already in the supervisor's mailbox waiting to be processed when a child reports an error? Won't the crashing child actor have to wait until those are processed until it gets a response?
 
-Actually, no. When an actor reports an error to its supervisor, it is sent as a special type of "system message." *System messages jump to the front of the supervisor's mailbox and are processed before the supervisor returns to its normal processing.*
+Actually, no. When an actor reports an error to its supervisor, it is sent as a special type of "system message."
 
 > *System messages jump to the front of the supervisor's mailbox and are processed before the supervisor returns to its normal processing.*
 
