@@ -1,8 +1,9 @@
-# Lesson 2.4: Using `Stash` to Defer Processing of Messages
+# Lesson 2.5: Using `Stash` to Defer Processing of Messages
 
-At the end of [Lesson 3](../lesson3/) we discovered a significant bug in how we implemented the **Pause / Resume** functionality on live charts, as you can see below:
+At the end of [Lesson 4](../lesson4/) we discovered a significant bug in how we implemented the **Pause / Resume** functionality on live charts, as you can see below:
 
-![Lesson 3 Output Bugs](../lesson3/images/dothis-fail4.gif)
+![Lesson 4 Output Bugs](../lesson4/images/dothis-fail4.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/raw/FSharp/src/Unit-2/lesson4/images/dothis-fail4.gif).
 
 The bug is that when our `ChartingActor` changes its behavior to `Paused`, it no longer processes the `AddSeries` and `RemoveSeries` messages generated whenever a toggle button is pressed for a particular performance counter.
 
@@ -15,7 +16,7 @@ The answer is to defer processing of `AddSeries` and `RemoveSeries` messages unt
 The mechanism for this is the [`Stash`](http://getakka.net/docs/Stash).
 
 ## Key Concepts / Background
-One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 3](../lesson3/).
+One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/).
 
 ### What is the `Stash`?
 The `Stash` is a stack-like data structure implemented in your actor to defer messages for later processing.
@@ -84,7 +85,7 @@ let mySampleActor = spawnOvrd system "actor" (actorOf sampleActor) <| {defOvrd w
 ### Real-World Scenario: Authentication with Buffering of Messages
 Now that you know what the `Stash` is and how it works, let's revisit the `userActor` from our chat room example and solve the problem with throwing away messages before the user was `authenticated`.
 
-This is the `userActor` we designed in the Concepts area of lesson 3, with behavior switching for different states of authentication:
+This is the `userActor` we designed in the Concepts area of [Lesson 4](../lesson4/), with behavior switching for different states of authentication:
 
 
 ```fsharp
@@ -122,7 +123,7 @@ let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
 
 ```
 
-When we first saw that chat room `userActor` example in lesson 3, we were focused on switching behaviors to enable authentication in the first place. But we ignored a major problem with the `userActor`: during the `authenticating` phase, we simply throw away any attempted `OutgoingMessage` and `IncomingMessage` instances.
+When we first saw that chat room `userActor` example in [Lesson 4](../lesson4/), we were focused on switching behaviors to enable authentication in the first place. But we ignored a major problem with the `userActor`: during the `authenticating` phase, we simply throw away any attempted `OutgoingMessage` and `IncomingMessage` instances.
 
 We're losing messages to/from the user for no good reason, because we didn't know how to delay message processing. **Yuck!** Let's fix it.
 
@@ -165,7 +166,7 @@ Now any messages the `userActor` receives while it's `authenticating` will be av
 Excellent! Now that you understand the `Stash`, let's put it to work to fix our system graphs.
 
 ## Exercise
-In this section, we're going to fix the **Pause / Resume** bug inside the `ChartingActor` that we noticed at the end of Lesson 4.
+In this section, we're going to fix the **Pause / Resume** bug inside the `ChartingActor` that we noticed at the end of [Lesson 4](../lesson4/).
 
 ### Add `Stash` Method Calls to Message Handlers Inside `paused` Behavior
 Go to the `paused` method declared inside `chartingActor`.
