@@ -1,4 +1,4 @@
-# Lesson 2.3: Switching Actor Behavior at Run-time
+# Lesson 2.4: Switching Actor Behavior at Run-time with BecomeStacked and UnbecomeStacked
 
 In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/docs/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
 
@@ -255,13 +255,13 @@ Here is a high-level overview of our working system at this point:
 
 What happens if I toggle a chart on or off when the `ChartingActor` is in a paused state?
 
-![Lesson 3 Output Bugs](images/dothis-fail4.gif)
+![Lesson 4 Output Bugs](images/dothis-fail4.gif)
 
 ### DOH!!!!!! It doesn't work!
 
 *This is exactly the problem we're going to solve in the next lesson*, using a message `Stash` to defer processing of messages until we're ready.
 
-**Let's move onto [Lesson 4 - Using `Stash` to Defer Processing of Messages](../lesson4).**
+**Let's move onto [Lesson 5 - Using `Stash` to Defer Processing of Messages](../lesson5).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
