@@ -1,5 +1,5 @@
-# Lesson 2.2: Using the `Scheduler` to Send Messages Later
-Welcome to Lesson 2.2!
+# Lesson 2.3: Using the `Scheduler` to Send Messages Later
+Welcome to Lesson 2.3!
 
 Where are we? At this point, we have our basic chart set up, along with our `chartingActor`  which is supposed to be graphing system metrics. Except right now, `chartingActor` isn't actually graphing anything! It's time to change that.
 
@@ -546,7 +546,7 @@ let load (myActorSystem:ActorSystem) =
 #### Wait a minute, what's this `SpawnOption.Dispatcher` nonsense?!
 `spawnOpt` allows you to configure your actor deployments programmatically. In this instance we decided to use the `[SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")]` to guarantee that each of the `buttonToggleActor` instances run on the UI thread.
 
-As we saw in Lesson 2.1, you can also configure the `Dispatcher` for an actor via the HOCON config. So if an actor has a `Dispatcher` set in HOCON, *and* one declared programmatically via `spawnOpt`, which wins?
+As we saw in [Lesson 2.1](../lesson1/), you can also configure the `Dispatcher` for an actor via the HOCON config. So if an actor has a `Dispatcher` set in HOCON, *and* one declared programmatically via `spawnOpt`, which wins?
 
 *In case of a conflict, `Config` wins and `spawnOpt` loses .* Any conflicting settings declared by the `spawnOpt` fluent interface will always be overriden by what was declared in configuration.
 
@@ -568,7 +568,7 @@ btnDisk.Click.Add (fun _ -> toggleActors.[CounterType.Disk] <! Toggle)
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
 
-![Successful Lesson 2 Output](images/dothis-successful-run3.gif)
+![Successful Lesson 3 Output](images/dothis-successful-run3.gif)
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
@@ -583,7 +583,7 @@ Here is a high-level overview of our working system at this point:
 
 ![Akka.NET Bootcamp Unit 2 System Overview](images/system_overview_2_3.png)
 
-**Let's move onto [Lesson 3 - Switching Actor Behavior at Run-time with `Become` and `Unbecome`](../lesson3).**
+**Let's move onto [Lesson 4 - Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](../lesson4).**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
