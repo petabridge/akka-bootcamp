@@ -7,9 +7,8 @@ open System.Windows.Forms
 open System.Windows.Forms.DataVisualization.Charting
 open Akka.Util.Internal
 
-
 [<AutoOpen>]
-module Form = 
+module Form =
     let sysChart = new Chart(Name = "sysChart", Text = "sysChart", Dock = DockStyle.Fill, Location = Point(0, 0), Size = Size(684, 446), TabIndex = 0)
     let form = new Form(Name = "Main", Visible = true, Text = "System Metrics", AutoScaleDimensions = SizeF(6.F, 13.F), AutoScaleMode = AutoScaleMode.Font, ClientSize = Size(684, 446))
     let chartArea1 = new ChartArea(Name = "ChartArea1")
@@ -24,8 +23,8 @@ module Form =
     sysChart.EndInit ()
     form.ResumeLayout false
 
-    let load (myActorSystem:ActorSystem) = 
+    let load (myActorSystem:ActorSystem) =
         let chartActor = spawn myActorSystem "charting" (actorOf (Actors.chartingActor sysChart))
-        let series = ChartDataHelper.randomSeries ("FakeSeries1" ) None None
+        let series = ChartDataHelper.randomSeries "FakeSeries1" None None
         chartActor <! InitializeChart(Map.ofList [(series.Name, series)])
         form

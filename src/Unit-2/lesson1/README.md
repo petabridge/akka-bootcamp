@@ -200,7 +200,7 @@ let yourConfig = ConfigurationFactory.ParseString "a = bar"
 If we request a value for a HOCON object with key "a", using the following code:
 
 ```fsharp
-let a = yourConfig.GetString("a");
+let a = yourConfig.GetString "a"
 ```
 
 Then the internal HOCON engine will match the first HOCON file that contains a definition for key `a`. In this case, which returns the value "bar".
@@ -212,7 +212,7 @@ The reason is because HOCON only searches through fallback `Config` objects if a
 What happens if we run the following code, given that `c` isn't defined?
 
 ```fsharp
-let c = yourConfig.GetString("c");
+let c = yourConfig.GetString "c"
 ```
 
 ![Fallback HOCON Config Behavior](images/hocon-config-fallbacks.gif)

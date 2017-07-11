@@ -7,16 +7,16 @@ open Akka.FSharp
 
 [<AutoOpen>]
 module Messages =
-    type InitializeChart = 
-    | InitializeChart of initialSeries: Map<string, Series>
+    type InitializeChart =
+        | InitializeChart of initialSeries: Map<string, Series>
 
 /// Actors used to intialize chart data
 [<AutoOpen>]
-module Actors = 
+module Actors =
     let chartingActor (chart: Chart) message =
         match message with
-        | InitializeChart series -> 
+        | InitializeChart series ->
             chart.Series.Clear ()
-            series |> Map.iter (fun k v -> 
+            series |> Map.iter (fun k v ->
                 v.Name <- k
                 chart.Series.Add(v))
