@@ -1,8 +1,8 @@
 # Lesson 2.2: Using `ReceiveActor` for Smarter Message Handling
 
 In this lesson we're going to introduce the concept of `ReceiveActor` ([docs](http://api.getakka.net/docs/stable/html/B124B2AF.htm "Akka.NET - ReceiveActor")).
-This concept is mainly used in the **C#** API to easily handle more sophisticated types of pattern matching and message handling in Akka.NET.
-In F# however, the concept of `ReceiveActor` is not as important, pattern matching being an inherent part of the language.
+This concept is mainly used in the **C#** API to deal more easily with sophisticated types of pattern matching and message handling in Akka.NET.
+In F# however, the concept of `ReceiveActor` is not as important, pattern matching already being an inherent part of the language.
 
 ## Key Concepts / Background
 ### Pattern matching
@@ -85,15 +85,9 @@ foo <! "AkkaDotNet test" // Will be handled, prints "Message processed: AkkaDotN
 foo <! { Count = 5; Max = 11 } // Won't be handled
 foo <! { Count = 3; Max = 11 } // Will be handled, prints "Valid Foo: {Count = 3;  Max = 11;}"
 ```
-#### *Much better*.
 
-So, what's the secret sauce that helped us simplify and clean up all of that pattern matching code from earlier?
-
-### The secret sauce of `ReceiveActor`
-The secret sauce that cleans up all that pattern matching code is **the `Receive<'T>` handler**.
-
-A `ReceiveActor` lets you easily add a layer of strongly typed, compile-time pattern matching to your actors.
-You can match messages easily based on their type, and then use typed **predicates** to perform additional checks or validations and decide whether or not your actor can handle a specific message.
+As you can see, a `ReceiveActor` lets you easily add a layer of strongly typed, compile-time pattern matching to your actors via the **the `Receive<'T>` handler**.
+You can easily match messages based on their type, and then use typed **predicates** to perform additional checks or validations and decide whether or not your actor can handle a specific message.
 
 #### Are there different kinds of `Receive<'T>` handlers?
 Yes, there are. Here are the different ways to use a `Receive<'T>` handler:
@@ -143,7 +137,7 @@ This is a concrete (no longer generic) version of the 3rd overload above.
 This is a catch-all handler which accepts all `object` instances. This is usually used to handle any messages that aren't handled by a previous, more specific `Receive()` handler.
 
 #### But wait, isn't there a more functional way of doing that in F#?!
-There is indeed! As we mentioned at the beginning of this lesson, F# comes with a powerful pattern matching out-of-the-box so you could re-write `FooActor` as follows instead:
+There is indeed! As we mentioned at the beginning of this lesson, F# comes with powerful pattern matching out-of-the-box so you could re-write `FooActor` as follows instead:
 
 ```fsharp
 let funcFooActor (mailbox: Actor<obj>) =
@@ -271,7 +265,7 @@ The handler doesn't do anything yet! We will come back to it later in the lesson
 
 ### Step 2 - Rename our `InitializeChart` type and add a new `AddSeries` case to it
 
-Let's open `Actor.fs` and rename of `InitializeChart` discriminated union type to `ChartMessage`. Let's also add a new case to it, as shown below:
+Let's open `Actor.fs` and rename our `InitializeChart` discriminated union type to `ChartMessage`. Let's also add a new case to it, as shown below:
 
 ```fsharp
 [<AutoOpen>]
@@ -284,7 +278,7 @@ module Messages =
 ### Step 3 - modify `chartingActor` so it handles the new `AddSeries` messages
 
 Right now our `chartingActor` can't handle messages of type `AddSeries`. Let's fix that! 
-We could do this the OO way and make the actor inherit from `ReceiveActor`, but as we are in F#, better stick with pattern matching.
+We could do this the OO way and make the actor inherit from `ReceiveActor`, but as we are in F#, we'd rather stick with pattern matching.
 
 As a reminder, `chartingActor` currently looks as follows: 
 
@@ -323,7 +317,7 @@ let chartingActor (chart: Chart) (mailbox: Actor<_>) =
 
 #### *Wow!* That's a lot of changes!
 
-But fear not, the logic is still pretty simple. We are now using our `actor` computation expression inside a recursive function called `charting` (remember, we did something similar in Unit 1 with our `tailActor`). The function takes a parameter called `mapping`, that basically contains all the series currently displayed on the chart.
+But fear not, the logic is still pretty simple. We are now using our `actor` computation expression inside a recursive function called `charting` (remember, we did something similar in Unit 1 with our `tailActor`). The function takes a parameter called `mapping` that basically contains all the series currently displayed on the chart.
 
 Every click on the `Add Series` button will cause a new series to be added to the `mapping`, provided the name of series is valid and that it does not exist in the collection yet:
 
