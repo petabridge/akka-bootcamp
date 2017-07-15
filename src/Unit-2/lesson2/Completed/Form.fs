@@ -15,17 +15,26 @@ module Form =
     let chartArea1 = new ChartArea(Name = "ChartArea1")
     let legend1 = new Legend(Name = "Legend1")
     let series1 = new Series(Name = "Series1", ChartArea = "ChartArea1", Legend = "Legend1")
+    let btnAddSeries = new Button(Name = "btnAddSeries", Text = "Add Series", Location = Point(540, 300), Size = Size(100, 40), TabIndex = 1, UseVisualStyleBackColor = true)
     sysChart.BeginInit ()
     form.SuspendLayout ()
     sysChart.ChartAreas.Add chartArea1
     sysChart.Legends.Add legend1
     sysChart.Series.Add series1
+    form.Controls.Add btnAddSeries
     form.Controls.Add sysChart
     sysChart.EndInit ()
     form.ResumeLayout false
 
     let load (myActorSystem:ActorSystem) = 
-        let chartActor = spawn myActorSystem "charting" (actorOf (Actors.chartingActor sysChart))
+        let chartActor = spawn myActorSystem "charting" (Actors.chartingActor sysChart)
         let series = ChartDataHelper.randomSeries ("FakeSeries1" ) None None
         chartActor <! InitializeChart(Map.ofList [(series.Name, series)])
+
+        btnAddSeries.Click.Add (fun _ -> 
+            let newSeriesName = sprintf "FakeSeries %i" (sysChart.Series.Count + 1)    
+            let newSeries = ChartDataHelper.randomSeries newSeriesName None None
+            chartActor <! AddSeries newSeries
+        )
+
         form

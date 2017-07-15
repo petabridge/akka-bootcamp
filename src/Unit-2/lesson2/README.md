@@ -189,7 +189,7 @@ This is because **`ReceiveActor` will handle a message using the *first* matchin
 
 So, how to solve our problem above and make sure our "AkkaDotNetSuccess" handler is being triggered?
 
-Simple: *we just need to make sure that the more specific handlers come first!*.
+Simple: *we just need to make sure that the more specific handlers come first!*
 
 ```fsharp
 type FooActor() as f =
@@ -295,6 +295,10 @@ let chartingActor (chart: Chart) message =
 But we need to change it to this:
 
 ```fsharp
+
+// Add this to the other open statements at the top of Actor.fs
+open System
+
 let chartingActor (chart: Chart) (mailbox: Actor<_>) =
     let rec charting (mapping: Map<string,Series>) = actor {
         let! message = mailbox.Receive ()
@@ -324,6 +328,18 @@ Every click on the `Add Series` button will cause a new series to be added to th
 ```fsharp
 // Check if the series can be added to the collection
 | AddSeries series when not <| String.IsNullOrEmpty series.Name && not <| (mapping |> Map.containsKey series.Name)
+```
+
+As we changed the definition of the our `chartingActor`, we also need to update its instantiation in `form.fs`. Update the following line:
+
+```fsharp
+let chartActor = spawn myActorSystem "charting" (actorOf (Actors.chartingActor sysChart))
+```
+
+to this:
+
+```fsharp
+let chartActor = spawn myActorSystem "charting" (Actors.chartingActor sysChart)
 ```
 
 And that's it, really! Now our `chartingActor` should be able to receive and process both types of messages easily.
