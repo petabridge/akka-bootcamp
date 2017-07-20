@@ -2,7 +2,7 @@
 
 ![Akka.NET logo](../../images/akka_net_logo.png)
 
-In **[Unit 1](../../FSharp/Unit-1)**, we learned some of the fundamentals of Akka.NET and the actor model.
+In **[Unit 1](../Unit-1/FSharp)**, we learned some of the fundamentals of Akka.NET and the actor model.
 
 In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET, such as pattern matching, basic Akka.NET configuration, scheduled messages, and more!
 
@@ -12,7 +12,7 @@ In Unit 2 you're going to build your own version of Resource Monitor using Windo
 
 In fact, here's what the final output from lesson 4 looks like:
 
-![Akka.NET Bootcamp Unit 2 Output](lesson4/images/syncharting-complete-output.gif)
+![Akka.NET Bootcamp Unit 2 Output](lesson5/images/syncharting-complete-output.gif)
 
 **You're going to build this whole thing using actors**, and you'll be surprised at how small your code footprint is when we're finished.
 
@@ -28,9 +28,10 @@ In Unit 2 you will learn:
 ## Table of Contents
 
 1. **[Lesson 1: `Config` and Deploying Actors via App.Config](lesson1/)**
-2. **[Lesson 2: Using the `Scheduler` to Send Recurring Messages](lesson2/)**
-3. **[Lesson 3: Switching Actor Behavior at Run-time](lesson3/)**
-4. **[Lesson 4: Using a `Stash` to Defer Processing of Messages](lesson4/)**
+1. **[Lesson 2: Using `ReceiveActor` for Smarter Message Handling](lesson2/)**
+2. **[Lesson 3: Using the `Scheduler` to Send Messages Later](lesson3/)**
+3. **[Lesson 4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`](lesson4/)**
+4. **[Lesson 5: Using `Stash` to Defer Processing of Messages](lesson5/)**
 
 ## Get Started
 

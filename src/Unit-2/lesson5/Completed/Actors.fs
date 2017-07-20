@@ -62,7 +62,7 @@ module Actors =
         let rec charting (mapping:Map<string,Series>, noOfPts:int) = 
             actor{
                 let! message = mailbox.Receive ()
-                match message with
+                match message with  
                 | InitializeChart series -> 
                     chart.Series.Clear ()
                     chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
@@ -70,7 +70,7 @@ module Actors =
                     series |> Map.iter (fun k v -> 
                                             v.Name <- k
                                             chart.Series.Add v)
-                    return! charting(series, noOfPts)
+                    return! charting (series, noOfPts)
                 | AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not -> 
                     let newMapping = mapping.Add (series.Name, series)
                     chart.Series.Add series
@@ -98,7 +98,12 @@ module Actors =
                 match message with
                 | TogglePause -> 
                     setPauseButtonText false
+                    mailbox.UnstashAll ()
                     return! charting (mapping, noOfPts)
+                | AddSeries series -> 
+                    mailbox.Stash ()
+                | RemoveSeries seriesName -> 
+                    mailbox.Stash ()
                 | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
                     let newNoOfPts = noOfPts + 1
                     let series = mapping.[seriesName]

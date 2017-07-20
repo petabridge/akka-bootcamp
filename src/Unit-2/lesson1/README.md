@@ -1,7 +1,8 @@
 # Lesson 2.1: Using HOCON Configuration to Configure Akka.NET
 We're going to be spending most of our time in Unit 2 working with the `chartingActor`, an actor that is responsible for actually plotting all the data on this chart:
 
-![Pretty output](../lesson4/images/syncharting-complete-output.gif)
+![Pretty output](../lesson5/images/syncharting-complete-output.gif)
+> NOTE: If you're following along using the eBook / .ePub, you won't see the animation. [Click here to see it](https://github.com/petabridge/akka-bootcamp/blob/FSharp/src/Unit-2/lesson5/images/syncharting-complete-output.gif).
 
 BUT, if you try to build and run `SystemCharting.sln` right now (in the [/DoThis/ folder](../DoThis/)) for Unit 2 right away, you'll see the following output:
 
@@ -199,7 +200,7 @@ let yourConfig = ConfigurationFactory.ParseString "a = bar"
 If we request a value for a HOCON object with key "a", using the following code:
 
 ```fsharp
-let a = yourConfig.GetString("a");
+let a = yourConfig.GetString "a"
 ```
 
 Then the internal HOCON engine will match the first HOCON file that contains a definition for key `a`. In this case, which returns the value "bar".
@@ -211,7 +212,7 @@ The reason is because HOCON only searches through fallback `Config` objects if a
 What happens if we run the following code, given that `c` isn't defined?
 
 ```fsharp
-let c = yourConfig.GetString("c");
+let c = yourConfig.GetString "c"
 ```
 
 ![Fallback HOCON Config Behavior](images/hocon-config-fallbacks.gif)
@@ -288,7 +289,7 @@ Compare your code to the code in the [/Completed/ folder](Completed/) to compare
 ## Great job!
 Nice work on completing your first lesson in Unit 2! We covered a lot of concepts and hopefully you're going to walk away from this with an appreciation for just how powerful Akka.NET's configuration model truly is.
 
-**Let's move onto [Lesson 2 - Using the `Scheduler` to Send Recurring Messages](../lesson2).**
+**Let's move onto [Lesson 2 - Using ReceiveActor for Smarter Message Handling](../lesson2).**
 
 ## Further reading
 As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/docs/HOCON).
