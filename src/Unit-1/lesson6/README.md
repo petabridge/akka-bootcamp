@@ -119,6 +119,8 @@ The top of `TailActor.cs` should now look like this
 
 ```csharp
 // TailActor.cs
+private string _filePath;
+private IActorRef _reporterActor;
 private FileObserver _observer;
 private Stream _fileStream;
 private StreamReader _fileStreamReader;
