@@ -21,7 +21,6 @@ module Messages =
     | AddSeries of series: Series
     | RemoveSeries of seriesName: string
     | Metric of series: string * counterValue: float
-    | TogglePause
 
     type CounterMessage = 
     | GatherMetrics
@@ -43,10 +42,8 @@ module Actors =
     open System.Diagnostics
     open System.Drawing
 
-    let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
+    let chartingActor (chart: Chart) (mailbox:Actor<_>) =
         let maxPoints = 250
-                
-        let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||" else "RESUME ->"
 
         let setChartBoundaries (mapping:Map<string,Series>, noOfPts:int) =
             let allPoints = mapping |> Map.toList |> Seq.collect (fun (n, s) -> s.Points) |> (fun p -> HashSet<DataPoint>(p))
@@ -58,59 +55,36 @@ module Actors =
                 chart.ChartAreas.[0].AxisY.Minimum <- if yValues |> List.length > 0 then Math.Floor(yValues |> List.min) else 0.
             else
                 ()
-
-        let rec charting (mapping:Map<string,Series>, noOfPts:int) = 
-            actor{
-                let! message = mailbox.Receive ()
-                match message with
-                | InitializeChart series -> 
-                    chart.Series.Clear ()
-                    chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
-                    chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
-                    series |> Map.iter (fun k v -> 
-                                            v.Name <- k
-                                            chart.Series.Add v)
-                    return! charting(series, noOfPts)
-                | AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not -> 
-                    let newMapping = mapping.Add (series.Name, series)
-                    chart.Series.Add series
-                    setChartBoundaries (newMapping, noOfPts)
-                    return! charting (newMapping, noOfPts)
-                | RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
-                    chart.Series.Remove mapping.[seriesName] |> ignore
-                    let newMapping = mapping.Remove seriesName
-                    setChartBoundaries (newMapping, noOfPts)
-                    return! charting (newMapping, noOfPts)
-                | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
-                    let newNoOfPts = noOfPts + 1
-                    let series = mapping.[seriesName] 
-                    series.Points.AddXY (noOfPts, counterValue) |> ignore
-                    while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-                    setChartBoundaries (mapping, newNoOfPts)
-                    return! charting (mapping, newNoOfPts)
-                | TogglePause -> 
-                    setPauseButtonText true
-                    return! paused (mapping, noOfPts)
-            }
-        and paused (mapping:Map<string,Series>, noOfPts:int) = 
-            actor{
-                let! message = mailbox.Receive ()
-                match message with
-                | TogglePause -> 
-                    setPauseButtonText false
-                    return! charting (mapping, noOfPts)
-                | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
-                    let newNoOfPts = noOfPts + 1
-                    let series = mapping.[seriesName]
-                    series.Points.AddXY (newNoOfPts, 0.) |> ignore
-                    while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-                    setChartBoundaries (mapping, newNoOfPts)
-                    return! paused (mapping, newNoOfPts)
-                | _ -> ()
-                setChartBoundaries (mapping, noOfPts)
-                return! paused (mapping, noOfPts)
-            }
-
+    
+        let rec charting(mapping:Map<string,Series>, noOfPts:int) = actor {
+            let! message = mailbox.Receive ()
+            match message with
+            | InitializeChart series -> 
+                chart.Series.Clear ()
+                chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
+                chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
+                series |> Map.iter (fun k v -> 
+                                        v.Name <- k
+                                        chart.Series.Add v)
+                return! charting(series, noOfPts)
+            | AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not -> 
+                let newMapping = mapping.Add (series.Name, series)
+                chart.Series.Add series
+                setChartBoundaries (newMapping, noOfPts)
+                return! charting (newMapping, noOfPts)
+            | RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
+                chart.Series.Remove mapping.[seriesName] |> ignore
+                let newMapping = mapping.Remove seriesName
+                setChartBoundaries (newMapping, noOfPts)
+                return! charting (newMapping, noOfPts)
+            | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName -> 
+                let newNoOfPts = noOfPts + 1
+                let series =   mapping.[seriesName] 
+                series.Points.AddXY (noOfPts, counterValue) |> ignore
+                while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
+                setChartBoundaries (mapping, newNoOfPts)
+                return! charting (mapping, newNoOfPts)
+        }
         charting (Map.empty<string, Series>, 0)
 
 

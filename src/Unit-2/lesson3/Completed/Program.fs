@@ -15,5 +15,5 @@ Application.EnableVisualStyles ()
 Application.SetCompatibleTextRenderingDefault false
 
 
-[<STAThread>]    
+[<STAThread>]
 do Application.Run (Form.load chartActors)
