@@ -7,7 +7,7 @@ At the end of [Lesson 4](../lesson4/) we discovered a significant bug in how we 
 
 The bug is that when our `ChartingActor` changes its behavior to `Paused`, it no longer processes the `AddSeries` and `RemoveSeries` messages generated whenever a toggle button is pressed for a particular performance counter.
 
-In it's current form, it doesn't take much for the visual state of the buttons to get completely out of sync with the live chart. All you have to do is press a toggle button when the graph is paused and it's immediately out of sync.
+In its current form, it doesn't take much for the visual state of the buttons to get completely out of sync with the live chart. All you have to do is press a toggle button when the graph is paused and it's immediately out of sync.
 
 So, how can we fix this?
 
@@ -16,7 +16,7 @@ The answer is to defer processing of `AddSeries` and `RemoveSeries` messages unt
 The mechanism for this is the [`Stash`](http://getakka.net/docs/Stash).
 
 ## Key Concepts / Background
-One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/).
+One of the side effects of switchable behaviors for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/).
 
 ### What is the `Stash`?
 The `Stash` is a stack-like data structure implemented in your actor to defer messages for later processing.
@@ -24,9 +24,9 @@ The `Stash` is a stack-like data structure implemented in your actor to defer me
 #### Stashing Messages
 Inside your actor's Message handler, you can call `mailbox.Stash ()` to put the current message at the top of the `Stash`.
 
-You only need to stash messages that you don't want to process now - in the below visualization, our actor happily processes Message 1 but stashes messages 2 and 0.
+You only need to stash messages that you don't want to process now - in the below visualization, our actor happily processes Message 1 but stashes messages 0 and 2.
 
-Note: calling `Stash ()` automatically stashes the current message, so you don't pass the message to the `mailbox.Stash ()` call.
+Note: calling `Stash ()` automatically stashes the current message, so you don't need to pass the message to the `mailbox.Stash ()` call.
 
 This is what that the full sequence of stashing a message looks like:
 
@@ -35,37 +35,37 @@ This is what that the full sequence of stashing a message looks like:
 Great! Now that we know how to `Stash` a message for later processing, how do we get messages back out of the `Stash`?
 
 #### Unstashing a Single Message
-We call `mailbox.Unstash ()` to pop off the message at the top of the `Stash`.
+We can call `mailbox.Unstash ()` to pop off the message at the top of the `Stash`.
 
 **When you call `mailbox.Unstash ()`, the `Stash` will place this message *at the front of the actor's mailbox, ahead of other queued user messages*.**
 
 ##### The VIP line
-Inside the mailbox, it's as if there are two separate queues for `user` messages to be processed by the actor: there's the normal message queue, and then there's the VIP line.
+Inside an actor's mailbox, we can think as if there were two separate queues of `user` messages to be processed: the normal message queue, and then the VIP line.
 
 This VIP line is reserved for messages coming from the `Stash`, and any messages in the VIP line will jump ahead of messages in the normal queue and get processed by the actor first. (On that note, there's also a "super VIP" line for `system` message, which cuts ahead of all `user` messages. But that's out of the scope of this lesson.)
 
 This is what the sequence of unstashing a message looks like:
 
-![Unstashing a Single Message with Akka.NET Actors](images/actor-unstashing-single-message.gif)
+![Unstashing a single message with Akka.NET actors](images/actor-unstashing-single-message.gif)
 
 #### Unstashing the Entire Stash at Once
 If we need to unstash *everything* in our actor's `Stash` all at once, we can use the `mailbox.UnstashAll ()` method to push the entire contents of the `Stash` into the front of the mailbox.
 
 Here's what calling `mailbox.UnstashAll ()` looks like:
-![Unstashing all stashed messages at once with Akka.NET Actors](images/actor-unstashing-all-messages.gif)
+![Unstashing all stashed messages at once with Akka.NET actors](images/actor-unstashing-all-messages.gif)
 
 ### Do messages stay in their original order when they come out of the `Stash`?
 It depends on how you take them out of the `Stash`.
 
 #### `mailbox.UnstashAll ()` preserves FIFO message order
-When you make a call to `mailbox.UnstashAll ()`, the `Stash` will ensure that the original FIFO order of the messages in the `Stash` is preserved when they're appended to the front of your actor's mailbox. (As shown in the `mailbox.UnstashAll ()` animation.)
+When you make a call to `mailbox.UnstashAll ()`, the `Stash` will ensure that the original FIFO order of the messages in the `Stash` is preserved when they're appended to the front of your actor's mailbox (As shown in the `mailbox.UnstashAll ()` animation).
 
 #### `mailbox.Unstash ()` can change the message order
 If you call `mailbox.Unstash ()` repeatedly, you can change the original FIFO order of the messages.
 
 Remember that VIP line inside the mailbox, where the `Stash` puts messages when they are unstashed?
 
-Well, when you `Unstash ()` a ***single*** message, it goes to the back of that VIP line. It's still ahead of normal `user` messages, but it is behind any other messages that were previously unstashed and are ahead of it in the VIP line.
+Well, when you `Unstash ()` a ***single*** message, it goes to the back of that VIP line. It's still ahead of normal `user` messages, but it is behind any other messages that were previously unstashed.
 
 There is a lot more that goes into *why* this can happen, but it's well beyond the scope of this lesson.
 
@@ -79,7 +79,7 @@ An excellent question! The `Stash` is part of your actor's ephemeral state. In t
 
 ```fsharp
 let preRestart = Some(fun (basefn: exn * obj -> unit) -> mailbox.UnstashAll () |> ignore)
-let mySampleActor = spawnOvrd system "actor" (actorOf sampleActor) <| {defOvrd with PreRestart = preRestart}
+let mySampleActor = spawnOvrd system "actor" (actorOf sampleActor) <| { defOvrd with PreRestart = preRestart }
 ```
 
 ### Real-World Scenario: Authentication with Buffering of Messages
@@ -87,40 +87,43 @@ Now that you know what the `Stash` is and how it works, let's revisit the `userA
 
 This is the `userActor` we designed in the Concepts area of [Lesson 4](../lesson4/), with behavior switching for different states of authentication:
 
-
 ```fsharp
-let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+let userActor (userId: string) (chatroomId: string) (mailbox: Actor<_>) =
     // start the authentication process for this user
     mailbox.Context.ActorSelection "/user/authenticator/" <! userId
 
     let rec authenticating () =
-        actor{
-            let! message = mailbox.Receive()
+        actor {
+            let! message = mailbox.Receive ()
+
             match message with
-            | AuthenticationSuccess -> return! authenticated () //switch behavior to Authenticated
-            | AuthenticationFailure -> return! unauthenticated ()  //switch behavior to Unauthenticated
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            | AuthenticationSuccess -> return! authenticated () // switch behavior to Authenticated
+            | AuthenticationFailure -> return! unauthenticated ()  // switch behavior to Unauthenticated
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // can't send the message yet - not auth'd
             return! authenticating ()
         }
     and unauthenticated () =
-        actor{
-            let! message = mailbox.Receive()
+        actor {
+            let! message = mailbox.Receive ()
+
             match message with
-            | RetryAuthentication -> return! authenticating () //swith behavior to Authenticating
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            | RetryAuthentication -> return! authenticating () // swith behavior to Authenticating
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // can't send the message yet - not auth'd
             return! authenticating ()
         }
     and authenticated () =
-        actor{
-            let! message = mailbox.Receive()
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //print message for user
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //send message to chatroom
+        actor {
+            let! message = mailbox.Receive ()
+
+            match message with
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // print message for user
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // send message to chatroom
             return! authenticated ()
         }
-    authenticating ()
 
+    authenticating ()
 ```
 
 When we first saw that chat room `userActor` example in [Lesson 4](../lesson4/), we were focused on switching behaviors to enable authentication in the first place. But we ignored a major problem with the `userActor`: during the `authenticating` phase, we simply throw away any attempted `OutgoingMessage` and `IncomingMessage` instances.
@@ -131,37 +134,34 @@ The right way to deal these messages is to temporarily store them until the `use
 
 This is what it looks like once we update the `Authenticating` behavior of our `UserActor` to delay processing messages until it knows whether or not the user is authenticated:
 
-
 ```fsharp
-let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+let userActor (userId: string) (chatroomId: string) (mailbox: Actor<_>) =
     ...
 
     let rec authenticating () =
-        actor{
-            let! message = mailbox.Receive()
+        actor {
+            let! message = mailbox.Receive ()
+
             match message with
             | AuthenticationSuccess ->
                 mailbox.UnstashAll ()
-                return! authenticated () //switch behavior to Authenticated
+                return! authenticated () // switch behavior to Authenticated
             | AuthenticationFailure ->
                 mailbox.UnstashAll ()
-                return! unauthenticated ()  //switch behavior to Unauthenticated
+                return! unauthenticated ()  // switch behavior to Unauthenticated
             | IncomingMessage (roomId, msg) when roomId = chatroomId  ->
                 mailbox.Stash ()
-                //can't accept the message yet - not auth'd
+                () // can't accept the message yet - not auth'd
             | OutgoingMessage (roomId, msg) when roomId = chatroomId  ->
                 mailbox.Stash ()
-                //can't send the message yet - not auth'd
+                () // can't send the message yet - not auth'd
             return! authenticating ()
         }
-    and unauthenticated () =
-        ...
-    and authenticated () =
-        ...
-
+    and unauthenticated () = ...
+    and authenticated () = ...
 ```
 
-Now any messages the `userActor` receives while it's `authenticating` will be available for processing when it switches behavior to `authenticated` or `unauthenticated`.
+Now any message the `userActor` receives while it iss `authenticating` will be available for processing when it switches behavior to `authenticated` or `unauthenticated`.
 
 Excellent! Now that you understand the `Stash`, let's put it to work to fix our system graphs.
 
@@ -174,32 +174,35 @@ Go to the `paused` method declared inside `chartingActor`.
 Update it to `Stash ()` the `AddSeries` and `RemoveSeries` messages:
 
 ```fsharp
-// Actors/chartingActor - inside the definition
-let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
+let chartingActor (chart: Chart) (pauseButton: System.Windows.Forms.Button) (mailbox: Actor<_>) =
+
     ...
-    let rec charting (mapping:Map<string,Series>, noOfPts:int) =
-        actor{
-            ...    
+
+    let rec charting (mapping: Map<string, Series>, numberOfPoints: int) = 
+        actor {
+            ...
         }
-    and paused (mapping:Map<string,Series>, noOfPts:int) =
-        actor{
+    and paused (mapping: Map<string, Series>, numberOfPoints: int) =
+        actor {
             let! message = mailbox.Receive ()
+
             match message with
             | TogglePause ->
-                // ChartingActor is leaving the Paused state, put messages back
-                // into mailbox for processing under new behavior
-                setPauseButtonText false
+                setPauseButton false
+                // ChartingActor is leaving the Paused state, put messages back into mailbox for processing under new behavior
                 mailbox.UnstashAll ()
-                return! charting (mapping, noOfPts)
-            | AddSeries series ->
-                mailbox.Stash () // while paused, we stash messages
-            | RemoveSeries seriesName ->
-                mailbox.Stash () // while paused, we stash messages
+                return! charting (mapping, numberOfPoints)
+
+            | AddSeries series -> mailbox.Stash () // stash messages while paused
+            | RemoveSeries series -> mailbox.Stash () // stash messages while paused
+
             ...
-            setChartBoundaries (mapping, noOfPts)
-            return! paused (mapping, noOfPts)
+
+            setChartBoundaries (mapping, numberOfPoints)
+            return! paused (mapping, numberOfPoints)
         }
 
+    charting (Map.empty<string, Series>, 0)
 ```
 
 That's it! The `chartingActor` will now save any `AddSeries` or `RemoveSeries` messages and will replay them in the order they were received as soon as it switches from the `paused` state to the `charting` state.
