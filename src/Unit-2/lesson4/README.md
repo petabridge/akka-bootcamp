@@ -1,4 +1,4 @@
-# Lesson 2.4: Switching Actor Behavior at Run-time with BecomeStacked and UnbecomeStacked
+# Lesson 2.4: Switching Actor Behavior at Run-time
 
 In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/docs/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
 
@@ -9,15 +9,14 @@ Let's start with a real-world scenario in which you'd want the ability to change
 Imagine you're building a simple chat system using Akka.NET actors, and here's what your `UserActor` looks like - this is the actor that is responsible for all communication to and from a specific human user.
 
 ```fsharp
-let useractor (userId:string) (chatroomId:string) (mailbox:Actor<_>) msg =
+let useractor (userId: string) (chatroomId: string) (mailbox: Actor<_>) msg =
     match msg with
     | IncomingMessage(chatroom) when chatroom = chatroomId -> // print message for user
     | OutgoingMessage(chatroom) when chatroom = chatroomId -> // send message to chatroom
     | _ -> ()
-
 ```
 
-So we have basic chat working - yay! But&hellip; right now there's nothing to guarantee that this user is who they say they are. This system needs some authentication.
+So we have a basic chat working - yay! But&hellip; right now there's nothing to guarantee that this user is who they say they are. This system needs some authentication.
 
 How could we rewrite this actor to handle these same types of chat messages differently when:
 
@@ -33,7 +32,6 @@ One of the core attributes of an actor in the [Actor Model](https://en.wikipedia
 This capability allows you to do all sorts of cool stuff, like build [Finite State Machines](http://en.wikipedia.org/wiki/Finite-state_machine) or change how your actors handle messages based on other messages they've received.
 
 Switchable behavior is one of the most powerful and fundamental capabilities of any true actor system. It's one of the key features enabling actor reusability, and helping you to do a massive amount of work with a very small code footprint.
-
 
 ### Isn't it problematic for actors to change behaviors?
 No, actually it's safe and is a feature that gives your `ActorSystem` a ton of flexibility and code reuse.
@@ -55,38 +53,42 @@ So, how could we rewrite this actor to handle chat messages differently when:
 Here's one way we can implement switchable message behavior in our `UserActor` to handle basic authentication:
 
 ```fsharp
-let userActor (userId:string) (chatroomId:string) (mailbox:Actor<_>) =
+let userActor (userId: string) (chatroomId: string) (mailbox: Actor<_>) =
     // start the authentication process for this user
     mailbox.Context.ActorSelection "/user/authenticator/" <! userId
 
     let rec authenticating () =
-        actor{
-            let! message = mailbox.Receive()
+        actor {
+            let! message = mailbox.Receive ()
+
             match message with
-            | AuthenticationSuccess -> return! authenticated () //switch behavior to Authenticated
-            | AuthenticationFailure -> return! unauthenticated ()  //switch behavior to Unauthenticated
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            | AuthenticationSuccess -> return! authenticated () // switch behavior to Authenticated
+            | AuthenticationFailure -> return! unauthenticated ()  // switch behavior to Unauthenticated
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // can't send the message yet - not auth'd
             return! authenticating ()
         }
     and unauthenticated () =
-        actor{
-            let! message = mailbox.Receive()
+        actor {
+            let! message = mailbox.Receive ()
+
             match message with
-            | RetryAuthentication -> return! authenticating () //swith behavior to Authenticating
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //can't accept the message yet - not auth'd
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //can't send the message yet - not auth'd
+            | RetryAuthentication -> return! authenticating () // swith behavior to Authenticating
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // can't accept the message yet - not auth'd
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // can't send the message yet - not auth'd
             return! authenticating ()
         }
     and authenticated () =
-        actor{
-            let! message = mailbox.Receive()
-            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> //print message for user
-            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> //send message to chatroom
+        actor {
+            let! message = mailbox.Receive ()
+
+            match message with
+            | IncomingMessage (roomId, msg) when roomId = chatroomId  -> () // print message for user
+            | OutgoingMessage (roomId, msg) when roomId = chatroomId  -> () // send message to chatroom
             return! authenticated ()
         }
-    authenticating ()
 
+    authenticating ()
 ```
 
 Whoa! What's all this stuff? Let's quickly review it.
@@ -109,88 +111,97 @@ Now, let's put behavior switching to work for us!
 In this lesson we're going to add the ability to pause and resume live updates to the `chartingActor` via switchable actor behaviors.
 
 ### Phase 1 - Add a New `Pause / Resume` Button to `Form.fs`
-This is the last button you'll have to add, we promise.
-
-![Add a Pause / Resume Button to Main](images/design-pauseresume-button.png)
-
-Add the following code below the other button declarations in `Form.fs`.
+This is the last button you'll have to add, we promise. Add the following code below the other button declarations in `Form.fs`:
 
 ```fsharp
-let btnPauseResume = new Button(Name = "btnPauseResume", Text = "PAUSE ||", Location = Point(562, 205), Size = Size(110, 41), TabIndex = 3, UseVisualStyleBackColor = true)
-
+let btnPauseResume = new Button(Name = "btnPauseResume", Text = "PAUSE ||", Location = Point(570, 200), Size = Size(110, 40), TabIndex = 4, UseVisualStyleBackColor = true)
 ```
 
-Add the new control on the form
+and add the new control on the form:
 
 ```fsharp
-//module Form
+// in Form.fs
 sysChart.BeginInit ()
 form.SuspendLayout ()
 sysChart.ChartAreas.Add chartArea1
 sysChart.Legends.Add legend1
+sysChart.Series.Add series1
+
+form.Controls.Add btnPauseResume // new button for Pause/Resume
 
 form.Controls.Add btnCpu
 form.Controls.Add btnMemory
 form.Controls.Add btnDisk
-form.Controls.Add btnPauseResume //new button for Pause/Resume
 
 form.Controls.Add sysChart
 sysChart.EndInit ()
 form.ResumeLayout false
 ```
 
-
-Once you've added your buttons, *add click handler for the new button* in the `load` function for `Form.fs` view.
+As before, we also need to add a click handler for the new button in the `load` function of `Form.fs`:
 
 ```fsharp
-btnPauseResume.Click.Add (fun _ -> () )
+btnPauseResume.Click.Add (fun _ -> ())
 ```
 
-We'll fill this click handler in shortly.
+We'll implement this click handler later in the lesson.
 
 ### Phase 2 - Add Switchable Behavior to `chartingActor`
 
-First, we need to add a new case to `ChartMessage` for `chartingActor`.
+First, we need to add a new `TogglePause` case to `ChartMessage` for `chartingActor`.
 
 ```fsharp
-type ChartMessage =
-| InitializeChart of initialSeries: Map<string, Series>
-| AddSeries of series: Series
-| RemoveSeries of seriesName: string
-| Metric of series: string * counterValue: float
-| TogglePause	//add new case
-
+type ChartMessage = 
+    | InitializeChart of initialSeries: Map<string, Series>
+    | AddSeries of series: Series
+    | RemoveSeries of seriesName: string
+    | Metric of series: string * counterValue: float
+    | TogglePause // new case
 ```
 
-Add a new function called `paused` to the `chartingActor`'s `Individual Message Handlers` region. The `paused` function needs to handle the following messages:
+Add a new function called `paused` to the `chartingActor`. The `paused` function needs to handle the following messages:
 1. The `TogglePause` message, which requires the handler to switch to the original behavior, and
 2. The `Metric` message, which requires the handler to add an empty data point on the chart.
 
 ```fsharp
-// Actors/chartingActor - inside Message Handlers region
-let rec charting (mapping:Map<string,Series>, noOfPts:int) =
-    ...
-and paused (mapping:Map<string,Series>, noOfPts:int) =
-    actor{
+// in Actors.fs, chartingActor
+let rec charting(mapping: Map<string, Series>, numberOfPoints: int) =
+    actor {
+        // implementation of the charting function...
+    }
+and paused (mapping: Map<string, Series>, numberOfPoints: int) =
+    actor {
         let! message = mailbox.Receive ()
+
         match message with
         | TogglePause ->
-            setPauseButtonText false
-            return! charting (mapping, noOfPts)
-        | Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
-            let newNoOfPts = noOfPts + 1
+            setPauseButton false
+            return! charting (mapping, numberOfPoints)
+
+        | Metric (seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
+            let newNoOfPts = numberOfPoints + 1
             let series = mapping.[seriesName]
             series.Points.AddXY (newNoOfPts, 0.) |> ignore
             while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
             setChartBoundaries (mapping, newNoOfPts)
             return! paused (mapping, newNoOfPts)
+
         | _ -> ()
-        setChartBoundaries (mapping, noOfPts)
-        return! paused (mapping, noOfPts)
+
+        setChartBoundaries (mapping, numberOfPoints)
+        return! paused (mapping, numberOfPoints)
     }
 
 charting (Map.empty<string, Series>, 0)
+```
 
+The key change here is that we set the value of the new, paused points to `0.` instead of their real value:
+
+```fsharp
+// when charting
+series.Points.AddXY (numberOfPoints, counterValue) |> ignore
+// when paused
+series.Points.AddXY (newNoOfPts, 0.) |> ignore
 ```
 
 Define a new method called `setPauseButtonText` at the top of the `chartingActor` class:
@@ -203,24 +214,23 @@ let setPauseButtonText paused = pauseButton.Text <- if not paused then "PAUSE ||
 Then handle the `TogglePause` case in the `charting` function by adding the following to the bottom of the `actor` computation expression:
 
 ```fsharp
-let rec charting (mapping : Map<string, Series>, noOfPts : int) =
+let rec charting (mapping : Map<string, Series>, numberOfPoints : int) =
     actor{
         let! message = mailbox.Receive()
+
         match message with
-          ...
+          // implementation of other cases...
+
           | TogglePause ->
             setPauseButtonText true
-            return! paused (mapping, noOfPts)
+            return! paused (mapping, numberOfPoints)
     }
 ```
 
 And finally, let's **update `chartingActor`'s defintion**:
 
 ```fsharp
-
-let chartingActor (chart: Chart) (pauseButton:System.Windows.Forms.Button) (mailbox:Actor<_>) =
-    ...
-
+let chartingActor (chart: Chart) (pauseButton: System.Windows.Forms.Button) (mailbox: Actor<_>) =
 ```
 
 ### Phase 3 - Update the `load` function and `Pause / Resume` Click Handler in `Form.fs`
@@ -240,7 +250,7 @@ btnPauseResume.Click.Add (fun _ -> chartActor <! TogglePause)
 ### Once you're done
 Build and run `SystemCharting.sln` and you should see the following:
 
-![Successful Lesson 4 Output](images/dothis-successful-run4.gif)
+![Successful Lesson 4 Output](images/dothis-successful_2-run4.gif)
 
 Compare your code to the code in the [/Completed/ folder](Completed/) to compare your final output to what the instructors produced.
 
