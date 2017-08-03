@@ -35,14 +35,10 @@ You can also schedule an `Action` to occur in the future, instead of sending a m
 ```fsharp
 // inside Program.fs we have direct handle to the ActorSystem
 let myActorSystem = System.create "myActorSystem" (Configuration.load ())
-myActorSystem.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes(30.),
-				              someActor,
-				              someMessage)
+myActorSystem.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes 30., someActor, someMessage)
 
 // but inside an actor, we access the ActorSystem via the ActorContext
-mailbox.Context.System.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes(30.),
-								             someActor,
-								             someMessage)
+mailbox.Context.System.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes 30., someActor, someMessage)
 ```
 
 #### Schedule one-off messages with `ScheduleTellOnce()`
@@ -51,11 +47,10 @@ Let's say we want to have one of our actors fetch the latest content from an RSS
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
 let someActor = spawn actorSystem "someActor" (actorOf sampleActor)
-let someMessage = { Uri = ...}
-//schedule the message
-actorSystem.Scheduler.ScheduleTellOnce(TimeSpan.FromMinutes 30.,
-						 someActor,
-						 someMessage)
+let someMessage = { Uri = ... }
+
+//schedule the one-off message
+actorSystem.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes 30., someActor, someMessage)
 ```
 
 Voila! `someActor` will receive `someMessage` in 30 minutes time.
@@ -68,12 +63,14 @@ For this we can use the following [`IScheduler.ScheduleTellRepeatedly()`](http:/
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
 let someActor = spawn actorSystem "someActor" (actorOf sampleActor)
-let someMessage = { Uri = ...}
-//schedule recurring message
-actorSystem.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromMinutes 30.,
-					 		 TimeSpan.FromMinutes 30.,
-							 someActor,
-							 someMessage)
+let someMessage = { Uri = ... }
+
+//schedule the recurring message
+actorSystem.Scheduler.ScheduleTellRepeatedly(
+							TimeSpan.FromMinutes 30.,
+							TimeSpan.FromMinutes 30.,
+							someActor,
+							someMessage)
 ```
 
 That's it!
@@ -87,35 +84,37 @@ First, the message must be scheduled so that it can be cancelled. If a message i
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
 let cancellation = new Cancelable (actorSystem.Scheduler)
 let sampleActor = spawn actorSystem "someActor" (actorOf sampleActor)
-let sampleMessage = { Uri = ...}
+let sampleMessage = { Uri = ... }
 
-// first, set up the message so that it can be canceled
-actorSystem.Scheduler.ScheduleTellRepeatedly (TimeSpan.FromMinutes 30.,
-								TimeSpan.FromMinutes 30.,
-								sampleActor,
-								sampleMessage,
-								ActorRefs.NoSender,
-								cancellation)
+// first, set up the message so that it can be cancelled
+actorSystem.Scheduler.ScheduleTellRepeatedly (
+							TimeSpan.FromMinutes 30.,
+							TimeSpan.FromMinutes 30.,
+							sampleActor,
+							sampleMessage,
+							ActorRefs.NoSender,
+							cancellation)
 
 // here we actually cancel the message and prevent it from being delivered
 cancellation.Cancel ()
 ```
 
 #### Alternative: get an `ICancelable` task using `ScheduleTellRepeatedlyCancelable`
-One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://api.getakka.net/docs/stable/html/9B66375D.htm "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method")].This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
+One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://api.getakka.net/docs/stable/html/9B66375D.htm "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method")]. This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
 
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
 let cancellation = new Cancelable (actorSystem.Scheduler)
 let sampleActor = spawn actorSystem "someActor" (actorOf sampleActor)
-let sampleMessage = { Uri = ...}
+let sampleMessage = { Uri = ... }
 
 // cancellable recurring message send created automatically
-let cancellation = actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable (TimeSpan.FromMinutes 30.,
-								TimeSpan.FromMinutes 30.,
-								sampleActor,
-								sampleMessage,
-								ActorRefs.NoSender)
+let cancellation = actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable (
+							TimeSpan.FromMinutes 30.,
+							TimeSpan.FromMinutes 30.,
+							sampleActor,
+							sampleMessage,
+							ActorRefs.NoSender)
 
 // here we actually cancel the message and prevent it from being delivered
 cancellation.Cancel ()
@@ -152,31 +151,31 @@ type Message =
     | Unsubscribe of IActorRef
     | Msg of string
 
-let publisher (mailbox:Actor<_>)  =
-    let rec loop (subscriptions) = actor {
+let publisherActor (mailbox:Actor<_>) =
+    let rec loop subscriptions = actor {
         let! message = mailbox.Receive ()
+		
         match box message :?> Message with
-        | Msg (content) ->  // iterate through subscription list and send message to each subscriber
+        | Msg content -> // iterate through subscription list and send message to each subscriber
             subscriptions |> Seq.iter (fun subscriber -> subscriber <! content)
             return! loop subscriptions
-        | Subscribe(subscriber) -> // add subscriber to subscription list (just in case, remove subscriber if duplicate)
+        | Subscribe subscriber -> // add subscriber to subscription list (just in case, remove subscriber if duplicate)
             let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> subscriber)
             return! loop (subscriber::subscriptionsWithoutSubscriber)
-        | Unsubscribe(subscriber)  -> // remove subscriber from subscription list
+        | Unsubscribe subscriber -> // remove subscriber from subscription list
             let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> subscriber)
             return! loop subscriptionsWithoutSubscriber
     }
     loop [] // start with an empty subscription list
 
-let subscriber (mailbox:Actor<_>) msg =
+let subscriberActor (mailbox:Actor<_>) msg =
     printfn "%A => %A" mailbox.Self.Path msg
 
-
 let actorSystem = System.create "myactorsystem" (Configuration.load ())
-let publisher = spawn actorSystem "publisher" publisher
-let subscriber1 = spawn actorSystem "subscriber1" (actorOf2 subscriber)
-let subscriber2 = spawn actorSystem "subscriber2" (actorOf2 subscriber)
-let subscriber3 = spawn actorSystem "subscriber3" (actorOf2 subscriber)
+let publisher = spawn actorSystem "publisher" publisherActor
+let subscriber1 = spawn actorSystem "subscriber1" (actorOf2 subscriberActor)
+let subscriber2 = spawn actorSystem "subscriber2" (actorOf2 subscriberActor)
+let subscriber3 = spawn actorSystem "subscriber3" (actorOf2 subscriberActor)
 
 publisher <! Subscribe subscriber1
 publisher <! Msg ("hello")
@@ -185,7 +184,6 @@ publisher <! Unsubscribe subscriber1
 publisher <! Subscribe subscriber2
 publisher <! Subscribe subscriber3
 publisher <! Msg ("hello again")
-
 ```
 
 Pub/sub is trivial to implement in Akka.NET and it's a pattern you can feel comfortable using regularly when you have scenarios that align well with it.
@@ -198,7 +196,21 @@ Now that you're familiar with how the `Scheduler` works, lets put it to use and 
 
 ### Step 1 - Add 3 New Buttons to `Form.fs`
 
-We're going to add three new buttons and click handlers for each. Here are the names we'll be using for each button when we refer to them later:
+We are not going to need our `btnAddSeries` anymore, so you can safely remove the following code from `Form.fs`:
+
+```fsharp
+// remove the button from the form
+let btnAddSeries = new Button(Name = "btnAddSeries", Text = "Add Series", Location = Point(540, 300), Size = Size(100, 40), TabIndex = 1, UseVisualStyleBackColor = true)
+form.Controls.Add btnAddSeries
+// and remove its click handler as well
+ btnAddSeries.Click.Add (fun _ -> 
+	let newSeriesName = sprintf "FakeSeries %i" (sysChart.Series.Count + 1)    
+	let newSeries = ChartDataHelper.randomSeries newSeriesName None None
+	chartActor <! AddSeries newSeries
+)
+```
+
+Instead, We're going to add three new buttons and click handlers. Here are the names we'll be using for each button when we refer to them later:
 
 * **CPU (ON)** - `btnCpu`
 * **MEMORY (OFF)** - `btnMemory`
@@ -206,12 +218,18 @@ We're going to add three new buttons and click handlers for each. Here are the n
 
 
 ```fsharp
-let btnCpu = new Button(Name = "btnCpu", Text = "CPU (ON)", Location = Point(562, 274), Size = Size(110, 41), TabIndex = 1, UseVisualStyleBackColor = true)
-let btnMemory = new Button(Name = "btnMemory", Text = "MEMORY (OFF)", Location = Point(562, 321), Size = Size(110, 41), TabIndex = 2, UseVisualStyleBackColor = true)
-let btnDisk = new Button(Name = "btnDisk", Text = "DISK (OFF)", Location = Point(562, 368), Size = Size(110, 41), TabIndex = 3, UseVisualStyleBackColor = true)
+// create the buttons
+let btnCpu = new Button(Name = "btnCpu", Text = "CPU (ON)", Location = Point(560, 275), Size = Size(110, 40), TabIndex = 1, UseVisualStyleBackColor = true)
+let btnMemory = new Button(Name = "btnMemory", Text = "MEMORY (OFF)", Location = Point(560, 320), Size = Size(110, 40), TabIndex = 2, UseVisualStyleBackColor = true)
+let btnDisk = new Button(Name = "btnDisk", Text = "DISK (OFF)", Location = Point(560, 365), Size = Size(110, 40), TabIndex = 3, UseVisualStyleBackColor = true)
+
+// and add them to the form
+form.Controls.Add btnCpu
+form.Controls.Add btnMemory
+form.Controls.Add btnDisk
 ```
 
-Once you've added your buttons, *add click handlers for each button* in the `load` function for `Form.fs` view.
+Now let's add a click handler for each of our new buttons in the `load` function:
 
 ```fsharp
 btnCpu.Click.Add (fun _ -> () )
@@ -219,28 +237,34 @@ btnMemory.Click.Add (fun _ -> () )
 btnDisk.Click.Add (fun _ -> () )
 ```
 
-We'll fill these handlers in later.
+We'll fill in these handlers later.
 
 ### Step 2 - Add Some New Message Types
-We're going to add a few new actors to our project in a moment, but before we do that let's define some new message types in `Actors.fs`:
+We're going to add a few new actors to our project in a moment, but before we do that let's define some new message types to our `Messages` module in `Actors.fs`:
 
 ```fsharp
 type CounterType =
-| Cpu = 1
-| Memory = 2
-| Disk = 3
+	| Cpu = 1
+	| Memory = 2
+	| Disk = 3
 
 type CounterMessage =
-| GatherMetrics
-| SubscribeCounter of subscriber: IActorRef
-| UnsubscribeCounter of subscriber: IActorRef
+	| GatherMetrics
+	| SubscribeCounter of subscriber: IActorRef
+	| UnsubscribeCounter of subscriber: IActorRef
 
 type CoordinationMessage =
-| Watch of counter: CounterType
-| Unwatch of counter: CounterType
+	| Watch of counter: CounterType
+	| Unwatch of counter: CounterType
 
-type ButtonMessage =
-| Toggle
+type ButtonMessage = Toggle
+
+// and also add new cases to the existing ChartMessage:
+type ChartMessage = 
+    | InitializeChart of initialSeries: Map<string, Series>
+    | AddSeries of series: Series
+    | RemoveSeries of seriesName: string
+	| Metric of series: string * counterValue: float
 ```
 
 Now we can start adding the actors who depend on these message definitions.
@@ -252,35 +276,40 @@ The `performanceCounterActor` is the actor who's going to publish `PerformanceCo
 Type the following in `Actors.fs`:
 
 ```fsharp
-// Actors/PerformanceCounterActor
-let performanceCounterActor (seriesName:string)  (performanceCounterGenerator:unit -> PerformanceCounter) (mailbox:Actor<_>) =
-    let counter = performanceCounterGenerator ()
-    let cancelled = mailbox.Context.System.Scheduler.ScheduleTellRepeatedlyCancelable (TimeSpan.FromMilliseconds 250.,
-                        TimeSpan.FromMilliseconds 250.,
-                        mailbox.Self,
-                        GatherMetrics,
-                        ActorRefs.NoSender)
+// add those at the beginning of the file, we are going to need them later.
+open System.Diagnostics
+open System.Drawing
 
-    mailbox.Defer (fun () ->
-        cancelled.Cancel()
-        counter.Dispose () |> ignore
-    )
+// in the Actors module
+let performanceCounterActor (seriesName: string) (perfCounterGenerator: unit -> PerformanceCounter) (mailbox: Actor<_>) =
+	let counter = perfCounterGenerator ()
+	let cancelled = mailbox.Context.System.Scheduler.ScheduleTellRepeatedlyCancelable (
+						TimeSpan.FromMilliseconds 250.,
+						TimeSpan.FromMilliseconds 250.,
+						mailbox.Self,
+						GatherMetrics,
+						ActorRefs.NoSender)
 
-    let rec loop(subscriptions) = actor {
-        let! message = mailbox.Receive ()
-        match box message :?> CounterMessage with
-        | GatherMetrics ->
-            let msg = Metric(seriesName, float <| counter.NextValue ())
-            subscriptions |> Seq.iter (fun subscriber -> subscriber <! msg)
-            return! loop subscriptions
-        | SubscribeCounter(s) ->
-            let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
-            return! loop (s::subscriptionsWithoutSubscriber)
-        | UnsubscribeCounter(s) ->
-            let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
-            return! loop subscriptionsWithoutSubscriber
-    }
-    loop []  
+	mailbox.Defer (fun _ ->
+		cancelled.Cancel ()
+		counter.Dispose () |> ignore)
+
+	let rec loop subscriptions = actor {
+		let! message = mailbox.Receive ()
+
+		match box message :?> CounterMessage with
+		| GatherMetrics ->
+			let msg = Metric(seriesName, counter.NextValue () |> float)
+			subscriptions |> Seq.iter (fun subscriber -> subscriber <! msg)
+			return! loop subscriptions
+		| SubscribeCounter sub ->
+			let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun actor -> actor <> sub)
+			return! loop (sub::subscriptionsWithoutSubscriber)
+		| UnsubscribeCounter sub ->
+			let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun actor -> actor <> sub)
+			return! loop subscriptionsWithoutSubscriber
+	}
+	loop []
 ```
 
 *Before we move onto the next step, let's talk about what you just did...*
@@ -299,13 +328,11 @@ What happens when the `performanceCounterActor` needs to restart?
 The `performanceCounterActor` has pub / sub built into it by way of its handlers for `SubscribeCounter` and `UnsubscribeCounter` messages:
 
 ```fsharp
-// Actors/performanceCounterActor
-// ...
-| SubscribeCounter(s) ->
-	let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
-	return! loop (s::subscriptionsWithoutSubscriber)
-| UnsubscribeCounter(s) ->
-	let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun i -> i <> s)
+| SubscribeCounter sub ->
+	let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun actor -> actor <> sub)
+	return! loop (sub::subscriptionsWithoutSubscriber)
+| UnsubscribeCounter sub ->
+	let subscriptionsWithoutSubscriber = subscriptions |> List.filter (fun actor -> actor <> sub)
 	return! loop subscriptionsWithoutSubscriber
 ```
 
@@ -316,84 +343,80 @@ Inside the `PreStart` lifecycle method, we used the `Context` object to get acce
 
 This causes `peformanceCounterActor` to fetch data every 250ms and publish it to `chartingActor`, giving us a live graph with a frame rate of 4 FPS.
 
-```fsharp
-// Actors/performanceCounterActor
-// ...
-    let counter = performanceCounterGenerator ()
-    let cancelled = mailbox.Context.System.Scheduler.ScheduleTellRepeatedlyCancelable (TimeSpan.FromMilliseconds 250.,
-                        TimeSpan.FromMilliseconds 250.,
-                        mailbox.Self,
-                        GatherMetrics,
-                        ActorRefs.NoSender)
-
+```fsharp					
+let counter = perfCounterGenerator ()
+let cancelled = mailbox.Context.System.Scheduler.ScheduleTellRepeatedlyCancelable (
+					TimeSpan.FromMilliseconds 250.,
+					TimeSpan.FromMilliseconds 250.,
+					mailbox.Self,
+					GatherMetrics,
+					ActorRefs.NoSender)
 ```
 
 Notice that inside the `performanceCounterActor`'s `Defer` function, we invoke the `ICancelable` we created to cancel this recurring message:
 
 ```fsharp
-// Actors/performanceCounterActor
-// ...
-   mailbox.Defer (fun () ->
-       cancelled.Cancel () |> ignore  // terminate the scheduled task
-       counter.Dispose () |> ignore  // stop the generator
-   )
-
+mailbox.Defer (fun _ ->
+	cancelled.Cancel () |> ignore  // terminate the scheduled task
+	counter.Dispose () |> ignore  // stop the generator
+)
 ```
 We do this for the same reason we `Dispose` the `PerformanceCounter` - to eliminate resource leaks and to prevent the `IScheduler` from sending recurring messages to dead or restarted actors.
 
-### Step 5 - Create the `performanceCounterCoordinatorActor`
+### Step 4 - Create the `performanceCounterCoordinatorActor`
 
 The `performanceCounterCoordinatorActor` is the interface between the `chartingActor` and all of the `performanceCounterActor` instances.
 
 It has the following jobs:
 
-* Lazily create all `peformanceCounterActor` instances that are requested by the end-user;
-* Provide the `peformanceCounterActor` with a function (`unit -> PerformanceCounter`) for creating its counters;
-* Manage all counter subscriptions for the `chartingActor`; and
-* Tell the `chartingActor` how to render each of the individual counter metrics (which colors and plot types to use for each `Series` that corresponds with a `PeformanceCounter`.)
+* Lazily create all `peformanceCounterActor` instances that are requested by the end-user
+* Provide the `peformanceCounterActor` with a function (`unit -> PerformanceCounter`) for creating its counters
+* Manage all counter subscriptions for the `chartingActor`
+* Tell the `chartingActor` how to render each of the individual counter metrics (which colors and plot types to use for each `Series` that corresponds with a `PeformanceCounter`)
 
 Sounds complicated, right? Well, you'll be surprised when you see how small the code footprint is!
 
-Type the following in `Actors.fs`:
+Create the following actor in `Actors.fs`:
 
 ```fsharp
 // Actors/performanceCoordinatorActor
-let performanceCounterCoordinatorActor chartingActor (mailbox:Actor<_>) =
-		let counterGenerators = Map.ofList [CounterType.Cpu, fun () -> new PerformanceCounter("Processor", "% Processor Time", "_Total", true)
-																				CounterType.Memory, fun () -> new PerformanceCounter("Memory", "% Committed Bytes In Use", true)
-																				CounterType.Disk, fun () -> new PerformanceCounter("LogicalDisk", "% Disk Time", "_Total", true)]
+let performanceCounterCoordinatorActor chartingActor (mailbox: Actor<_>) =
+	let counterGenerators = Map.ofList [CounterType.Cpu, fun _ -> new PerformanceCounter("Processor", "% Processor Time", "_Total", true)
+										CounterType.Memory, fun _ -> new PerformanceCounter("Memory", "% Committed Bytes In Use", true)
+										CounterType.Disk, fun _ -> new PerformanceCounter("LogicalDisk", "% Disk Time", "_Total", true)]
 
-		let counterSeries = Map.ofList [CounterType.Cpu, fun () -> new Series(CounterType.Cpu.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkGreen)
-																		CounterType.Memory, fun () -> new Series(CounterType.Memory.ToString (), ChartType = SeriesChartType.FastLine, Color = Color.MediumBlue)
-																		CounterType.Disk, fun () -> new Series(CounterType.Disk.ToString (), ChartType = SeriesChartType.SplineArea, Color = Color.DarkRed)]
+	let counterSeries = Map.ofList [CounterType.Cpu, fun _ -> new Series(string CounterType.Cpu, ChartType = SeriesChartType.SplineArea, Color = Color.DarkGreen)
+									CounterType.Memory, fun _ -> new Series(string CounterType.Memory, ChartType = SeriesChartType.FastLine, Color = Color.MediumBlue)
+									CounterType.Disk, fun _ -> new Series(string CounterType.Disk, ChartType = SeriesChartType.SplineArea, Color = Color.DarkRed)]
 
-		let rec loop(counterActors:Map<CounterType, IActorRef>) = actor {
-				let! msg = mailbox.Receive ()
+	let rec loop (counterActors: Map<CounterType, IActorRef>) = actor {
+		let! message = mailbox.Receive ()
 
-				match msg with
-				| Watch counter when counterActors |> Map.containsKey counter |> not ->
-						let counterName = counter.ToString ()
-						let actor = spawn mailbox.Context (sprintf "counterActor-%s" counterName) (performanceCounterActor counterName counterGenerators.[counter])
-						let newCounterActors = counterActors.Add (counter, actor)
-						chartingActor <! AddSeries(counterSeries.[counter] ())
-						newCounterActors.[counter] <! SubscribeCounter chartingActor
-						return! loop newCounterActors
-				| Watch counter ->
-						chartingActor <! AddSeries(counterSeries.[counter] ())
-						counterActors.[counter] <! SubscribeCounter chartingActor
-				| Unwatch counter when (Map.containsKey counter counterActors) ->
-						chartingActor <! RemoveSeries((counterSeries.[counter] ()).Name)
-						counterActors.[counter] <! UnsubscribeCounter chartingActor
-				return! loop counterActors
-		}
-		loop Map.empty
+		match message with
+		| Watch counter when counterActors |> Map.containsKey counter |> not ->
+			let counterName = string counter
+			let actor = spawn mailbox.Context (sprintf "counterActor-%s" counterName) (performanceCounterActor counterName counterGenerators.[counter])
+			let newCounterActors = counterActors.Add (counter, actor)
+			chartingActor <! AddSeries(counterSeries.[counter] ())
+			newCounterActors.[counter] <! SubscribeCounter(chartingActor)
+			return! loop newCounterActors
+		| Watch counter ->
+			chartingActor <! AddSeries(counterSeries.[counter] ())
+			counterActors.[counter] <! SubscribeCounter(chartingActor)
+		| Unwatch counter when counterActors |> Map.containsKey counter ->
+			chartingActor <! RemoveSeries((counterSeries.[counter] ()).Name)
+			counterActors.[counter] <! UnsubscribeCounter(chartingActor)
+		
+		return! loop counterActors
+	}
+	loop Map.empty
 ```
 
 *Notice that the tail recursive call that processes the messages. We start with an empty map and add to the map when we add a new actor.*
 
 Okay, we're almost there. Just one more actor to go!
 
-### Step 6 - Create the `buttonToggleActor`
+### Step 5 - Create the `buttonToggleActor`
 You didn't think we were going to let you just fire off those buttons you created in Step 2 without adding some actors to manage them, did you? ;)
 
 In this step, we're going to add a new type of actor that will run on the UI thread just like the `chartingActor`.
@@ -404,143 +427,116 @@ Type the following in `Actors.fs`:
 
 ```fsharp
 // Actors/buttonToggleActor
-let buttonToggleActor coordinatorActor (myButton: System.Windows.Forms.Button) myCounterType isToggled (mailbox: Actor<_>) =
-		let flipToggle (isOn) =
-						let isToggledOn = not isOn
-						myButton.Text <- (sprintf "%s (%s)" ((myCounterType.ToString ()).ToUpperInvariant ()) (if isToggledOn then "ON" else "OFF"))
-						isToggledOn
+let buttonToggleActor coordinatorActor (button: System.Windows.Forms.Button) counterType isToggled (mailbox: Actor<_>) =
+	let flipToggle isOn =
+		let isToggledOn = not isOn
+		button.Text <- sprintf "%s (%s)" (counterType.ToString().ToUpperInvariant()) (if isToggledOn then "ON" else "OFF")
+		isToggledOn
 
-		let rec loop (isToggledOn) = actor {
-				let! message = mailbox.Receive ()
-				match message with
-				| Toggle when isToggledOn -> coordinatorActor <! Unwatch(myCounterType)
-				| Toggle when not isToggledOn -> coordinatorActor <! Watch(myCounterType)
-				| m -> mailbox.Unhandled m
-				return! loop (flipToggle isToggledOn)
-		}
-		loop isToggled
+	let rec loop isToogledOn = actor {
+		let! message = mailbox.Receive ()
+
+		match message with
+		| Toggle when isToogledOn -> coordinatorActor <! Unwatch(counterType)
+		| Toggle when not isToogledOn -> coordinatorActor <! Watch(counterType)
+		| m -> mailbox.Unhandled m
+
+		return! loop (flipToggle isToogledOn)
+	}
+	loop isToggled
 ```
 
-### Step 7 - Update the `chartingActor`
+### Step 6 - Update the `chartingActor`
 Home stretch! We're almost there.
 
-We need to integrate all of the new message types we defined in Step 3 into the `chartingActor`. We also need to make some changes to the way we render the `Chart` since we're going to be making *live updates* to it continuously.
+We need to integrate all of the new message types we defined in Step 2 into the `chartingActor`. We also need to make some changes to the way we render the `Chart` since we're going to be making *live updates* to it continuously.
 
-To start, add this code at the very top of `chartingActor`:
+To start, add the `setChartBoundaries` function at the very top of `chartingActor`. It is is used to make sure that the boundary area of our chart gets updated as we remove old points from the beginning of the chart as time elapses.
 
 ```fsharp
 // Actors/chartingActor
 let chartingActor (chart: Chart) (mailbox:Actor<_>) =
-		let maxPoints = 250
 
-		let setChartBoundaries (mapping:Map<string,Series>, noOfPts:int) =
-				let allPoints = mapping |> Map.toList |> Seq.collect (fun (n, s) -> s.Points) |> (fun p -> HashSet<DataPoint>(p))
-				if allPoints |> Seq.length > 2 then
-						let yValues = allPoints |> Seq.collect (fun p -> p.YValues) |> Seq.toList
-						chart.ChartAreas.[0].AxisX.Maximum <- float noOfPts
-						chart.ChartAreas.[0].AxisX.Minimum <- (float noOfPts - float maxPoints)
-						chart.ChartAreas.[0].AxisY.Maximum <- if yValues |> List.length > 0 then Math.Ceiling(yValues |> List.max) else 1.
-						chart.ChartAreas.[0].AxisY.Minimum <- if yValues |> List.length > 0 then Math.Floor(yValues |> List.min) else 0.
-				else
-						()
+	let maxPoints = 250
 
-		let rec charting(mapping:Map<string,Series>, noOfPts:int) = actor {
-				let! message = mailbox.Receive ()
-				match message with  
-				| InitializeChart series ->
-						chart.Series.Clear ()
-						chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
-						chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
-						series |> Map.iter (fun k v ->
-																		v.Name <- k
-																		chart.Series.Add v)
-						return! charting(series, noOfPts)
-				| AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not ->
-						let newMapping = mapping.Add (series.Name, series)
-						chart.Series.Add series
-						setChartBoundaries (newMapping, noOfPts)
-						return! charting (newMapping, noOfPts)
-				| RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
-						chart.Series.Remove mapping.[seriesName] |> ignore
-						let newMapping = mapping.Remove seriesName
-						setChartBoundaries (newMapping, noOfPts)
-						return! charting (newMapping, noOfPts)
-				| Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
-						let newNoOfPts = noOfPts + 1
-						let series =   mapping.[seriesName]
-						series.Points.AddXY (noOfPts, counterValue) |> ignore
-						while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-						setChartBoundaries (mapping, newNoOfPts)
-						return! charting (mapping, newNoOfPts)
-		}
-		charting (Map.empty<string, Series>, 0)
-```
-
-The following function at the top of the `chartingActor` is  adding UI management code that isn't directly related to actors (don't worry about the specifics):
-
-```fsharp
-// Actors/chartingActor
-// ...
-let setChartBoundaries (mapping:Map<string,Series>, noOfPts:int) =
-		let allPoints = mapping |> Map.toList |> Seq.collect (fun (n, s) -> s.Points) |> (fun p -> HashSet<DataPoint>(p))
+	let setChartBoundaries (mapping: Map<string, Series>, numberOfPoints: int) =
+		let allPoints =
+                mapping
+                |> Map.toList
+                |> Seq.collect (fun (_, series) -> series.Points)
+                |> (fun points -> HashSet<DataPoint>(points))
+				
 		if allPoints |> Seq.length > 2 then
-				let yValues = allPoints |> Seq.collect (fun p -> p.YValues) |> Seq.toList
-				chart.ChartAreas.[0].AxisX.Maximum <- float noOfPts
-				chart.ChartAreas.[0].AxisX.Minimum <- (float noOfPts - float maxPoints)
-				chart.ChartAreas.[0].AxisY.Maximum <- if yValues |> List.length > 0 then Math.Ceiling(yValues |> List.max) else 1.
-				chart.ChartAreas.[0].AxisY.Minimum <- if yValues |> List.length > 0 then Math.Floor(yValues |> List.min) else 0.
+			let yValues = allPoints |> Seq.collect (fun p -> p.YValues) |> Seq.toList
+			chart.ChartAreas.[0].AxisX.Maximum <- float numberOfPoints
+			chart.ChartAreas.[0].AxisX.Minimum <- (float numberOfPoints - float maxPoints)
+			chart.ChartAreas.[0].AxisY.Maximum <- if List.length yValues > 0 then Math.Ceiling(List.max yValues) else 1.
+			chart.ChartAreas.[0].AxisY.Minimum <- if List.length yValues > 0 then Math.Floor(List.min yValues) else 0.
 		else
-				()
+			()
 ```
 
-> **NOTE**: the `setChartBoundaries`function is used to make sure that the boundary area of our chart gets updated as we remove old points from the beginning of the chart as time elapses.
-
-Next, we've redefined our message handlers to use the new `setChartBoundaries` function.
+Then onto the actor itself! We need to handle the new `ChartMessage` cases we added in step 2. Let's update our `charting` function accordingly:
 
 ```fsharp
-// Actors/chartingActor - inside the Message Handlers region
-// ...
-| AddSeries series when not <| String.IsNullOrEmpty series.Name && mapping |> Map.containsKey series.Name |> not ->
-	let newMapping = mapping.Add (series.Name, series)
-	chart.Series.Add series
-	setChartBoundaries (newMapping, noOfPts)
-	return! charting (newMapping, noOfPts)
-| RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
-	chart.Series.Remove mapping.[seriesName] |> ignore
-	let newMapping = mapping.Remove seriesName
-	setChartBoundaries (newMapping, noOfPts)
-	return! charting (newMapping, noOfPts)
-| Metric(seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
-	let newNoOfPts = noOfPts + 1
-	let series =   mapping.[seriesName]
-	series.Points.AddXY (noOfPts, counterValue) |> ignore
-	while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
-	setChartBoundaries (mapping, newNoOfPts)
-	return! charting (mapping, newNoOfPts)
+let rec charting(mapping: Map<string, Series>, numberOfPoints: int) = actor {
+	let! message = mailbox.Receive ()
+
+	match message with  
+	| InitializeChart series ->
+		chart.Series.Clear ()
+		chart.ChartAreas.[0].AxisX.IntervalType <- DateTimeIntervalType.Number
+		chart.ChartAreas.[0].AxisY.IntervalType <- DateTimeIntervalType.Number
+		series |> Map.iter (fun k v ->
+			v.Name <- k
+			chart.Series.Add v)
+		return! charting(series, numberOfPoints)
+
+	| AddSeries series when not <| String.IsNullOrEmpty series.Name && not <| (mapping |> Map.containsKey series.Name) ->
+		let newMapping = mapping.Add (series.Name, series)
+		chart.Series.Add series
+		setChartBoundaries (newMapping, numberOfPoints)
+		return! charting (newMapping, numberOfPoints)
+
+	| RemoveSeries seriesName when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
+		chart.Series.Remove mapping.[seriesName] |> ignore
+		let newMapping = mapping.Remove seriesName
+		setChartBoundaries (newMapping, numberOfPoints)
+		return! charting (newMapping, numberOfPoints)
+
+	| Metric (seriesName, counterValue) when not <| String.IsNullOrEmpty seriesName && mapping |> Map.containsKey seriesName ->
+		let newNoOfPts = numberOfPoints + 1
+		let series = mapping.[seriesName]
+		series.Points.AddXY (numberOfPoints, counterValue) |> ignore
+		while (series.Points.Count > maxPoints) do series.Points.RemoveAt 0
+		setChartBoundaries (mapping, newNoOfPts)
+		return! charting (mapping, newNoOfPts)
+}
+charting (Map.empty<string, Series>, 0)
 ```
 
-### Step 8 - Replace the `load` function in `Form.fs`
-Now that we have real data we want to plot in real-time, we need to replace the original `Main_Load` event handler, which supplied fake data to our `chartActor` with a real one that sets us up for live charting.
+our `chartingActor` is now able to handle removal of a given series as well as actually getting to add new data points to an existing series!
 
-Replace the `load` function so that it matches this:
+### Step 7 - Update the `load` function in `Form.fs`
+Now that we have real data we want to plot in real-time, we need to update the original `load` event handler that original supplied fake data to our `chartActor`.
+Update the `load` function so it looks like this:
 
 ```fsharp
-let load (myActorSystem:ActorSystem) =
-		let chartActor = spawn myActorSystem "charting" (Actors.chartingActor sysChart)
+let load (myActorSystem:ActorSystem) = 
+	let chartActor = spawn myActorSystem "charting" (Actors.chartingActor sysChart)
+	let coordinatorActor = spawn myActorSystem "counters" (Actors.performanceCounterCoordinatorActor chartActor)
+	let toggleActors = Map.ofList [(CounterType.Cpu, spawnOpt myActorSystem "cpuCounter" (Actors.buttonToggleActor coordinatorActor btnCpu CounterType.Cpu false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
+									(CounterType.Memory, spawnOpt myActorSystem "memoryCounter" (Actors.buttonToggleActor coordinatorActor btnMemory CounterType.Memory false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])
+									(CounterType.Disk, spawnOpt myActorSystem "diskCounter" (Actors.buttonToggleActor coordinatorActor btnDisk CounterType.Disk false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")])]
 
-		let coordinatorActor = spawn myActorSystem "counters" (Actors.performanceCounterCoordinatorActor chartActor)
-		let toggleActors = Map.ofList [(CounterType.Cpu, spawnOpt myActorSystem "cpuCounter" (Actors.buttonToggleActor coordinatorActor btnCpu CounterType.Cpu false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")]) // CPU Toggle Actor
-																	 (CounterType.Memory, spawnOpt myActorSystem "memoryCounter" (Actors.buttonToggleActor coordinatorActor btnMemory CounterType.Memory false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")]) // Memory Toggle Actor
-																	 (CounterType.Disk, spawnOpt myActorSystem "diskCounter" (Actors.buttonToggleActor coordinatorActor btnDisk CounterType.Disk false) [SpawnOption.Dispatcher("akka.actor.synchronized-dispatcher")]) // Disk Toggle Actor
-																	 ]
+	// the CPU counter will auto-start at launch
+	toggleActors.[CounterType.Cpu] <! Toggle
 
-		toggleActors.[CounterType.Cpu] <! Toggle
+	btnCpu.Click.Add (fun _ -> () )
+	btnMemory.Click.Add (fun _ -> () )
+	btnDisk.Click.Add (fun _ -> () )
 
-		btnCpu.Click.Add (fun _ -> () )
-		btnMemory.Click.Add (fun _ -> () )
-		btnDisk.Click.Add (fun _ -> () )
-
-		form
+	form
 ```
 
 #### Wait a minute, what's this `SpawnOption.Dispatcher` nonsense?!
@@ -548,10 +544,10 @@ let load (myActorSystem:ActorSystem) =
 
 As we saw in [Lesson 2.1](../lesson1/), you can also configure the `Dispatcher` for an actor via the HOCON config. So if an actor has a `Dispatcher` set in HOCON, *and* one declared programmatically via `spawnOpt`, which wins?
 
-*In case of a conflict, `Config` wins and `spawnOpt` loses .* Any conflicting settings declared by the `spawnOpt` fluent interface will always be overriden by what was declared in configuration.
+*In case of a conflict, `Config` wins and `spawnOpt` loses .* Any conflicting settings declared by the `spawnOpt` fluent interface will always be overriden by what was declared in the HOCON configuration.
 
-### Step 9 - Have Button Handlers Send `Toggle` Messages to Corresponding `buttonToggleActor`
-**THE LAST STEP.** We promise :) Thanks for hanging in there.
+### Step 8 - Have Button Handlers Send `Toggle` Messages to Corresponding `buttonToggleActor`
+**THIS IS THE LAST STEP.** We promise :) Thanks for hanging in there.
 
 Finally, we need to wire up the button handlers we created in Step 3.
 
