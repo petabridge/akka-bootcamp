@@ -9,6 +9,11 @@ open Akka.FSharp
 
 [<AutoOpen>]
 module RepoResultsForm =
+
+    let generateRandomActorName () =
+        Guid.NewGuid().ToString().[0..7]
+        |> sprintf "repoResults%s"
+
     let createNew (repoKey: RepoKey) (coordinator: IActorRef) =
         
         let formTitle = sprintf "Repos similar to %s / %s" repoKey.Owner repoKey.Repo
@@ -66,8 +71,9 @@ module RepoResultsForm =
         statusStrip.PerformLayout ()
         form.ResumeLayout false
         form.PerformLayout ()
-                
-        let repoResultsActor = spawnOpt ActorSystem.githubActors "repoResults" (Actors.repoResultsActor dgUsers lblStatus progressBar) [SpawnOption.Dispatcher "akka.actor.synchronized-dispatcher"]
+        
+        let actorName = generateRandomActorName ()
+        let repoResultsActor = spawnOpt ActorSystem.githubActors actorName (Actors.repoResultsActor dgUsers lblStatus progressBar) [SpawnOption.Dispatcher "akka.actor.synchronized-dispatcher"]
         coordinator <! SubscribeToProgressUpdates repoResultsActor
 
         form.FormClosing.Add (fun _ -> 
