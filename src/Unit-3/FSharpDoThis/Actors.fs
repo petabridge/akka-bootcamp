@@ -274,6 +274,8 @@ module Actors =
                     // Check to see if the job has fully completed
                     match settings.ReceivedInitialUsers && settings.GithubProgressStats.IsFinished with
                     | true ->
+                        let finishStats = finish settings.GithubProgressStats
+
                         // All repos minus forks of the current one
                         let sortedSimilarRepos =
                             settings.SimilarRepos.Values
@@ -284,7 +286,7 @@ module Actors =
                         settings.Subscribers
                         |> Seq.iter (fun subscriber ->
                             subscriber <! SimilarRepos sortedSimilarRepos
-                            subscriber <! GithubProgressStats settings.GithubProgressStats)
+                            subscriber <! GithubProgressStats finishStats)
 
                         settings.PublishTimer.Cancel ()
                         return! waiting ()
@@ -314,6 +316,7 @@ module Actors =
                     settings.Subscribers
                     |> Seq.iter (fun subscriber -> subscriber <! JobFailed settings.CurrentRepo)
 
+                    settings.PublishTimer.Cancel ()
                     return! waiting ()
                 // query failed, can't be retried, and it's a QueryStarrer operation - meaning that an individual operation failed
                 | RetryableQuery query when not query.CanRetry && isQueryStarrer query.Query ->
