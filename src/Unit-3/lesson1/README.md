@@ -45,7 +45,7 @@ A group router is a router that does not create/manage its routees. It only forw
 In this lesson, we'll be working with Group routers.
 
 #### How do I configure a `Router`?
-You can configure a router directly in your code (dubbed "procedural" or "programatic" configuration), or you can configure the router using HOCON and  `App.config`.
+You can configure a router directly in your code (dubbed "procedural" or "programmatic" configuration), or you can configure the router using HOCON and  `App.config`.
 
 We'll use procedural configuration in this lesson and the next, but go in depth on using HOCON to configure routers in Lesson 3.
 
@@ -148,18 +148,18 @@ When would you use this? It doesn't come up very often, but one use case we can 
 
 For example, perhaps you have a group of actors that all must be alerted if a critical system goes down. In this case, you could send their router a `Broadcast` message and all the routees would be alerted.
 
-```csharp
+```fsharp
 // tell a router to broadcast message to all its routees
 // regardless of what type of router it actually is
-router.Tell(new Broadcast("Shields failing, Captain!"));
+router <! Broadcast("Shields failing, Captain!")
 ```
 
 #### `GetRoutees`
 The `GetRoutees` message type tells a router to return a list of its routees. This is most commonly used for debugging, but in our example we'll also use it to track how many jobs are open.
 
-```csharp
+```fsharp
 // get a list of a routers routees
-router.Tell(new GetRoutees());
+router <! GetRoutees()
 ```
 
 #### `PoisonPill`
@@ -169,9 +169,9 @@ For a group router, this only stops the router and does not stop its routees. Fo
 
 Sending a `PoisonPill` will terminate any actor immediately:
 
-```csharp
+```fsharp
 // kill router actor
-router.Tell(PoisonPill.Instance);
+router <! PoisonPill.Instance
 ```
 
 Great! Now that you know what the different kinds of routers are, and how to use them, let's wrap up by covering how group routers and their routees recover from failures.
@@ -205,113 +205,80 @@ The current state of our actor hierarchy for processing GitHub repositories curr
 
 We're going to modify the `GithubCommanderActor` to use a `BroadcastGroup` router so we can run multiple jobs in parallel by the end of this lesson!
 
-### Phase 1 - Add `WithUnboundedStash` to the `GithubCommanderActor`
-Open `Actors\GithubCommanderActor.cs` and make the following changes to the actor declaration:
+### Phase 1 - Add switchable behaviors to the `GithubCommanderActor`
+Let split the logic of `GithubCommanderActor` into two different states: `ready` and `asking`.
+This is the new code for the `ready` state:
 
-```csharp
-// Actors\GithubCommanderActor.cs
-public class GithubCommanderActor : ReceiveActor, WithUnboundedStash
+
+```fsharp
+// pass around the actor that sent the CanAcceptJob message as well as the current number of pending jobs
+let rec ready canAcceptJobSender pendingJobReplies =
+    actor {
+        let! message = mailbox.Receive ()
+
+        match message with
+        | CanAcceptJob repoKey ->
+            coordinator <! CanAcceptJob repoKey
+            return! asking mailbox.Context.Sender 3 // 3 pending job replies
+        | _ -> return! ready canAcceptJobSender pendingJobReplies
+    }
 ```
 
-And then add the `Stash` property to `GithubCommanderActor` somewhere
+You will notice that we now pass around the `pendingJobReplies` that represents the number of jobs currently running. When the first job is launched, we arbitrarily set this number to 3, meaning that the scraper will now be able to run up to 3 jobs at the same time!
 
-```csharp
-// inside GithubCommanderActor class definition
-public IStash Stash { get; set; }
+and this is the code for the `asking` state:
+
+```fsharp
+// pass around the actor that sent the CanAcceptJob message as well as the current number of pending jobs
+and asking canAcceptJobSender pendingJobReplies =
+    actor {
+        let! message = mailbox.Receive ()
+
+        match message with
+        | CanAcceptJob repoKey ->
+            mailbox.Stash ()
+            return! asking canAcceptJobSender pendingJobReplies
+        | UnableToAcceptJob repoKey ->
+            let currentPendingJobReplies = pendingJobReplies - 1
+            if currentPendingJobReplies = 0 then
+                canAcceptJobSender <! UnableToAcceptJob repoKey
+                mailbox.UnstashAll ()
+                return! ready canAcceptJobSender currentPendingJobReplies
+            else
+                return! asking canAcceptJobSender currentPendingJobReplies
+        | AbleToAcceptJob repoKey ->
+            canAcceptJobSender <! AbleToAcceptJob repoKey
+            mailbox.Context.Sender <! BeginJob repoKey // start processing messages
+            mailbox.Context.ActorSelection "akka://GithubActors/user/mainform" <! LaunchRepoResultsWindow(repoKey, mailbox.Context.Sender) // launch the new window to view results of the processing
+            mailbox.UnstashAll ()
+            return! ready canAcceptJobSender pendingJobReplies
+        | _ -> return! asking canAcceptJobSender pendingJobReplies
+    }
+
+ready null 0
 ```
 
-### Phase 2 - Add switchable behaviors to the `GithubCommanderActor`
-Replace the `GithubCommanderActor`'s constructor and current `Receive<T>` handlers with the following:
+Here the interesting part is within the `UnableToAcceptJob` case. When we receive an `UnableToAcceptJob` message from one of the underlying coordinators, we interpret it as the coordinator being busy. If all coordinators (3 here) are currently busy, we tell our `githubValidatorActor` that we're not ready to handle the next job just yet.
 
-```csharp
-/* replace the current constructor and Receive<T> handlers
- * in Actors/GithubCommanderActor.cs with the following
- */
-private int pendingJobReplies;
-
-public GithubCommanderActor()
-{
-   Ready();
-}
-
-private void Ready()
-{
-    Receive<CanAcceptJob>(job =>
-    {
-        _coordinator.Tell(job);
-
-        BecomeAsking();
-    });
-}
-
-private void BecomeAsking()
-{
-    _canAcceptJobSender = Sender;
-    pendingJobReplies = 3; //the number of routees
-    Become(Asking);
-}
-
-private void Asking()
-{
-    // stash any subsequent requests
-    Receive<CanAcceptJob>(job => Stash.Stash());
-
-    Receive<UnableToAcceptJob>(job =>
-    {
-        pendingJobReplies--;
-        if (pendingJobReplies == 0)
-        {
-            _canAcceptJobSender.Tell(job);
-            BecomeReady();
-        }
-    });
-
-    Receive<AbleToAcceptJob>(job =>
-    {
-        _canAcceptJobSender.Tell(job);
-
-        // start processing messages
-        Sender.Tell(new GithubCoordinatorActor.BeginJob(job.Repo));
-
-        // launch the new window to view results of the processing
-        Context.ActorSelection(ActorPaths.MainFormActor.Path).Tell(
-			new MainFormActor.LaunchRepoResultsWindow(job.Repo, Sender));
-
-        BecomeReady();
-    });
-}
-
-private void BecomeReady()
-{
-    Become(Ready);
-    Stash.UnstashAll();
-}
-```
-
-### Phase 3 - Modify `GithubCommanderActor.PreStart` to use a group router for `_coordinator`
+### Phase 2 - Modify the pre-start logic of `GithubCommanderActor` to configure the `coordinator` as a group router
 The `GithubCommanderActor` is responsible for creating one `GithubCoordinatorActor`, who manages and coordinates all of the actors responsible for downloading data from GitHub via [Octokit](http://octokit.github.io/).
 
 We're going to change the `GithubCommanderActor` to actually create 3 different `GithubCoordinatorActor` instances, and we're going to use a `BroadcastGroup` to communicate with them!
 
-Replace the `GithubCommanderActor.PreStart` method with the following:
+Replace the pre-start logic of `GithubCommanderActor` with the following:
 
-```csharp
-protected override void PreStart()
-{
-    // create three GithubCoordinatorActor instances
-    var c1 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "1");
-    var c2 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "2");
-    var c3 = Context.ActorOf(Props.Create(() => new GithubCoordinatorActor()), ActorPaths.GithubCoordinatorActor.Name + "3");
+```fsharp
+// pre-start
+let c1 = spawn mailbox.Context "coordinator1" (githubCoordinatorActor)
+let c2 = spawn mailbox.Context "coordinator2" (githubCoordinatorActor)
+let c3 = spawn mailbox.Context "coordinator3" (githubCoordinatorActor)
 
-    // create a broadcast router who will ask all if them if they're available for work
-    _coordinator =
-        Context.ActorOf(Props.Empty.WithRouter(new BroadcastGroup(ActorPaths.GithubCoordinatorActor.Path + "1",
-            ActorPaths.GithubCoordinatorActor.Path + "2", ActorPaths.GithubCoordinatorActor.Path + "3")));
-    base.PreStart();
-}
+//create a broadcast router who will ask all of the coordinators if they are available for work
+let coordinatorPaths = [| string c1.Path; string c2.Path; string c3.Path |]
+let coordinator = mailbox.Context.ActorOf(Props.Empty.WithRouter(BroadcastGroup(coordinatorPaths)))
 ```
 
-And with that, you're all set!
+And with that, you're all set! The main coordinator (last line) will now route incoming message to all three `githubCoordinatorActor` instances.
 
 ### Once you're done
 
@@ -323,7 +290,7 @@ As a result of the changes you made, the actor hierarchy for GithubActors now lo
 
 ![Final state of GithubActors hierarchy after lesson 1](images/unit3-lesson1-final-actor-hierarchy.png)
 
-Now we have 3 separate `GithubCoordinatorActor` instances who are all available for GitHub repository analysis jobs.
+Now we have 3 separate `GithubCoordinatorActor` instances that are all available for GitHub repository analysis jobs.
 
 ## Great job!
 
