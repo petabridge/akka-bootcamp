@@ -5,7 +5,7 @@ Over the course of Unit 3, you're going to build a sophisticated GitHub scraper 
 
 > ***Heads up: This lesson is the most critical (and longest) of all the lessons in Unit 3. Grab some coffee and get comfortable!***
 
-The most important new concept we need to learn is `Router`s ([docs](http://getakka.net/wiki/Routing)). Let's get going.
+The most important new concept we need to learn is `Router`s ([docs](http://getakka.net/articles/actors/routers.html)). Let's get going.
 
 ## Key Concepts / Background
 ### `Router`s
@@ -276,6 +276,12 @@ let c3 = spawn mailbox.Context "coordinator3" (githubCoordinatorActor)
 //create a broadcast router who will ask all of the coordinators if they are available for work
 let coordinatorPaths = [| string c1.Path; string c2.Path; string c3.Path |]
 let coordinator = mailbox.Context.ActorOf(Props.Empty.WithRouter(BroadcastGroup(coordinatorPaths)))
+```
+
+By the way, don't forget to add this new `open` directive at the top of the file to be able to use `BroadcastGroup`:
+
+```fsharp
+open Akka.Routing
 ```
 
 And with that, you're all set! The main coordinator (last line) will now route incoming message to all three `githubCoordinatorActor` instances.
