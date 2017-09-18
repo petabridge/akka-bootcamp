@@ -16,7 +16,7 @@ This is because group routers are given the `ActorPath`s of their routees and in
 Additionally, pool routers can grow/shrink their routee pool whereas the routee pool for a group router is fixed once set. Also be aware that pool routers don't let you control the names of its routee children, so you have to talk to those routees via the router.
 
 ### When should I use Group routers vs Pool routers?
-***You should use a pool router if you can.***
+***You should use a pool router whenever you can.***
 
 We recommend using a pool router unless you have a unique situation that falls into one of these categories:
 
@@ -43,7 +43,7 @@ The selection is done in this order:
 1. Pick any idle routee (not currently processing a message) with an empty mailbox
 1. Pick any routee with an empty mailbox
 1. Pick the routee with the fewest pending messages in mailbox
-1. Pick any remote routee, remote actors are consider lowest priority, since their mailbox size is unknown
+1. Pick any remote routee, remote actors are considered lowest priority, since their mailbox size is unknown
 
 There is no Group router version of the `SmallestMailbox` because the information needed to execute the strategy is only practically available to a parent and not via an `ActorPath`.
 
@@ -82,7 +82,7 @@ Here's what will happen, by default, if you haven't specified a `supervisorStrat
 2. The parent of the router will issue a `restart` directive to the router
 3. The router will restart itself, and then restart its child routees
 
-The reason is to make the default behavior such that adding `withRouter` to a child actor definition does not change the supervision strategy applied to the child. Of course, you can change this by specifying the strategy when defining the parent router.
+The reason is to make the default behavior such that adding a `router` to a child actor definition does not change the supervision strategy applied to the child. Of course, you can change this by specifying the strategy when defining the parent router.
 
 ## Exercise
 The current state of our actor hierarchy looks like this:
@@ -95,45 +95,29 @@ This is how fast `GithubActors.sln` runs before we add our `Pool` router - take 
 
 ![GithubActors without parallelism](../lesson1/images/lesson1-after.gif)
 
-### Phase 1 - Modify `GithubCoordinatorActor.PreStart` to create `_githubWorker` as a router
-This exercise consists of adding two lines of code.
+### Phase 1 - Modify `GithubCoordinatorActor.PreStart` to create `githubWorker` as a router
+This exercise consists of changing one line of code only.
 
-First, open `Actors/GithubCoordinatorActor.cs` and add the following namespace import:
+Go to your `githubCoorindatorActor` and change the `pre-start` logic from this:
 
-```csharp
-// add to the top of Actors/GithubCoordinatorActor.cs
-using Akka.Routing;
-```
-
-And then change the `GithubCoorindatorActor.PreStart` method from this:
-
-```csharp
-// original GithubCoordinatorActor.PreStart method from the start of the lesson
- protected override void PreStart()
-{
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient)));
-}
+```fsharp
+let githubWorker = spawn mailbox.Context "worker" (githubWorkerActor)
 ```
 
 To this:
 
-```csharp
-// CHANGE GithubCoordinatorActor.PreStart to use this code instead
-protected override void PreStart()
-{
-    _githubWorker = Context.ActorOf(Props.Create(() => new GithubWorkerActor(GithubClientFactory.GetClient))
-        .WithRouter(new RoundRobinPool(10)));
-}
+```fsharp
+let githubWorker = spawn mailbox.Context "worker" (githubWorkerActor) [ SpawnOption.Router(RoundRobinPool(10)) ]
 ```
 
 That's it!
 
 ### Once you're done
-Build and run `GithubActors.sln`, and let's compare the performance of the app now that we're using 10 `GithubWorkerActor` instances per `GithubCoordinatorActor` instead of 1:
+Build and run `GithubActors.sln`, and let's compare the performance of the app now that we're using 10 `githubWorkerActor` instances per `githubCoordinatorActor` instead of 1:
 
-![GtihubActors at the end of lesson 2](images/lesson2-after.gif)
+![GithubActors at the end of lesson 2](images/lesson2-after.gif)
 
-**At the start of the lesson, it took us 16 seconds to download our first 4 users** for https://github.com/petabridge/akka-bootcamp. **At the end of the lesson it took us less than 4 seconds**. And it only took two lines of code to do it - that's how easy it is to parallelize work using actors.
+**At the start of the lesson, it took us 16 seconds to download our first 4 users** for https://github.com/petabridge/akka-bootcamp. **At the end of the lesson it took us less than 4 seconds**. And it only took one line of code to do it - that's how easy it is to parallelize work using actors.
 
 Our final actor hierarchy at the end of the lesson looks like this:
 
