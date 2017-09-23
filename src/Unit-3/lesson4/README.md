@@ -2,11 +2,13 @@
 
 One of the first questions developers ask once they learn [how Akka.NET actors work](http://petabridge.com/blog/akkadotnet-what-is-an-actor/) is&hellip;
 
-> "If actors can only process one message at a time, can I still use `async` methods or `Task<T>` objects inside my actors?"
+> "If actors can only process one message at a time, can I still use F# `async` workflows or `Task<T>` objects inside my actors?"
 
-*Yes!* You can still use asynchronous methods and `Task<T>` objects inside your actors - using the `PipeTo` pattern (instead of using `await`)!
+*Yes!* You can still use asynchronous functions and `Task<T>` objects inside your actors - using the `PipeTo` pattern!
 
 This lesson will show you how.
+
+Before going further, remember that F# asynchronous workflows produce an `Async<'T>` construct that needs to be run via a subsequent call to either `Async.RunSynchronously`, `Async.StartAsTask`, etc...This in turn will create a TPL `Task<T>` that will be handled by the .NET runtime. It is important to know that `Async<'T>` is not the same as `Task<T>` and that doing asynchronous work in F# will require knowledge about both. In the rest of the lesson we'll mostly use the term `Task<T>` to represent asynchronous operations.
 
 ## Key Concepts / Background
 "But wait!", you say. "Aren't actors already asynchronous?"
@@ -15,7 +17,8 @@ Indeed they are, and you make an astute point! Due to the nature of passing immu
 
 But what if you want to do some asynchronous work from within an actor itself, such as kick off a long-running HTTP request via a `Task`?
 
-Most developers would default to using `await`, which has achieved demigod status since its release in 2012.
+In C#, most developers would default to using `await`, which has achieved demigod status since its release in 2012.
+In F#, you would probably go with a combination of an [asynchronous workflow](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/asynchronous-workflows) run by `Async.StartAsTask`.
 
 *And they would be making the wrong choice.*
 
@@ -39,18 +42,23 @@ An immutable message is pushed from the mailbox into `OnReceive`. Once the call 
 That being said, it's still possible to take advantage of `async` methods and methods that return `Task<T>` objects inside the `OnReceive` method - you just have to use the `PipeTo` extension method!
 
 ### Async message processing using `PipeTo`
-The [`PipeTo` pattern](https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Actor/PipeToSupport.cs) is a simple [extension method](https://msdn.microsoft.com/en-us/library/bb383977.aspx) built into Akka.NET that you can append to any `Task<T>` object.
+The [`PipeTo` pattern](https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Actor/PipeToSupport.cs) is a simple [extension method](https://msdn.microsoft.com/en-us/library/bb383977.aspx) built into Akka.NET that you can append to any `Task<T>` object. This is how `PipeTo` looks in C#:
 
 ```csharp
 public static Task PipeTo<T>(this Task<T> taskToPipe, ICanTell recipient, ActorRef sender = null)
 ```
+
+But for the F# folks Akka.NET also comes with a nice `PipeTo` operator: **`|!>`** (or its backward equivalent **`<!|`**)
+Contrary to its C# cousin though, the F# `PipeTo` lives in the world of `Async<'T>` (and not `Task<T>`)!
+
+Be aware that those custom operators don't allow you to specify the sender (it will be set to `ActorRefs.NoSender` by default). If you want to pass in a sender, you can still use the equivalent F# `pipeTo` function and map it to your own operator.
 
 ### `Task`s are just another source of messages
 The goal behind `PipeTo` is to ***treat every async operation just like any other method that can produce a message for an actor's mailbox***.
 
 THAT is the right way to think about actors and concurrent `Task<T>`s in Akka.NET. A `Task<T>` is not something you `await` on in Akka.NET. It's *just something else that produces a message* for an actor to process through its mailbox.
 
-The `PipeTo` method takes an `ICanTell` object as a required argument, which tells the method where to pipe the results of an asynchronous `Task<T>`.
+The `pipeTo` function takes an `ICanTell` object as a required argument, which tells the method where to pipe the results of an asynchronous `Task<T>`.
 
 Here are all of the Akka.NET classes that you can use with `ICanTell`:
 
@@ -68,6 +76,19 @@ Receive<BeginProcessFeed>(feed =>
 });
 ```
 
+and here is the F# equivalent:
+
+```fsharp
+match message with
+| BeginProcessFeed feed ->
+    SendMessage <| sprintf "Downloading %O for RSS/ATOM processing..." feed.FeedUri
+    _feedFactory.CreateFeedAsync feed.FeedUri
+    |> Async.AwaitTask
+    |!> mailbox.Self
+```
+
+The `|!>` operator expects an `Async<'T>` while CreateFeedAsync returns a `System.Threading.Task<T>`. This is why we need to use `Async.AwaitTask` to make the conversion from the former to the latter.
+
 [View the full source for this example.](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/src/PipeTo.App/Actors/FeedParserActor.cs#L70).
 
 Whenever you kick off a `Task<T>` and use `PipeTo` to deliver the results to some `ActorRef` or `ActorSelection`, here's how your actor is really processing its mailbox.
@@ -83,48 +104,39 @@ That's why `PipeTo` is great for allowing your actors to parallelize long-runnin
 ### Composing `Task<T>` instances using `ContinueWith` and `PipeTo`
 Have some post-processing you need to do on a `Task<T>` before the result gets piped into an actor's mailbox? No problem - you can still use `ContinueWith` and all of the other TPL design patterns you used in procedural C# programming.
 
-Here's another example from our **[PipeTo code sample](https://github.com/petabridge/akkadotnet-code-samples/tree/master/PipeTo "Petabridge Akka.NET PipeTo code sample")**:
+In fact, this is exactly what we do in our `githubAuthenticationActor`! Have a look at the sample below:
 
-```csharp
-// asynchronously download the image and pipe the results to ourself
-_httpClient.GetAsync(imageUrl).ContinueWith(httpRequest =>
-{
-    var response = httpRequest.Result;
-
-    // successful img download
-    if (response.StatusCode == HttpStatusCode.OK)
-    {
-        var contentStream = response.Content.ReadAsStreamAsync();
-        try
-        {
-            contentStream.Wait(TimeSpan.FromSeconds(1));
-            return new ImageDownloadResult(image, response.StatusCode, contentStream.Result);
-        }
-        catch //timeout exceptions!
-        {
-            return new ImageDownloadResult(image, HttpStatusCode.PartialContent);
-        }
-    }
-
-    return new ImageDownloadResult(image, response.StatusCode);
-},
-  TaskContinuationOptions.AttachedToParent &
-  TaskContinuationOptions.ExecuteSynchronously)
- .PipeTo(Self);
+```fsharp
+| Authenticate token ->
+    showAuthenticatingStatus ()
+    let client = GithubClientFactory.getUnauthenticatedClient ()
+    client.Credentials <- Octokit.Credentials token
+    
+    let continuation (task: System.Threading.Tasks.Task<Octokit.User>) : AuthenticationMessage =
+        match task.IsFaulted with
+        | true -> AuthenticationFailed
+        | false ->
+            match task.IsCanceled with
+            | true -> AuthenticationCancelled
+            | false ->
+                GithubClientFactory.setOauthToken token
+                AuthenticationSuccess
+        
+    client.User.Current().ContinueWith continuation
+    |> Async.AwaitTask
+    |!> mailbox.Self
 ```
 
-[View the full source for this example.](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/src/PipeTo.App/Actors/HttpDownloaderActor.cs#L98).
+So in this case, we're trying to download a GitHub user using our own auth token via the Octokit client inside the actor. We want to check the status of the task before we use `|!>` to deliver a message back to the actor.
 
-So in this case, we're downloading an image via a [HttpClient](https://msdn.microsoft.com/en-us/library/system.net.http.httpclient(v=vs.118).aspx) inside an Akka.NET actor, and we want to check the status code of the HTTP response before we use `PipeTo` to deliver a message back to this actor.
-
-So we do the HTTP code handling inside a `ContinueWith` block and use that to return an `ImageDownloadResult` message that will be piped to the actor using the `PipeTo` block. Pretty easy!
+We write all the task status handling code inside a `ContinueWith` block and use that to pipe `AuthenticationFailed`. `AuthenticationCancelled` or `AuthenticationSuccess` to the actor. Pretty easy!
 
 ### Why is `await` an Anti-pattern inside actors?
 
 #### `await` is not magic, and breaks the core message processing guarantees
 While `await` is a powerful and convenient construct, it isn't magic. It's just syntactic sugar for TPL continuation. If this is confusing or unfamiliar, we highly recommend reviewing [Stephen Cleary's excellent Async/Await primer](http://blog.stephencleary.com/2012/02/async-and-await.html).
 
-`Await` does two key things which break the core message processing guarantees of Akka.NET:
+`await` does two key things which break the core message processing guarantees of Akka.NET:
 
 1. Exits the containing `async` function, while
 2. Sets a continuation point in the containing method where the asynchronous `Task` (the `awaitable`) will return to and continue executing once it is done with its async work.
@@ -146,96 +158,181 @@ This will turn the results of `async` operations into messages that get delivere
 
 This usually means closing over the `Sender` property and any private state you've defined that is likely to change between messages.
 
-For instance, the `Sender` property of your actor will definitely change between messages. You'll need to [use a C# closure](http://www.codethinked.com/c-closures-explained) for this property in order to guarantee that any asynchronous methods that depend on this property get the right value.
+For instance, the `Sender` property of your actor will definitely change between messages. You'll need to use a closurefor this property in order to guarantee that any asynchronous methods that depend on this property get the right value.
 
-Doing a closure is as simple as stuffing the property into an instance variable (`var`) and using that instance variable in your `PipeTo` call, instead of the field or property defined on your actor.
+Doing a closure is as simple as stuffing the property into an new variable (`let`) and using that instance variable in your `PipeTo` call, instead of the field or property defined on your actor. To illustrate this, let's have a look at the sample below where several `sender` actors trigger long-running asynchronous operations (simulated by `Async.Sleep`) in a single `processor` actor:
 
-Here's an example of closing over the `Sender` property:
+```fsharp
+open System
+open Akka.Actor
+open Akka.FSharp
 
-```csharp
-Receive<BeginProcessFeed>(feed =>
-{
-    // instance variable for closure
-    // close over the current value of Sender, since it changes between
-    // messages and accessing by property later would give different value
-    var senderClosure = Sender;
-    SendMessage(string.Format("Downloading {0} for RSS/ATOM processing...", feed.FeedUri));
+// helper to allow piping in the async computation
+let pipeToWithSender recipient sender asyncComp = pipeTo asyncComp recipient sender
 
-    // send result of this async task back to the sender of the current message
-    _feedFactory.CreateFeedAsync(feed.FeedUri).PipeTo(senderClosure);
-});
+type Message =
+    | Duration of int
+    | Response of string
+
+let senderActor (processor: IActorRef) (mailbox: Actor<_>) =
+    let rec processMessage () = actor {
+        let! message = mailbox.Receive ()
+        
+        match message with
+        | Duration duration ->
+            printfn "%s job's duration: %is" mailbox.Self.Path.Name duration
+            processor <! Duration(duration)
+        | Response response ->
+            printfn "%s got response: %s" mailbox.Self.Path.Name response
+
+        return! processMessage ()
+    }
+    processMessage ()
+
+let processorActor (mailbox: Actor<_>) =
+    let rec processMessage () = actor {
+        let! message = mailbox.Receive ()
+        printfn "processor received message, sender is %s" mailbox.Context.Sender.Path.Name
+
+        match message with
+        | Duration duration ->
+            async {
+                printfn "[%s] starting job for %s" (DateTime.Now.ToString("ss.mmm")) mailbox.Context.Sender.Path.Name
+                do! Async.Sleep (duration * 1000)
+                printfn "[%s] ending job for %s" (DateTime.Now.ToString("ss.mmm")) mailbox.Context.Sender.Path.Name
+                return Response mailbox.Context.Sender.Path.Name
+            }
+            |> pipeToWithSender mailbox.Self mailbox.Context.Sender
+        | Response response ->
+            mailbox.Context.Sender <! Response(response)
+
+        return! processMessage ()
+    }
+    processMessage ()
+
+let system = System.create "system" <| Configuration.load()
+let processor = spawn system "processor" processorActor
+let sender1 = spawn system "sender1" (senderActor processor)
+let sender2 = spawn system "sender2" (senderActor processor)
+
+sender1 <! Duration(2)
+sender2 <! Duration(3)
 ```
+
+The interesting bit is here, where the sender is passed as `mailbox.Context.Sender`:
+
+```fsharp
+| Duration duration ->
+    async {
+        printfn "[%s] starting job for %s" (DateTime.Now.ToString("ss.mmm")) mailbox.Context.Sender.Path.Name
+        do! Async.Sleep (duration * 1000)
+        printfn "[%s] ending job for %s" (DateTime.Now.ToString("ss.mmm")) mailbox.Context.Sender.Path.Name
+        return Response mailbox.Context.Sender.Path.Name
+    }
+    |> pipeToWithSender mailbox.Self mailbox.Context.Sender
+```
+This returns the following invalid results (look at the lines with NOK):
+
+```
+sender1 job's duration: 2s
+sender2 job's duration: 3s
+processor received message, sender is sender1
+[17.29] starting job for sender1
+processor received message, sender is sender2
+[17.29] starting job for sender2
+[19.29] ending job for sender2 ------> NOK, this should be sender1 (after 2s)
+processor received message, sender is sender1
+sender1 got response: sender2  ------> NOK, this should be sender1
+[20.29] ending job for sender1 ------> NOK, this should be sender2 (after 3s)
+processor received message, sender is sender2
+sender2 got response: sender1  ------> NOK, this should be sender2
+```
+
+However, if we close over `mailbox.Context.Sender` as below:
+
+```fsharp
+| Duration duration ->
+    let sender = mailbox.Context.Sender // close over sender
+    async {
+        printfn "[%s] starting job for %s" (DateTime.Now.ToString("ss.mmm")) sender.Path.Name // use closure here
+        do! Async.Sleep (duration * 1000)
+        printfn "[%s] ending job for %s" (DateTime.Now.ToString("ss.mmm")) sender.Path.Name // use closure here
+        return Response sender.Path.Name // use closure here
+    }
+    |> pipeToWithSender mailbox.Self sender // use closure here
+```
+
+we now obtain the expected results:
+
+```
+sender1 job's duration: 2s
+sender2 job's duration: 3s
+processor received message, sender is sender1
+[23.21] starting job for sender1
+processor received message, sender is sender2
+[23.21] starting job for sender2
+[25.21] ending job for sender1 ------> OK, timing is correct
+processor received message, sender is sender1
+sender1 got response: sender1  ------> OK, correct sender
+[26.21] ending job for sender2 ------> OK, timing is correct
+processor received message, sender is sender2
+sender2 got response: sender2  ------> OK, correct sender
+```
+
 > NOTE: Assuming you're piping the result of the `Task` back to the same actor, you don't need to close over `Self` or `Parent`. Those `ActorRef`s will be the same when the `Task` returns. You just need to close over the state that is going to change by the time the `Task` completes and executes its continuation delegate.
 
 Now, let's get to work and use this powerful parallelism technique inside our actors!
 
 ## Exercise
 
-Currently our `GithubWorkerActor` instances all block when they're waiting for responses back from the GitHub API, using the following code:
+Currently our `githubWorkerActor` instances all block when they're waiting for responses back from the GitHub API, using the following code:
 
-```csharp
- var getStarrer = _gitHubClient.Activity.Starring.GetAllForUser(starrer);
+```fsharp
+let starredRepos =
+    githubClient.Value.Activity.Starring.GetAllForUser (login)
+    |> Async.AwaitTask
+    |> Async.RunSynchronously
 
-// ewww
-getStarrer.Wait();
-var starredRepos = getStarrer.Result;
-Sender.Tell(new StarredReposForUser(starrer, starredRepos));
+mailbox.Context.Sender <! StarredReposForUser(login, starredRepos)
 ```
 
-We're going to leverage the full power of the TPL and allow each of our `GithubWorkerActor` instances kick off multiple parallel Octokit queries at once, and then use `PipeTo` to asynchronously deliver the completed results back to our `GithubCoordinatorActor`.
+We're going to leverage the full power of the TPL and allow each of our `githubWorkerActor` instances kick off multiple parallel Octokit queries at once, and then use `PipeTo` to asynchronously deliver the completed results back to our `githubCoordinatorActor`.
 
 Take note - this the current speed of our GitHub scraper at the end of lesson 2:
 
 ![GtihubActors at the end of lesson 2](../lesson2/images/lesson2-after.gif)
 
-### Phase 1 - Replace `GithubWorkerActor.InitialReceives`
+### Phase 1 - Update `githubWorkerActor`
 
-Open up `Actors/GithubWorkerActor.cs`and replace the `InitialRecieves` method with the following code:
+Open up `Actors.fs`and replace the core of `githubWorkerActor`with the following code:
 
-```csharp
-private void InitialReceives()
-{
-    // query an individual starrer
-    Receive<RetryableQuery>(query => query.Query is QueryStarrer, query =>
-    {
-        // ReSharper disable once PossibleNullReferenceException
-		// (we know from the previous IS statement that this is not null)
-        var starrer = (query.Query as QueryStarrer).Login;
+```fsharp
+| QueryStarrer login ->
+    let sender = mailbox.Context.Sender // closure over the sender
 
-        // close over the Sender in an instance variable
-        var sender = Sender;
-        _gitHubClient.Activity.Starring.GetAllForUser(starrer).ContinueWith<object>(tr =>
-        {
-            // query faulted
-            if (tr.IsFaulted || tr.IsCanceled)
-                return query.NextTry();
-            // query succeeded
-            return new StarredReposForUser(starrer, tr.Result);
-        }).PipeTo(sender);
+    // continuation that returns either a failure message (RetryableQuery) or a success message (StarredReposForUser)
+    let continuation (task: System.Threading.Tasks.Task<Collections.Generic.IReadOnlyList<Octokit.Repository>>) : GithubActorMessage =
+        if task.IsFaulted || task.IsCanceled then
+            RetryableQuery(nextTry query) 
+        else
+            StarredReposForUser(login, task.Result)
 
-    });
+    githubClient.Value.Activity.Starring.GetAllForUser(login).ContinueWith continuation
+    |> Async.AwaitTask
+    |!> sender
+| QueryStarrers repoKey ->
+    let sender = mailbox.Context.Sender
 
-    // query all starrers for a repository
-    Receive<RetryableQuery>(query => query.Query is QueryStarrers, query =>
-    {
-        // ReSharper disable once PossibleNullReferenceException
-		// (we know from the previous IS statement that this is not null)
-        var starrers = (query.Query as QueryStarrers).Key;
+    let continuation (task: System.Threading.Tasks.Task<Collections.Generic.IReadOnlyList<Octokit.User>>) : GithubActorMessage =
+        if task.IsFaulted || task.IsCanceled then
+            RetryableQuery(nextTry query) 
+        else
+            task.Result |> Seq.toArray |> UsersToQuery // returns the list of users
 
-
-        // close over the Sender in an instance variable
-        var sender = Sender;
-        _gitHubClient.Activity.Starring.GetAllStargazers(starrers.Owner, starrers.Repo)
-            .ContinueWith<object>(tr =>
-            {
-                // query faulted
-                if (tr.IsFaulted || tr.IsCanceled)
-                    return query.NextTry();
-                return tr.Result.ToArray();
-            }).PipeTo(sender);
-
-    });
-}
+    githubClient.Value.Activity.Starring.GetAllStargazers(repoKey.Owner, repoKey.Repo).ContinueWith continuation
+    |> Async.AwaitTask
+    |!> sender
+// rest of the actor...
 ```
 
 That's it!
@@ -257,7 +354,7 @@ Awesome - now you can use `Task<T>` instances in combination with your actors fo
 **Now it's time to move onto the final lesson: [Lesson 5 - How to prevent deadlocks with `ReceiveTimeout`](../lesson5).**
 
 ## Further reading
-See our [full Akka.NET `PipeTo` sample](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/).
+See our [full Akka.NET `PipeTo` sample in C#](https://github.com/petabridge/akkadotnet-code-samples/blob/master/PipeTo/).
 
 ## Any questions?
 **Don't be afraid to ask questions** :).
