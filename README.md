@@ -12,7 +12,7 @@ We will start with some basic actors and have you progressively work your way up
 
 The course is self-directed learning. You can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself throughout the course.
 
-> NOTE: F# support is in progress (see the [FSharp branch](https://github.com/petabridge/akka-bootcamp/tree/FSharp)). We will happily accept F# pull requests. Feel free to send them in.
+> **Great news, the full Akka.NET bootcamp is now available in F# too! You can grab it from the dedicated [FSharp branch](https://github.com/petabridge/akka-bootcamp/tree/FSharp) and experience the power of functional actors :)!**
 
 ## What will you learn?
 In Akka.NET Bootcamp you will learn how to use Akka.NET actors to build reactive, concurrent applications.
