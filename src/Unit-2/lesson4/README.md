@@ -1,6 +1,6 @@
 # Lesson 2.4: Switching Actor Behavior at Run-time
 
-In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/docs/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
+In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/articles/actors/receive-actor-api.html#becomeunbecome "Akka.NET - Actor behavior hotswap")!
 
 ## Key Concepts / Background
 Let's start with a real-world scenario in which you'd want the ability to change an actor's behavior.

@@ -22,7 +22,7 @@ Perhaps you want an actor to periodically fetch information, or to occasionally 
 Akka.NET provides a mechanism for doing just this sort of thing. Meet your new best friend: the `Scheduler`.
 
 ### What is the `Scheduler`?
-The `ActorSystem.Scheduler` ([docs](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Docs - IScheduler interface")) is a singleton within every `ActorSystem` that allows you to schedule messages to be sent to an actor in the future. The `Scheduler` can send both one-off and recurring messages.
+The `ActorSystem.Scheduler` ([docs](http://getakka.net/api/Akka.Actor.IScheduler.html "Akka.NET Stable API Docs - IScheduler interface")) is a singleton within every `ActorSystem` that allows you to schedule messages to be sent to an actor in the future. The `Scheduler` can send both one-off and recurring messages.
 
 ### How do I use the `Scheduler`?
 As we mentioned, you can schedule one-off or recurring messages to an actor.
@@ -42,7 +42,7 @@ mailbox.Context.System.Scheduler.ScheduleTellOnce (TimeSpan.FromMinutes 30., som
 ```
 
 #### Schedule one-off messages with `ScheduleTellOnce()`
-Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use [`IScheduler.ScheduleTellOnce()`](http://api.getakka.net/docs/stable/html/190E4EB.htm "Akka.NET Stable API Docs - IScheduler.ScheduleTellOnce method") to do that:
+Let's say we want to have one of our actors fetch the latest content from an RSS feed 30 minutes in the future. We can use [`IScheduler.ScheduleTellOnce()`](http://getakka.net/api/Akka.Actor.ITellScheduler.html#Akka_Actor_ITellScheduler_ScheduleTellOnce_System_TimeSpan_Akka_Actor_ICanTell_System_Object_Akka_Actor_IActorRef_ "Akka.NET Stable API Docs - IScheduler.ScheduleTellOnce method") to do that:
 
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
@@ -58,7 +58,7 @@ Voila! `someActor` will receive `someMessage` in 30 minutes time.
 #### Schedule recurring messages with `ScheduleTellRepeatedly()`
 Now, **what if we want to schedule this message to be delivered once *every 30 minutes*?**
 
-For this we can use the following [`IScheduler.ScheduleTellRepeatedly()`](http://api.getakka.net/docs/stable/html/A909C289.htm "Akka.NET Stable API Docs - IScheduler.ScheduleTellRepeatedly") overload.
+For this we can use the following [`IScheduler.ScheduleTellRepeatedly()`](http://getakka.net/api/Akka.Actor.ITellScheduler.html#Akka_Actor_ITellScheduler_ScheduleTellRepeatedly_System_TimeSpan_System_TimeSpan_Akka_Actor_ICanTell_System_Object_Akka_Actor_IActorRef_ "Akka.NET Stable API Docs - IScheduler.ScheduleTellRepeatedly") overload.
 
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
@@ -76,7 +76,7 @@ actorSystem.Scheduler.ScheduleTellRepeatedly(
 That's it!
 
 ### How do I cancel a scheduled message?
-What happens if we need to cancel a scheduled or recurring message? We use a [`ICancelable`](http://api.getakka.net/docs/stable/html/3FA8058E.htm "Akka.NET Stable API Docs - ICancelable interface"), which we can create using a [`Cancelable`](http://api.getakka.net/docs/stable/html/8869EC52.htm) instance.
+What happens if we need to cancel a scheduled or recurring message? We use a [`ICancelable`](http://getakka.net/api/Akka.Actor.ICancelable.html "Akka.NET Stable API Docs - ICancelable interface"), which we can create using a [`Cancelable`](http://getakka.net/api/Akka.Actor.Cancelable.html) instance.
 
 First, the message must be scheduled so that it can be cancelled. If a message is cancelable, we then just have to call `Cancel()` on our handle to the `ICancelable` and it will not be delivered. For example:
 
@@ -100,7 +100,7 @@ cancellation.Cancel ()
 ```
 
 #### Alternative: get an `ICancelable` task using `ScheduleTellRepeatedlyCancelable`
-One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://api.getakka.net/docs/stable/html/9B66375D.htm "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method")]. This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
+One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://getakka.net/api/Akka.Actor.SchedulerExtensions.html#Akka_Actor_SchedulerExtensions_ScheduleTellRepeatedlyCancelable_Akka_Actor_IScheduler_System_TimeSpan_System_TimeSpan_Akka_Actor_ICanTell_System_Object_Akka_Actor_IActorRef_ "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method")]. This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
 
 ```fsharp
 let actorSystem = System.create "myActorSystem" (Configuration.load ())
@@ -135,12 +135,12 @@ Here are all the overload options you have for scheduling a message.
 #### Overloads of `ScheduleTellRepeatedly`
 These are the various API calls you can make to schedule recurring messages.
 
-[Refer to the `IScheduler` API documentation](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Documentation - IScheduler Interface").
+[Refer to the `IScheduler` API documentation](http://getakka.net/api/Akka.Actor.IScheduler.html "Akka.NET Stable API Documentation - IScheduler Interface").
 
 #### Overloads of `ScheduleTellOnce`
 These are the various API calls you can make to schedule one-off messages.
 
-[Refer to the `IScheduler` API documentation](http://api.getakka.net/docs/stable/html/FB15E2E6.htm "Akka.NET Stable API Documentation - IScheduler Interface").
+[Refer to the `IScheduler` API documentation](http://getakka.net/api/Akka.Actor.IScheduler.html "Akka.NET Stable API Documentation - IScheduler Interface").
 
 ### How do I do Pub/Sub with Akka.NET Actors?
 It's actually very simple. Many people expect this to be very complicated and are suspicious that there isn't more code involved. Rest assured, there's nothing magic about pub/sub with Akka.NET actors. It can literally be as simple as this:
