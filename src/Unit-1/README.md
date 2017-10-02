@@ -1,6 +1,6 @@
 # Akka.NET Bootcamp - Unit 1: Beginning Akka.NET
 
-![Akka.NET logo](../../../images/akka_net_logo.png)
+![Akka.NET logo](../../images/akka_net_logo.png)
 
 In Unit 1, we will learn the fundamentals of how the actor model and Akka.NET work.
 

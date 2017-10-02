@@ -131,7 +131,7 @@ Compare your code to the solution in the [Completed](Completed/) folder to see w
 ## Great job!
 ### WOW! YOU WIN! Phenomenal work finishing Unit 1.
 
-**Ready for more? [Start Unit 2 now](../../../Unit-2 "Akka.NET Bootcamp Unit 2").**
+**Ready for more? [Start Unit 2 now](../../Unit-2 "Akka.NET Bootcamp Unit 2").**
 
 ## Any questions?
 **Don't be afraid to ask questions** :).

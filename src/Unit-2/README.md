@@ -2,7 +2,7 @@
 
 ![Akka.NET logo](../../images/akka_net_logo.png)
 
-In **[Unit 1](../Unit-1/FSharp)**, we learned some of the fundamentals of Akka.NET and the actor model.
+In **[Unit 1](../Unit-1)**, we learned some of the fundamentals of Akka.NET and the actor model.
 
 In Unit 2 we will learn some of the more sophisticated concepts behind Akka.NET, such as pattern matching, basic Akka.NET configuration, scheduled messages, and more!
 

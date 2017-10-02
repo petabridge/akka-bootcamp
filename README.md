@@ -12,9 +12,7 @@ We will start with some basic actors and have you incrementally work your way up
 
 The course is self-directed learning - you can do it at whatever pace you wish. You can [sign up here to have one Akka.NET Bootcamp lesson emailed to you daily](http://learnakka.net/ "Learn Akka.NET with Akka.NET Bootcamp") if you'd like a little help pacing yourself.
 
-> NOTE: Currently this bootcamp only supports C# - we intend to add F# in the future.
->
-> (We will also accept F# pull requests.)
+> Good news! The full Akka.NET bootcamp is now available in F#! Yeah!
 
 ## What will you learn?
 In Akka.NET Bootcamp you will learn how to use Akka.NET actors to build reactive, concurrent applications.
@@ -35,7 +33,7 @@ In Unit 1 you will learn:
 5. How to create child actors and actor hierarchies, and how to supervise children with `SupervisionStrategy`.
 6. How to use the Actor lifecycle to control actor startup, shutdown, and restart behavior.
 
-**[Begin Unit 1](src/Unit-1/FSharp)**.
+**[Begin Unit 1](src/Unit-1/)**.
 
 ### Unit 2
 In Unit 2, we're going to get into some more of the intermediate Akka.NET features to build a more sophisticated application than what we accomplished at the end of unit 1.
@@ -94,12 +92,12 @@ src\Unit1\README.MD - table of contents and instructions for the module
 src\Unit1\DoThis\ - contains the .SLN and project files that you will use through all lessons
 -- lesson 1
 src\Unit1\Lesson1\README.MD - README explaining lesson1
-src\Unit1\Lesson1\DoThis\ - C# classes, images, text files, and other junk you'll need to complete lesson1
+src\Unit1\Lesson1\DoThis\ - F# classes, images, text files, and other junk you'll need to complete lesson1
 src\Unit1\Lesson1\Completed\ - Got stuck on lesson1? This folder shows the "expected" output for the lesson
 -- repeat for all lessons
 ````
 
-Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/FSharp/lesson1)**.
+Start with the first lesson in each unit and follow the links through their README files on Github. We're going to begin with **[Unit 1, Lesson 1](src/Unit-1/lesson1)**.
 
 ### Lesson Layout
 Each Akka.NET Bootcamp lesson contains a README which explains the following:
@@ -123,14 +121,14 @@ We will provide explanations of all key concepts throughout each lesson, but of 
 ## Tools / prerequisites
 This course expects the following:
 
-- You have some programming experience and familiarity with C#
+- You have some programming experience and familiarity with F#
 - A Github account and basic knowledge of Git.
 - You are using a version of Visual Studio ([it's free now!](http://www.visualstudio.com/))
   - We haven't had a chance to test these in Xamarin / on Mono yet, but that will be coming soon. If you try them there, please let us know how it goes! We are planning on having everything on all platforms ASAP.
 
 
 ## Enough talk, let's go!
-[Let's begin!](src/Unit-1/FSharp/lesson1)
+[Let's begin!](src/Unit-1/lesson1)
 
 ## About Petabridge
 ![Petabridge logo](images/petabridge_logo.png)
