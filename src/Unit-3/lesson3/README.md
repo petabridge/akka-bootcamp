@@ -8,7 +8,7 @@ Now we need to show you how to configure and deploy them :)
 #### Quick review of HOCON
 We first learned about HOCON in [Lesson 2.1](../../Unit-2/lesson1/).
 
-To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/wiki/HOCON) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `ActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
+To review, [HOCON (Human-Optimized Config Object Notation)](http://getakka.net/articles/concepts/configuration.html#what-is-hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `ActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
 It's this last feature that we'll be using here to configure how our router actors are deployed. An actor is "deployed" when it is instantiated and put into service within the `ActorSystem` somewhere.
 
@@ -247,4 +247,4 @@ We've been able to leverage routers for parallelism both via explicit programmat
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

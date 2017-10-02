@@ -26,23 +26,23 @@ Because the actor system can be distributed over multiple machines in a cluster,
 
 We can think of an actor as a function that processes a message. Such a function would have a signature like
 
-```
+```fsharp
 // 'M is the type of the message
 'M -> unit
 ```
 
 An actor can also be a function that sends a message to another actor. Such a function would have the signature
 
-```
+```fsharp
 // 'M is the type of the message
 Actor<'M> -> 'M -> unit
 ```
 
 And that's actually all we care about when we write our application - all the rest is plumbing...
 
-Akka.FSharp gives us a couple of helpers to take these functions and inject them into an Actor System so that we can start interacting with them. We'll talk about how to create the actor system in a bit - you just need to be aware of the ``spawn``, ``actorOf`` and ``actorOf2`` functions provided by Akka.FSharp.  
+Akka.FSharp gives us a couple of helpers to take these functions and inject them into an Actor System so that we can start interacting with them. We'll talk about how to create the actor system in a bit - you just need to be aware of the `spawn`, `actorOf` and `actorOf2` functions provided by Akka.FSharp.  
 
-```
+```fsharp
 // for the message-processor kind of actor
 spawn actor_system "name" (actorOf (fn : 'M -> unit))
 
@@ -56,9 +56,9 @@ Actors communicate by sending messages to each other. Just like everything in F#
 
 The other really important thing to remember is that all these functions communicate asynchronously. There's a bunch of messaging logic under the hood that hides all of that from you, so basically you just write code that *looks* like you're calling a function, but you're actually doing a lot more!
 
-For the moment, just think of the ``<!`` operator as the way to send a message.
+For the moment, just think of the `<!` operator as the way to send a message.
 
-```
+```fsharp
 let message = "This is some text"
 
 someActor <! message
@@ -81,19 +81,9 @@ Go to the [DoThis](../DoThis/) folder and open [WinTail](../DoThis/WinTail.sln) 
 
 You will use this solution file through all of Unit 1.
 
-### Install the latest Akka.NET NuGet package
-In the Package Manager Console, type the following command:
-
-```
-Install-Package Akka
-Install-Package Akka.FSharp
-```
-
-This will install the latest Akka.NET binaries, which you will need in order to compile this sample.
-
 Note that the `open` keyword is used at the top of `Program.fs` to reference the necessary Akka modules:
 
-```
+```fsharp
 // in Program.fs
 
 open Akka.FSharp
@@ -107,23 +97,23 @@ Open the `Actors.fs` file and take a look at the two actor functions there
 
 The simpler function is the one that simply processes a message by writing it to the console:
 
-```
+```fsharp
 let consoleWriterActor message = ...
 
 // this has the signature of : 'M -> unit
 ```
 
-This function can be consumed by ``actorOf`` directly in order to ``spawn`` an actor.
+This function can be consumed by `actorOf` directly in order to `spawn` an actor.
 
 The more complex function is one that is capable of sending a message to an actor
 
-```
+```fsharp
 let consoleReaderActor (consoleWriter: IActorRef) (mailbox: Actor<_>) message = ...
 
 // this has the signature of : IActorRef -> Actor<'M> -> 'M -> unit
 ```
 
-So we can bind the consoleWriter actor to the first parameter and get ourselves a function which can be consumed by ``actorOf2``.
+So we can bind the consoleWriter actor to the first parameter and get ourselves a function which can be consumed by `actorOf2`.
 
 ### Have ConsoleReaderActor Send a Message to ConsoleWriterActor
 Time to give your actors instructions!
@@ -132,20 +122,20 @@ You will need to do the following in `Actors.fs`:
 
 1. Have ConsoleReaderActor send a message to ConsoleWriterActor containing the content that it just read from the console.
 
-	```fsharp
-	consoleWriter <! input
-	```
+```fsharp
+consoleWriter <! input
+```
 
 2. Have ConsoleReaderActor send a message to itself after sending a message to ConsoleWriterActor. This is what keeps the read loop going.
 
-	```fsharp
-	mailbox.Self <! Continue
-	```
+```fsharp
+mailbox.Self <! Continue
+```
 
 ### Make your first `Actor System`
 Go to `Program.fs` and add this to create your first actor system:
 
-```
+```fsharp
 let myActorSystem = System.create "MyActorSystem" (Configuration.load ())
 ```
 
@@ -157,7 +147,7 @@ Now that you have given `ConsoleReaderActor` and `ConsoleWriterActor` something 
 
 Go to `Program.fs`, and add this just below where you made your `ActorSystem`:
 
-```
+```fsharp
 let consoleWriterActor = spawn myActorSystem "consoleWriterActor" (actorOf Actors.consoleWriterActor)  
 let consoleReaderActor = spawn myActorSystem "consoleReaderActor" (actorOf2 (Actors.consoleReaderActor consoleWriterActor))
 ```
@@ -168,7 +158,7 @@ We will get into the details of `spawn` later, so don't worry too much for now. 
 
 Your actor system is in place, but now you have to start the process.  Add the following code below the creation of your actors in `Program.fs` to get consoleReaderActor to start reading from the console:
 
-```
+```fsharp
 // in Program.fs
 consoleReaderActor <! Actors.Start
 ```
@@ -194,4 +184,4 @@ Awesome work! Well done on completing your first lesson.
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

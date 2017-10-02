@@ -181,7 +181,7 @@ Great! Now that you know what the different kinds of routers are, and how to use
 
 Recall that group routers do not create their routees, but instead are passed the `ActorPath`s of their routees. This means that those routees exist somewhere else in the hierarchy, and are managed by whatever other parent actors created them.
 
-Practically, this means that a group router usually won't know that its routees have died. A group router will attempt to [`DeathWatch`](http://getakka.net/wiki/Supervision#what-lifecycle-monitoring-means) its routees, but it doesn't always succeed in subscribing. Much of this is due to the fact that `ActorPath`s can have wildcards.
+Practically, this means that a group router usually won't know that its routees have died. A group router will attempt to [`DeathWatch`](http://getakka.net/articles/concepts/supervision.html#what-lifecycle-monitoring-means) its routees, but it doesn't always succeed in subscribing. Much of this is due to the fact that `ActorPath`s can have wildcards.
 
 #### Isn't it bad that group routers usually don't know their routees have died?
 Yes, it is bad.
@@ -310,4 +310,4 @@ Awesome job! You've successfully used Akka.NET routers to achieve the first laye
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.

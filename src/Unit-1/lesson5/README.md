@@ -5,7 +5,7 @@ Mmm, that was nice.
 
 Okay, let's get on with it!
 
-In this lesson, we're going to learn how to decouple our actors from each other a bit and a new way of communicating between actors: [`ActorSelection`](http://api.getakka.net/docs/stable/html/CC0731A6.htm "Akka.NET Stable API Docs - ActorSelection class"). This lesson is shorter than the previous ones, now that we've laid down a solid conceptual foundation.
+In this lesson, we're going to learn how to decouple our actors from each other a bit and a new way of communicating between actors: [`ActorSelection`](http://getakka.net/api/Akka.Actor.ActorSelection.html "Akka.NET Stable API Docs - ActorSelection class"). This lesson is shorter than the previous ones, now that we've laid down a solid conceptual foundation.
 
 ## Key concepts / background
 `ActorSelection` is a natural extension of actor hierarchies, which we covered in the last lesson. Now that we understand that actors live in hierarchies, it begs the question: now that actors aren't all on the same level, does this change the way they communicate?
@@ -34,7 +34,7 @@ We think of `ActorSelection` as both a process and an object: the process of loo
 Always a great question, glad you asked! There are a number of benefits that `ActorSelection` gives you.
 
 #### Location transparency
-What [location transparency](http://getakka.net/docs/concepts/location-transparency) actually means is that whenever you send a message to an actor, you don't need to know where they are within an actor system, which might span hundreds of computers. You don't care if your actors are all in one process or spread across 100 machines around the world. You just have to know that actors' address (its `ActorPath`).
+What [location transparency](http://getakka.net/articles/concepts/location-transparency.html) actually means is that whenever you send a message to an actor, you don't need to know where they are within an actor system, which might span hundreds of computers. You don't care if your actors are all in one process or spread across 100 machines around the world. You just have to know that actors' address (its `ActorPath`).
 
 Think of it like calling someone's cell phone number - you don't need to know that your friend Bob is in Seattle, Washington, USA in order to place a call to them. You just need to dial Bob's cell phone number and your cellular network provider will take care of the rest.
 
@@ -74,7 +74,7 @@ select "akka://MyActorSystem/user/AuthenticationActor" mailbox.Context.System <!
 > NOTE: `ActorSelection`s can be either absolute or relative. An absolute `ActorSelection` includes the root `/user/` actor in the path. However, an `ActorSelection` could also be relative, such as `select "../validationActor" mailbox.Context.System`.
 
 #### Doing elastic processing of large data streams
-A very common extension of the well-known actor pattern is talking to routers ([docs](http://getakka.net/docs/Routing)). Routers are a more advanced topic we go in-depth on in unit 2.
+A very common extension of the well-known actor pattern is talking to routers ([docs](http://getakka.net/articles/actors/routers.html)). Routers are a more advanced topic we go in-depth on in unit 2.
 
 As a quick example, imagine that you had a system that needed to process a large data stream in real time. Let's say for fun that you had a very popular consumer app that had peak usage once or twice a day, like a social app that people love to use on their breaks at work. Each user is generating a flurry of activity that has to be processed and rolled up in realtime. For the sake of this example, imagine that you had an actor running per user tracking the user's activity, and feeding that data to other parts of the system.
 

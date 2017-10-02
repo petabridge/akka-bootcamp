@@ -1,6 +1,6 @@
 # Lesson 2.2: Using `ReceiveActor` for Smarter Message Handling
 
-In this lesson we're going to introduce the concept of `ReceiveActor` ([docs](http://api.getakka.net/docs/stable/html/B124B2AF.htm "Akka.NET - ReceiveActor")).
+In this lesson we're going to introduce the concept of `ReceiveActor` ([docs](http://getakka.net/api/Akka.Actor.ReceiveActor.html "Akka.NET - ReceiveActor")).
 This concept is mainly used in the **C#** API to deal more easily with sophisticated types of pattern matching and message handling in Akka.NET.
 In F# however, the concept of `ReceiveActor` is not as important, pattern matching already being an inherent part of the language.
 
@@ -185,7 +185,7 @@ In this case is that the second handler associated with `str.StartsWith "AkkaDot
 
 ***The order in which `Receive<'T>` handlers are declared matters!***
 
-This is because **`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler** and it [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/docs/ReceiveActor#handler-priority).
+This is because **`ReceiveActor` will handle a message using the *first* matching handler, not the *best* matching handler** and it [evaluates its handlers for each message in the order in which they were declared](http://getakka.net/articles/actors/receive-actor-api.html#handler-priority).
 
 So, how to solve our problem above and make sure our "AkkaDotNetSuccess" handler is being triggered?
 

@@ -18,7 +18,7 @@ F# has a very rich and powerful type system. It has built in support for *Tuples
 
 ```fsharp
  // this is a Record Type that could be used as an Actor Message
- type Person = { name:string; age:int }
+ type Person = { name: string; age: int }
  ```
 
  A *Record Type* has labeled elements and can be used as well. Record types provides structural equality out-of-the-box.
@@ -247,4 +247,4 @@ Awesome work! Well done on completing this lesson.
 Come ask any questions you have, big or small, [in this ongoing Bootcamp chat with the Petabridge & Akka.NET teams](https://gitter.im/petabridge/akka-bootcamp).
 
 ### Problems with the code?
-If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
+If there is a problem with the code running, or something else that needs to be fixed in this lesson, please [create an issue](https://github.com/petabridge/akka-bootcamp/issues) and we'll get right on it. This will benefit everyone going through Bootcamp.
