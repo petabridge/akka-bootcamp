@@ -238,8 +238,8 @@ To start off, we need to do some upgrading of our system. We are going to add in
 
 The goal of this exercise is to show you how to make a parent/child actor relationship.
 
-### Phase 2: Make your first parent/child actors!
-Great! Now we're ready to create our actor classes that will form a parent/child relationship.
+### Phase 1: Make your first parent/child actors!
+We're ready to create our actor classes that will form a parent/child relationship.
 
 Recall that in the hierarchy we're going for, there is a `TailCoordinatorActor` that coordinates child actors to actually monitor and tail files. For now it will only supervise one child, `TailActor`, but in the future it can easily expand to have many children, each observing/tailing a different file.
 
@@ -468,7 +468,7 @@ protected override void OnReceive(object message)
 ### ***BAM!***
 You have just established your first parent/child actor relationship!
 
-### Phase 1: A quick bit of prep
+### Phase 2: A quick bit of prep
 #### Replace `ValidationActor` with `FileValidatorActor`
 Since we're shifting to actually looking at files now, go ahead and replace `ValidationActor` with `FileValidatorActor`.
 
