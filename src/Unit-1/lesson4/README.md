@@ -302,22 +302,7 @@ namespace WinTail
 }
 ```
 
-#### Create `IActorRef` for `TailCoordinatorActor`
-In `Main()`, create a new `IActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
 
-```csharp
-// Program.Main
-// make tailCoordinatorActor
-Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
-IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps,
-    "tailCoordinatorActor");
-
-// pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
-Props fileValidatorActorProps = Props.Create(() =>
-new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
-IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps,
-    "validationActor");
-```
 
 #### Add `TailActor`
 Now, add a class called `TailActor` in its own file. This actor is the actor that is actually responsible for tailing a given file. `TailActor` will be created and supervised by `TailCoordinatorActor` in a moment.
@@ -548,12 +533,21 @@ namespace WinTail
 }
 ```
 
-You'll also want to make sure to update the `Props` instance in `Main` that references the class:
+#### Create `IActorRef` for `TailCoordinatorActor`
+In `Main()`, create a new `IActorRef` for `TailCoordinatorActor` and then pass it into `fileValidatorActorProps`, like so:
 
 ```csharp
-// Program.cs
-Props validationActorProps = Props.Create(
-  () => new FileValidatorActor(consoleWriterActor));
+// Program.Main
+// make tailCoordinatorActor
+Props tailCoordinatorProps = Props.Create(() => new TailCoordinatorActor());
+IActorRef tailCoordinatorActor = MyActorSystem.ActorOf(tailCoordinatorProps,
+    "tailCoordinatorActor");
+
+// pass tailCoordinatorActor to fileValidatorActorProps (just adding one extra arg)
+Props fileValidatorActorProps = Props.Create(() =>
+new FileValidatorActor(consoleWriterActor, tailCoordinatorActor));
+IActorRef validationActor = MyActorSystem.ActorOf(fileValidatorActorProps,
+    "validationActor");
 ```
 
 #### Update `DoPrintInstructions`
