@@ -21,7 +21,7 @@ Second, like any actor, a router can be remotely deployed into another process. 
 
 But most importantly, ***using HOCON means that you can change the behavior of actors dramatically without having to actually touch the actor code itself, just by changing config settings.***
 
-#### What configuration flags usually specified?
+#### What configuration flags are usually specified?
 What specific flags you need to specify will depend on the type of router you're using (e.g. you will need a `duration` with a `ScatterGatherFirstCompletedRouter`), but here are the things you'll be configuring the most.
 
 ##### Type of `Router`

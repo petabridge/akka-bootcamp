@@ -112,7 +112,7 @@ private void BecomeAsking()
       .Result.Members.Count();
     Become(Asking);
 
-    // send ourselves a ReceiveTimeout message if no message within 3 seonds
+    // send ourselves a ReceiveTimeout message if no message within 3 seconds
     Context.SetReceiveTimeout(TimeSpan.FromSeconds(3));
 }
 ```
