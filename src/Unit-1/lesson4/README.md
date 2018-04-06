@@ -241,6 +241,102 @@ The goal of this exercise is to show you how to make a parent/child actor relati
 ### Phase 1: Make your first parent/child actors!
 We're ready to create our actor classes that will form a parent/child relationship.
 
+#### Add `FileObserver`
+This is a utility class that we're providing for you to use. It does the low-level work of actually watching a file for changes.
+
+Create a new class called `FileObserver` and type in the code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
+
+```csharp
+// FileObserver.cs
+using System;
+using System.IO;
+using Akka.Actor;
+
+namespace WinTail
+{
+    /// <summary>
+    /// Turns <see cref="FileSystemWatcher"/> events about a specific file into
+    /// messages for <see cref="TailActor"/>.
+    /// </summary>
+    public class FileObserver : IDisposable
+    {
+        private readonly IActorRef _tailActor;
+        private readonly string _absoluteFilePath;
+        private FileSystemWatcher _watcher;
+        private readonly string _fileDir;
+        private readonly string _fileNameOnly;
+
+        public FileObserver(IActorRef tailActor, string absoluteFilePath)
+        {
+            _tailActor = tailActor;
+            _absoluteFilePath = absoluteFilePath;
+            _fileDir = Path.GetDirectoryName(absoluteFilePath);
+            _fileNameOnly = Path.GetFileName(absoluteFilePath);
+        }
+
+        /// <summary>
+        /// Begin monitoring file.
+        /// </summary>
+        public void Start()
+        {
+            // Need this for Mono 3.12.0 workaround
+            // uncomment next line if you're running on Mono!
+            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
+
+            // make watcher to observe our specific file
+            _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
+
+            // watch our file for changes to the file name,
+            // or new messages being written to file
+            _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
+
+            // assign callbacks for event types
+            _watcher.Changed += OnFileChanged;
+            _watcher.Error += OnFileError;
+
+            // start watching
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        /// <summary>
+        /// Stop monitoring file.
+        /// </summary>
+        public void Dispose()
+        {
+            _watcher.Dispose();
+        }
+
+        /// <summary>
+        /// Callback for <see cref="FileSystemWatcher"/> file error events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void OnFileError(object sender, ErrorEventArgs e)
+        {
+            _tailActor.Tell(new TailActor.FileError(_fileNameOnly,
+                e.GetException().Message),
+                ActorRefs.NoSender);
+        }
+
+        /// <summary>
+        /// Callback for <see cref="FileSystemWatcher"/> file change events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.ChangeType == WatcherChangeTypes.Changed)
+            {
+                // here we use a special ActorRefs.NoSender
+                // since this event can happen many times,
+                // this is a little microoptimization
+                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
+            }
+        }
+    }
+}
+```
+
 Recall that in the hierarchy we're going for, there is a `TailCoordinatorActor` that coordinates child actors to actually monitor and tail files. For now it will only supervise one child, `TailActor`, but in the future it can easily expand to have many children, each observing/tailing a different file.
 
 #### Add `TailCoordinatorActor`
@@ -563,101 +659,6 @@ private void DoPrintInstructions()
 }
 ```
 
-#### Add `FileObserver`
-This is a utility class that we're providing for you to use. It does the low-level work of actually watching a file for changes.
-
-Create a new class called `FileObserver` and type in the code for [FileObserver.cs](Completed/FileObserver.cs). If you're running this on Mono, note the extra environment variable that has to be uncommented in the `Start()` method:
-
-```csharp
-// FileObserver.cs
-using System;
-using System.IO;
-using Akka.Actor;
-
-namespace WinTail
-{
-    /// <summary>
-    /// Turns <see cref="FileSystemWatcher"/> events about a specific file into
-    /// messages for <see cref="TailActor"/>.
-    /// </summary>
-    public class FileObserver : IDisposable
-    {
-        private readonly IActorRef _tailActor;
-        private readonly string _absoluteFilePath;
-        private FileSystemWatcher _watcher;
-        private readonly string _fileDir;
-        private readonly string _fileNameOnly;
-
-        public FileObserver(IActorRef tailActor, string absoluteFilePath)
-        {
-            _tailActor = tailActor;
-            _absoluteFilePath = absoluteFilePath;
-            _fileDir = Path.GetDirectoryName(absoluteFilePath);
-            _fileNameOnly = Path.GetFileName(absoluteFilePath);
-        }
-
-        /// <summary>
-        /// Begin monitoring file.
-        /// </summary>
-        public void Start()
-        {
-            // Need this for Mono 3.12.0 workaround
-            // uncomment next line if you're running on Mono!
-            // Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
-
-            // make watcher to observe our specific file
-            _watcher = new FileSystemWatcher(_fileDir, _fileNameOnly);
-
-            // watch our file for changes to the file name,
-            // or new messages being written to file
-            _watcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
-
-            // assign callbacks for event types
-            _watcher.Changed += OnFileChanged;
-            _watcher.Error += OnFileError;
-
-            // start watching
-            _watcher.EnableRaisingEvents = true;
-        }
-
-        /// <summary>
-        /// Stop monitoring file.
-        /// </summary>
-        public void Dispose()
-        {
-            _watcher.Dispose();
-        }
-
-        /// <summary>
-        /// Callback for <see cref="FileSystemWatcher"/> file error events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void OnFileError(object sender, ErrorEventArgs e)
-        {
-            _tailActor.Tell(new TailActor.FileError(_fileNameOnly,
-                e.GetException().Message),
-                ActorRefs.NoSender);
-        }
-
-        /// <summary>
-        /// Callback for <see cref="FileSystemWatcher"/> file change events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void OnFileChanged(object sender, FileSystemEventArgs e)
-        {
-            if (e.ChangeType == WatcherChangeTypes.Changed)
-            {
-                // here we use a special ActorRefs.NoSender
-                // since this event can happen many times,
-                // this is a little microoptimization
-                _tailActor.Tell(new TailActor.FileWrite(e.Name), ActorRefs.NoSender);
-            }
-        }
-    }
-}
-```
 
 
 
