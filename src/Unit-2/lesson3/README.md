@@ -528,7 +528,24 @@ _cancelPublishing.Cancel();
 
 We do this for the same reason we `Dispose` the `PerformanceCounter` - to eliminate resource leaks and to prevent the `IScheduler` from sending recurring messages to dead or restarted actors.
 
-### Step 5 - Create the `PerformanceCounterCoordinatorActor`
+### Step 5 - Create the `PerformanceCounterCoordinatorActor` and `RemoveSeries` Message
+
+Add a new message type `RemoveSeries` in the `Messages` region of the `ChartingActor` class
+```csharp
+// Actors/ChartingActor.cs - inside the Messages region
+/// <summary>
+/// Remove an existing <see cref="Series"/> from the chart
+/// </summary>
+public class RemoveSeries
+{
+    public RemoveSeries(string seriesName)
+    {
+        SeriesName = seriesName;
+    }
+
+    public string SeriesName { get; private set; }
+}
+```
 
 The `PerformanceCounterCoordinatorActor` is the interface between the `ChartingActor` and all of the `PerformanceCounterActor` instances.
 
@@ -799,24 +816,7 @@ public const int MaxPoints = 250;
 private int xPosCounter = 0;
 ```
 
-Next, add a new message type that the `ChartingActor` is going to use. Add this inside the `Messages` region of `Actors/ChartingActor.cs`:
 
-```csharp
-// Actors/ChartingActor.cs - inside the Messages region
-
-/// <summary>
-/// Remove an existing <see cref="Series"/> from the chart
-/// </summary>
-public class RemoveSeries
-{
-    public RemoveSeries(string seriesName)
-    {
-        SeriesName = seriesName;
-    }
-
-    public string SeriesName { get; private set; }
-}
-```
 
 Add the following method to the bottom of the `ChartingActor` class (don't worry about the specifics, it's adding UI management code that isn't directly related to actors):
 
