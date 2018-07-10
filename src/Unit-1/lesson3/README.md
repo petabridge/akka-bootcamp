@@ -108,14 +108,14 @@ There are 3 ways to properly create `Props`, and they all involve a call to `Pro
 
   While it looks simple, **we recommend that you do not use this approach.** Why? *Because it has no type safety and can easily introduce bugs where everything compiles fine, and then blows up at runtime*.
 
-1. **The lambda syntax**:
+2. **The lambda syntax**:
   ```csharp
   Props props2 = Props.Create(() => new MyActor(..), "...");
   ```
 
   This is a mighty fine syntax, and our favorite. You can pass in the arguments required by the constructor of your actor class inline, along with a name.
 
-1. **The generic syntax**:
+3. **The generic syntax**:
   ```csharp
   Props props3 = Props.Create<MyActor>();
   ```
