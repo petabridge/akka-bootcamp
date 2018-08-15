@@ -22,7 +22,7 @@ Does this mean we have to rewrite `ChartingActor` with some evil code to manuall
 
 Nope! We can relax.
 
-**We can solve this problem using [HOCON configuration in Akka.NET](http://getakka.net/docs/concepts/configuration) without updating any of the code that defines `ChartingActor`.**
+**We can solve this problem using [HOCON configuration in Akka.NET](https://getakka.net/articles/concepts/configuration.html#what-is-hocon) without updating any of the code that defines `ChartingActor`.**
 
 But first, we need to understand `Dispatcher`s.
 
@@ -78,7 +78,7 @@ Time to meet HOCON.
 Akka.NET leverages a configuration format, called HOCON, to allow you to configure your Akka.NET applications with whatever level of granularity you want.
 
 #### What is HOCON?
-[HOCON (Human-Optimized Config Object Notation)](http://getakka.net/docs/concepts/hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
+[HOCON (Human-Optimized Config Object Notation)](https://getakka.net/articles/concepts/configuration.html#what-is-hocon) is a flexible and extensible configuration format. It will allow you to configure everything from Akka.NET's `IActorRefProvider` implementation, logging, network transports, and more commonly - how individual actors are deployed.
 
 Values returned by HOCON are strongly typed (i.e. you can fetch out an `int`, a `Timespan`, etc).
 
@@ -300,7 +300,7 @@ Nice work on completing your first lesson in Unit 2! We covered a lot of concept
 **Let's move onto [Lesson 2 - Using `ReceiveActor` for Smarter Message Handling](../lesson2/README.md).**
 
 ## Further reading
-As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](http://getakka.net/docs/HOCON).
+As you probably guessed while reading the HOCON configs above, any line with `#` at the front of it is treated as a comment in HOCON. [Learn more about HOCON syntax here](https://getakka.net/articles/concepts/configuration.html#what-is-hocon).
 
 ## Any questions?
 
