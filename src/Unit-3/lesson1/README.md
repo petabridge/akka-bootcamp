@@ -5,7 +5,7 @@ Over the course of Unit 3, you're going to build a sophisticated GitHub scraper 
 
 > ***Heads up: This lesson is the most critical (and longest) of all the lessons in Unit 3. Grab some coffee and get comfortable!***
 
-The most important new concept we need to learn is `Router`s ([docs](http://getakka.net/docs/Routing)). Let's get going.
+The most important new concept we need to learn is `Router`s ([docs](https://getakka.net/articles/actors/routers.html)). Let's get going.
 
 ## Key Concepts / Background
 ### `Router`s
@@ -114,7 +114,7 @@ Here's what the `RoundRobin` `RoutingStrategy` looks like:
 
 ![RoundRobin RoutingStrategy](images/RoundRobinRouter.png)
 
-***In practice, a `RoundRobin` strategy is going to be fine for most situations and should be your go-to load balancing `RoutingStrategy`***.
+**In practice, a `RoundRobin` strategy is going to be fine for most situations and should be your go-to load balancing `RoutingStrategy`**.
 
 However, if you find yourself with a router under *massive* load (e.g. 10s of millions of messages per second) or needing a unique pattern, then you may want to look at the more esoteric load balancing strategies that follow.
 
@@ -181,7 +181,7 @@ Great! Now that you know what the different kinds of routers are, and how to use
 
 Recall that group routers do not create their routees, but instead are passed the `ActorPath`s of their routees. This means that those routees exist somewhere else in the hierarchy, and are managed by whatever other parent actors created them.
 
-Practically, this means that a group router usually won't know that its routees have died. A group router will attempt to [`DeathWatch`](http://getakka.net/docs/Supervision#what-lifecycle-monitoring-means) its routees, but it doesn't always succeed in subscribing. Much of this is due to the fact that `ActorPath`s can have wildcards.
+Practically, this means that a group router usually won't know that its routees have died. A group router will attempt to [`DeathWatch`](https://getakka.net/articles/concepts/supervision.html#what-lifecycle-monitoring-means) its routees, but it doesn't always succeed in subscribing. Much of this is due to the fact that `ActorPath`s can have wildcards.
 
 #### Isn't it bad that group routers usually don't know their routees have died?
 Yes, it is bad.
