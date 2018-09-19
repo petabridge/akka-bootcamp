@@ -13,7 +13,7 @@ So, how can we fix this?
 
 The answer is to defer processing of `AddSeries` and `RemoveSeries` messages until the `ChartingActor` is back in its `Charting` behavior, at which time it can actually do something with those messages.
 
-The mechanism for this is the [`Stash`](http://getakka.net/docs/Stash).
+The mechanism for this is the [`Stash`](https://getakka.net/articles/actors/receive-actor-api.html#stash).
 
 ## Key Concepts / Background
 One of the side effects of switchable behavior for actors is that some behaviors may not be able to process specific types of messages. For instance, let's consider the authentication example we used for behavior-switching in [Lesson 4](../lesson4/README.md).

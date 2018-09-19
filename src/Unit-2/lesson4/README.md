@@ -1,6 +1,6 @@
 # Lesson 2.4: Switching Actor Behavior at Run-time with `BecomeStacked` and `UnbecomeStacked`
 
-In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](http://getakka.net/docs/Working%20with%20actors#hotswap "Akka.NET - Actor behavior hotswap")!
+In this lesson we're going to learn about one of the really cool things actors can do: [change their behavior at run-time](https://getakka.net/articles/actors/receive-actor-api.html#becomeunbecome "Akka.NET - Actor behavior hotswap")!
 
 ## Key Concepts / Background
 Let's start with a real-world scenario in which you'd want the ability to change an actor's behavior.
@@ -195,7 +195,7 @@ We called `Authenticating()` from the constructor, so our actor began in the `Au
 
 *This means that only the `Receive<T>` handlers defined in the `Authenticating()` method will be used to process messages (initially)*.
 
-However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](http://getakka.net/docs/ReceiveActor#become "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
+However, if we receive a message of type `AuthenticationSuccess` or `AuthenticationFailure`, we use the `Become` method ([docs](https://getakka.net/articles/actors/receive-actor-api.html#becomeunbecome "Akka.NET - ReceiveActor Become")) to switch behaviors to either `Authenticated` or `Unauthenticated`, respectively.
 
 ### Can I switch behaviors in an `UntypedActor`?
 Yes, but the syntax is a little different inside an `UntypedActor`. To switch behaviors in an `UntypedActor`, you have to access `BecomeStacked` and `UnbecomeStacked` via the `ActorContext`, instead of calling them directly.
