@@ -52,7 +52,7 @@ Actors are inherently asynchronous (more on this in a future lesson), and there 
 ### What kinds of actors are there?
 All types of actors inherit from `UntypedActor`, but don't worry about that now. We'll cover different actor types later.
 
-In Unit 1 all of your actors will inherit from [`UntypedActor`](http://getakka.net/docs/Working%20with%20actors#untypedactor-api "Akka.NET - UntypedActor API").
+In Unit 1 all of your actors will inherit from [`UntypedActor`](https://getakka.net/articles/actors/untyped-actor-api.html?q=untyped%20actor).
 
 ### How do you make an actor?
 There are 2 key things to know about creating an actor:
@@ -152,7 +152,7 @@ Once you've made your edits, press `F5` to compile and run the sample in Visual 
 You should see something like this, when it is working correctly:
 ![Petabridge Akka.NET Bootcamp Lesson 1.1 Correct Output](Images/example.png)
 
-> **N.B.** In Akka.NET 1.0.8 and later, you'll receive a warning about the JSON.NET serializer being deprecated in a future released of Akka.NET (1.5). This is true and you can [learn how to start using the beta of the Wire serializer package here](http://getakka.net/docs/Serialization#how-to-setup-wire-as-default-serializer). This is mainly meant to be a warning for Akka.NET users running Akka.Persistence or Akka.Remote, which both depend on the default serializer.
+> **N.B.** In Akka.NET 1.0.8 and later, you'll receive a warning about the JSON.NET serializer being deprecated in a future released of Akka.NET (1.5). This is true, the default Newtonsoft.Json serializer will be replaced in the favor of [Hyperion](https://github.com/akkadotnet/Hyperion). This is mainly meant to be a warning for Akka.NET users running Akka.Persistence or Akka.Remote, which both depend on the default serializer.
 
 
 ### Once you're done
