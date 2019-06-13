@@ -45,7 +45,8 @@ If you have any questions about Octokit or want to learn more about it, make sur
 ## Things you'll need
 **You will need to make a GitHub OAuth access token for the API**.
 
-This will be a throwaway token in your account only used for this app. [Follow the instructions here](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and write down your OAuth token.
+This will be a throwaway token in your account only used for this app. [Follow the instructions here](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and write down your OAuth token. When you create your access token, you can select repo as your scope. This scope will be all you need for this project.  
+![](../../images/OAuth_Scope.png)
 
 When you run the samples and are actually pulling data from GitHub, you will get two popup windows:
 1. The first popup window will ask you for your GitHub token. This is the read-only access token that you just created.
