@@ -170,9 +170,9 @@ There are two built-in supervision strategies:
 
  The basic difference between these is how widespread the effects of the error-resolution directive will be.
 
-**One-For-One** says that that the directive issued by the parent only applies to the failing child actor. It has no effect on the siblings of the failing child. This is the default strategy if you don't specify one. (You can also define your own custom supervision strategy.)
+**One-For-One** says that the directive issued by the parent only applies to the failing child actor. It has no effect on the siblings of the failing child. This is the default strategy if you don't specify one. (You can also define your own custom supervision strategy.)
 
-**All-For-One** says that that the directive issued by the parent applies to the failing child actor AND all of its siblings.
+**All-For-One** says that the directive issued by the parent applies to the failing child actor AND all of its siblings.
 
 The other important choice you make in a supervision strategy is how many times a child can fail within a given period of time before it is shut down (e.g. "no more than 10 errors within 60 seconds, or you're shut down").
 
