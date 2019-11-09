@@ -102,7 +102,7 @@ using Akka.Actor;
 Go to `Program.cs` and add this to create your first actor system:
 
 ```csharp
-MyActorSystem = ActorSystem.Create("MyActorSystem");
+var MyActorSystem = ActorSystem.Create("MyActorSystem");
 ```
 >
 > **NOTE:** When creating `Props`, `ActorSystem`, or `ActorRef` you will very rarely see the `new` keyword. These objects must be created through the factory methods built into Akka.NET. If you're using `new` you might be making a mistake.
