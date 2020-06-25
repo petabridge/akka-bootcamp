@@ -2,7 +2,7 @@
 using System.Configuration;
 using System.Windows.Forms;
 using Akka.Actor;
-using Akka.Configuration.Hocon;
+using Akka.Configuration;
 
 namespace GithubActors
 {
@@ -20,8 +20,22 @@ namespace GithubActors
         [STAThread]
         static void Main()
         {
-            GithubActors = ActorSystem.Create("GithubActors");
-
+            var config = ConfigurationFactory.ParseString(@"
+                akka {
+                    actor{
+                        deployment{
+                            #used to configure our MainFormActor
+                            /mainform{
+                                dispatcher = akka.actor.synchronized-dispatcher #causes MainFormActor to run on the UI thread for WinForms
+                            }
+                            /authenticator{
+                                dispatcher = akka.actor.synchronized-dispatcher
+                            }
+                        }
+                    }
+                }");
+            GithubActors = ActorSystem.Create("GithubActors", config);
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new GithubAuth());

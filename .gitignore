@@ -186,3 +186,5 @@ FakesAssemblies/
 # F#
 .vscode
 .ionide
+.idea
+.vs

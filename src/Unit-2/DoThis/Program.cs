@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Akka.Actor;
+using Akka.Configuration;
 
 namespace ChartApp
 {
@@ -18,7 +19,19 @@ namespace ChartApp
         [STAThread]
         static void Main()
         {
-            ChartActors = ActorSystem.Create("ChartActors");
+            var config = ConfigurationFactory.ParseString(@"
+                akka {
+                    actor{
+                        deployment{
+                            #used to configure our ChartingActor
+                            /charting{
+                                dispatcher = akka.actor.synchronized-dispatcher #causes ChartingActor to run on the UI thread for WinForms
+                            }
+                        }
+                    }
+                }");
+            ChartActors = ActorSystem.Create("ChartActors", config);
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main());
