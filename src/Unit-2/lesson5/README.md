@@ -44,7 +44,7 @@ But wait a minute, there's a new `Stash` property on the `UserActor` that includ
 
 The `Stash` property is automatically populated by an Akka.NET feature known as the "Actor Construction Pipeline," which gets used every time an actor is created locally (the details are beyond the scope of this lesson.)
 
-When the `ActorSystem` sees a `IWithBoundedStash` interface on an actor, it knows to automatically populate a `BoundedStash` inside its `Stash` property. Likewise, if it sees a `IWithUnboundedStash` interface, it knows to populate a `UnboundedStash` in that property instead.
+When the `ActorSystem` sees a `IWithBoundedStash` interface on an actor, it knows to automatically populate a `BoundedStash` inside its `Stash` property. Likewise, if it sees an `IWithUnboundedStash` interface, it knows to populate an `UnboundedStash` in that property instead.
 
 ### How to use the `Stash`
 Now that we've added a `Stash` to `UserActor`, how do we actually use it to store messages for later processing, and release previously stored messages to be processed?
