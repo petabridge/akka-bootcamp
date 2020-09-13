@@ -228,8 +228,8 @@ Excellent! Now that you understand the `Stash`, let's put it to work to fix our 
 ## Exercise
 In this section, we're going to use an `UnboundedStash` to fix the **Pause / Resume** bug inside the `ChartingActor` that we noticed at the end of Lesson 4.
 
-### Phase 1 - Have the `ChartingActor` Implement the `WithUnboundedStash` Interface
-Inside `Actors/ChartingActor.cs`, update the `ChartingActor` class declaration and have it implement the `WithUnboundedStash` interface:
+### Phase 1 - Have the `ChartingActor` Implement the `IWithUnboundedStash` Interface
+Inside `Actors/ChartingActor.cs`, update the `ChartingActor` class declaration and have it implement the `IWithUnboundedStash` interface:
 
 ```csharp
 // Actors/ChartingActor.cs
