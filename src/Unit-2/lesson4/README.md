@@ -250,7 +250,7 @@ Go to the **[Design]** view of `Main.cs` and add a new button with the following
 
 ![Add a Pause / Resume Button to Main](images/design-pauseresume-button.png)
 
-Got to the **Properties** window in Visual Studio and change the name of this button to `btnPauseResume`.
+Go to the **Properties** window in Visual Studio and change the name of this button to `btnPauseResume`.
 
 ![Use the Properties window to rename the button to btnPauseResume](images/pauseresume-properties.png)
 
