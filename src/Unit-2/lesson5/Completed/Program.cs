@@ -20,18 +20,7 @@ namespace ChartApp
         [STAThread]
         static void Main()
         {
-            var config = ConfigurationFactory.ParseString(@"
-                akka {
-                    actor{
-                        deployment{
-                            #used to configure our ChartingActor
-                            /charting{
-                                dispatcher = akka.actor.synchronized-dispatcher #causes ChartingActor to run on the UI thread for WinForms
-                            }
-                        }
-                    }
-                }");
-            ChartActors = ActorSystem.Create("ChartActors", config);
+            ChartActors = ActorSystem.Create("ChartActors");
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
