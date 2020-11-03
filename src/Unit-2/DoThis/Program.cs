@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Akka.Actor;
+using Akka.Configuration;
 
 namespace ChartApp
 {
@@ -19,6 +20,7 @@ namespace ChartApp
         static void Main()
         {
             ChartActors = ActorSystem.Create("ChartActors");
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main());
