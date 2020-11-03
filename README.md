@@ -125,7 +125,7 @@ This course expects the following:
 - You have some programming experience and familiarity with C#
 - A Github account and basic knowledge of Git.
 - You are using a version of Visual Studio ([it's free now!](http://www.visualstudio.com/))
-  - We haven't had a chance to test these in Xamarin / on Mono yet, but that will be coming soon. If you try them there, please let us know how it goes! We are planning on having everything on all platforms ASAP.
+  - These lessons are designed to run on Windows only due to the limitation of the WindowsForms framework.
 
 
 ## Enough talk, let's go!
@@ -140,4 +140,4 @@ This course expects the following:
 **[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](http://eepurl.com/bSlGWr)!
 
 ---
-Copyright 2015-2017 Petabridge, LLC
+Copyright 2015-2020 Petabridge, LLC

@@ -123,6 +123,10 @@ We haven't gone over what all these options mean, but *the key thing to know for
 Flexible config FTW!
 
 #### HOCON can be used inside `App.config` and `Web.config`
+
+> **NOTE**
+> We know that App.config and Web.config are deprecated in dotnet core, we will update this sample with a new way to declare HOCON configuration once the standalone HOCON 3.0 are released.
+
 Parsing HOCON from a `string` is handy for small configuration sections, but what if you want to be able to take advantage of [Configuration Transforms for `App.config` and `Web.config`](https://msdn.microsoft.com/en-us/library/dd465326.aspx) and all of the other nice tools we have in the `System.Configuration` namespace?
 
 As it turns out, you can use HOCON inside these configuration files too!
