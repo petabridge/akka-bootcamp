@@ -9,7 +9,7 @@ namespace GithubActors
     static class Program
     {
         /// <summary>
-        /// ActorSystem we'llbe using to collect and process data
+        /// ActorSystem we'll be using to collect and process data
         /// from Github using their official .NET SDK, Octokit
         /// </summary>
         public static ActorSystem GithubActors;
@@ -20,21 +20,7 @@ namespace GithubActors
         [STAThread]
         static void Main()
         {
-            var config = ConfigurationFactory.ParseString(@"
-                akka {
-                    actor{
-                        deployment{
-                            #used to configure our MainFormActor
-                            /mainform{
-                                dispatcher = akka.actor.synchronized-dispatcher #causes MainFormActor to run on the UI thread for WinForms
-                            }
-                            /authenticator{
-                                dispatcher = akka.actor.synchronized-dispatcher
-                            }
-                        }
-                    }
-                }");
-            GithubActors = ActorSystem.Create("GithubActors", config);
+            GithubActors = ActorSystem.Create("GithubActors");
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
