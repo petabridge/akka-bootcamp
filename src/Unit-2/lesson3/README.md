@@ -102,7 +102,7 @@ system
 cancellation.Cancel();
 ```
 
-####Alternative: get an `ICancelable` task using `ScheduleTellRepeatedlyCancelable`
+#### Alternative: get an `ICancelable` task using `ScheduleTellRepeatedlyCancelable`
 One of the new `IScheduler` methods we introduced in Akka.NET v1.0 is the [`ScheduleTellRepeatedlyCancelable` extension method](http://api.getakka.net/docs/stable/html/9B66375D.htm "Akka.NET API Docs - SchedulerExtensions.ScheduleTellRepeatedlyCancelable extension method").This extension method inlines the process of creating an `ICancelable` instance for your recurring messages and simply returns an `ICancelable` for you.
 
 ```csharp
