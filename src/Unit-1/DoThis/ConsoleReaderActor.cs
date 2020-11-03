@@ -20,7 +20,7 @@ namespace WinTail
         protected override void OnReceive(object message)
         {
             var read = Console.ReadLine();
-            if (!string.IsNullOrEmpty(read) && String.Equals(read, ExitCommand, StringComparison.OrdinalIgnoreCase))
+            if (TerminationConditionMet(read))
             {
                 // shut down the system (acquire handle to system via
                 // this actors context)
@@ -34,6 +34,10 @@ namespace WinTail
             // continue reading messages from the console
             // YOU NEED TO FILL IN HERE
         }
-
+        
+        private static bool TerminationConditionMet(string read)
+         {
+             return !string.IsNullOrEmpty(read) && String.Equals(read, ExitCommand, StringComparison.OrdinalIgnoreCase);
+         }
     }
 }
