@@ -26,11 +26,10 @@ class MyActor : UntypedActor
 {
     protected override void OnReceive(object message)
     {
-         if (message is Messages.InputError)
+         if (message is Messages.InputError inputErrorMsg)
         {
-            var msg = message as Messages.InputError;
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(msg.Reason);
+            Console.WriteLine(inputErrorMsg.Reason);
         }
         else
         {
@@ -187,9 +186,9 @@ protected override void OnReceive(object message)
     {
         DoPrintInstructions();
     }
-    else if (message is Messages.InputError)
+    else if (message is Messages.InputError errorMessage)
     {
-        _consoleWriterActor.Tell(message as Messages.InputError);
+        _consoleWriterActor.Tell(errorMessage);
     }
 
     GetAndValidateInput();
@@ -295,17 +294,15 @@ Change the `OnReceive` method of `ConsoleWriterActor` as follows:
 // in ConsoleWriterActor.cs
 protected override void OnReceive(object message)
 {
-    if (message is Messages.InputError)
+    if (message is Messages.InputError inputErrorMsg)
     {
-        var msg = message as Messages.InputError;
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(msg.Reason);
+        Console.WriteLine(inputErrorMsg.Reason);
     }
-    else if (message is Messages.InputSuccess)
+    else if (message is Messages.InputSuccess inputSuccessMsg)
     {
-        var msg = message as Messages.InputSuccess;
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(msg.Reason);
+        Console.WriteLine(inputSuccessMsg.Reason);
     }
     else
     {
