@@ -182,3 +182,9 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+# F#
+.vscode
+.ionide
+.idea
+.vs

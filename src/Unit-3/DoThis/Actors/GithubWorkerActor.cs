@@ -81,7 +81,7 @@ namespace GithubActors.Actors
                     var starredRepos = getStarrer.Result;
                     Sender.Tell(new StarredReposForUser(starrer, starredRepos));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //operation failed - let the parent know
                     Sender.Tell(query.NextTry());
@@ -102,7 +102,7 @@ namespace GithubActors.Actors
                     var stars = getStars.Result;
                     Sender.Tell(stars.ToArray());
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //operation failed - let the parent know
                     Sender.Tell(query.NextTry());
