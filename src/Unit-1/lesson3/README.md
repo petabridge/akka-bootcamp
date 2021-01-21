@@ -169,13 +169,13 @@ namespace WinTail
                 if (valid)
                 {
                     // send success to console writer
-                    _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you!
+                    _consoleWriterActor.Tell(new Messages.InputSuccess(@"Thank you!
                      Message was valid."));
                 }
                 else
                 {
                     // signal that input was bad
-                    _consoleWriterActor.Tell(new Messages.ValidationError("Invalid:
+                    _consoleWriterActor.Tell(new Messages.ValidationError(@"Invalid:
                      input had odd number of characters."));
                 }
             }

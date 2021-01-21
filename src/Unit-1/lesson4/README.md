@@ -487,7 +487,7 @@ namespace WinTail
             if (string.IsNullOrEmpty(msg))
             {
                 // signal that the user needs to supply an input
-                _consoleWriterActor.Tell(new Messages.NullInputError("Input was blank.
+                _consoleWriterActor.Tell(new Messages.NullInputError(@"Input was blank.
                 Please try again.\n"));
 
                 // tell sender to continue doing its thing (whatever that may be,
