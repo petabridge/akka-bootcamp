@@ -231,7 +231,7 @@ private void GetAndValidateInput()
         var valid = IsValid(message);
         if (valid)
         {
-            _consoleWriterActor.Tell(new Messages.InputSuccess("Thank you!
+            _consoleWriterActor.Tell(new Messages.InputSuccess(@"Thank you!
              Message was valid."));
 
             // continue reading messages from console
@@ -239,7 +239,7 @@ private void GetAndValidateInput()
         }
         else
         {
-        	Self.Tell(new Messages.ValidationError("Invalid: input had
+        	Self.Tell(new Messages.ValidationError(@"Invalid: input had
             odd number of characters."));
         }
     }
