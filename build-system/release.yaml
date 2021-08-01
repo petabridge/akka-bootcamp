@@ -65,7 +65,7 @@ stages:
         inputs:
           rootFolderOrFile: $(Build.ArtifactStagingDirectory)
           archiveType: zip
-          includeRootFolder: true 
+          includeRootFolder: false
           archiveFile: '$(Build.ArtifactStagingDirectory)/Akka.NET Bootcamp - $(tag).zip' 
 
       
