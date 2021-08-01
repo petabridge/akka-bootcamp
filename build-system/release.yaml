@@ -48,7 +48,7 @@ stages:
         displayName: Login to ACR
         inputs:
           command: login
-          containerRegistry: '$(dockerRegistryServiceConnection)'
+          containerRegistry: '2f755d13-512c-44bb-a36d-58f6fa08cefc'
 
       - task: CmdLine@2
         displayName: Render
