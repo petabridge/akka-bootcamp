@@ -1,0 +1,70 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+  branches:
+    include:
+      - refs/tags/*
+pr: none
+
+resources:
+- repo: self
+
+variables:
+  - group: Docker # ACR connections
+  - name: vmImageName
+    value: ubuntu-latest
+  - name: tag
+    value: $(Build.SourceBranchName)
+
+stages:
+- stage: Build
+  displayName: Build and Publish
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+      - task: CmdLine@2
+        displayName: Archive Code Samples
+        inputs:
+          script: |
+            mkdir $(Build.ArtifactStagingDirectory)/Code
+            # publish Unit 1 DoThis and Completed
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit1-DoThis.zip" HEAD:src/Unit-1/DoThis/
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit1-Completed.zip" HEAD:src/Unit-1/lesson6/
+
+            # publish Unit 2 DoThis and Completed
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit2-DoThis.zip" HEAD:src/Unit-2/DoThis/
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit2-Completed.zip" HEAD:src/Unit-2/lesson5/
+
+            # publish Unit 3 DoThis and Completed
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit3-DoThis.zip" HEAD:src/Unit-3/DoThis/
+            git archive -o "$(Build.ArtifactStagingDirectory)/Code/Unit3-Completed.zip" HEAD:src/Unit-3/lesson5/
+
+      - task: Docker@2
+        displayName: Login to ACR
+        inputs:
+          command: login
+          containerRegistry: $(dockerRegistryServiceConnection)
+
+      - task: CmdLine@2
+        displayName: Render
+        inputs:
+          script: |
+            mkdir $(Build.ArtifactStagingDirectory)/Book
+            docker run --name testebook2 -v $(pwd):/usr/src/ebook $(containerRegistry)/ebook.file /usr/src/ebook "Akka.NET Bootcamp"
+            docker cp testebook2:"/work/src/bin/Akka.NET Bootcamp.pdf" "$(Build.ArtifactStagingDirectory)/Book/Akka.NET Bootcamp File.pdf"
+            docker cp testebook2:"/work/src/bin/Akka.NET Bootcamp.mobi" "$(Build.ArtifactStagingDirectory)/Book/Akka.NET Bootcamp File.mobi"
+            docker cp testebook2:"/work/src/bin/Akka.NET Bootcamp.epub" "$(Build.ArtifactStagingDirectory)/Book/Akka.NET Bootcamp File.epub"
+
+      - task: ArchiveFiles@2
+        displayName: Archive
+        inputs:
+          rootFolderOrFile: $(Build.ArtifactStagingDirectory)
+          archiveType: zip
+          archiveFile: '$(Build.ArtifactStagingDirectory)/$(tag).zip' 
+
+      - publish: '$(Build.ArtifactStagingDirectory)/$(tag).zip' 
