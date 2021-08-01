@@ -67,4 +67,8 @@ stages:
           archiveType: zip
           archiveFile: '$(Build.ArtifactStagingDirectory)/$(tag).zip' 
 
-      - publish: '$(Build.ArtifactStagingDirectory)/$(tag).zip' 
+      
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/Akka.NET Bootcamp - $(tag).zip' 
+          artifactName: 'Akka.NET Bootcamp'
