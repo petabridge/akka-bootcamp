@@ -34,8 +34,6 @@ module Actors =
 
 
     let consoleWriterActor message = 
-        let (|Even|Odd|) n = if n % 2 = 0 then Even else Odd
-    
         let printInColor color message =
             Console.ForegroundColor <- color
             Console.WriteLine (message.ToString ())

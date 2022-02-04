@@ -55,10 +55,6 @@ module Actors =
         getAndValidateInput ()
             
     let consoleWriterActor message =
-        
-        // Active pattern matching to define if a number is even or odd
-        let (|Even|Odd|) n = if n % 2 = 0 then Even else Odd
-    
         let printInColor color message =
             Console.ForegroundColor <- color
             Console.WriteLine (message.ToString ())
