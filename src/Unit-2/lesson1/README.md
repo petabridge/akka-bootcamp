@@ -22,7 +22,7 @@ Does this mean we have to rewrite `ChartingActor` with some evil code to manuall
 
 Nope! We can relax.
 
-**We can solve this problem using [HOCON configuration in Akka.NET](https://getakka.net/articles/concepts/configuration.html#what-is-hocon) without updating any of the code that defines `ChartingActor`.**
+**We can solve this problem using [HOCON configuration in Akka.NET](https://getakka.net/articles/configuration/config.html) without updating any of the code that defines `ChartingActor`.**
 
 But first, we need to understand `Dispatcher`s.
 
