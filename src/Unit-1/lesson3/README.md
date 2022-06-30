@@ -425,7 +425,7 @@ We've left a little landmine as a demonstration. You should blow it up just to s
 Okay, so what was the point of that? Contrived as that example was, it should show you that *using the `typeof` syntax for `Props` has no type safety and is best avoided unless you have a good reason to use it.*
 
 ## Great job! Onto Lesson 4!
-Awesome work! Well done on completing your this lesson. It was a big one.
+Awesome work! Well done on completing this lesson. It was a big one.
 
 **Let's move onto [Lesson 4 - Child Actors, Actor Hierarchies, and Supervision](../lesson4/README.md).**
 
