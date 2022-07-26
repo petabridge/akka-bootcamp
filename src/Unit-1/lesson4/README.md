@@ -23,7 +23,7 @@ What's the pattern? Take a lot of work. Break it down recursively until it is ea
 ### Hierarchies enable resilient systems
 A hierarchy allows for different levels of risk and specialization to exist that could not otherwise.
 
-Think of how an army works. An army has a general setting strategy and overseeing everything, but she is usually not going to be on the front line of the battle where there is the most risk. However, she has wide leverage and guides everything. At the same time, there are lower-ranking soldiers who are on the front lines, doing risky operations and carrying out the orders that they receive.
+Think of how an army works. An army has a General setting strategy and overseeing everything, but she is usually not going to be on the front line of the battle where there is the most risk. However, she has wide leverage and guides everything. At the same time, there are lower-ranking soldiers who are on the front lines, doing risky operations and carrying out the orders that they receive.
 
 This is exactly how an actor system operates.
 
@@ -78,7 +78,7 @@ This is where the party starts! And this is where you'll be spending all your ti
 
 The `/user` actor may also be referred to as "The Guardian Actor". But from a user perspective, `/user` is the root of your actor system and is usually just called the "root actor."
 
-> Generally, "root actor" refers to the `/user` actor.
+> `ly, "root actor" refers to the `/user` actor.
 
 As a user, you don't really need to worry too much about the Guardians. We just have to make sure that we use supervision properly under `/user` so that no exception can bubble up to the Guardians and crash the whole system.
 
