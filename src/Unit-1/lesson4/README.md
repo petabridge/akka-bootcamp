@@ -78,7 +78,7 @@ This is where the party starts! And this is where you'll be spending all your ti
 
 The `/user` actor may also be referred to as "The Guardian Actor". But from a user perspective, `/user` is the root of your actor system and is usually just called the "root actor."
 
-> `ly, "root actor" refers to the `/user` actor.
+> `Generally, "root actor" refers to the `/user` actor.
 
 As a user, you don't really need to worry too much about the Guardians. We just have to make sure that we use supervision properly under `/user` so that no exception can bubble up to the Guardians and crash the whole system.
 
