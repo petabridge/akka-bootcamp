@@ -5,7 +5,7 @@ This lesson picks up right where Lesson 1 left off, and continues extending our 
 
 ## Key concepts / background
 ### What is a message?
-Any POCO can be a message. A message can be a `string`, a value like `int`, a type, an object that implements an interface... whatever you want.
+Any POCO (Plain Old CSharp Object) can be a message. A message can be a `string`, a value like `int`, a type, an object that implements an interface... whatever you want.
 
 That being said, the recommended approach is to make your own custom messages into semantically named classes, and to encapsulate any state you want inside those classes (e.g. store a `Reason` inside a `ValidationFailed` class... hint, hint...).
 
