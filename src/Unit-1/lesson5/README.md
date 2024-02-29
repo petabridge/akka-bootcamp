@@ -25,18 +25,18 @@ An `ActorSelection` will also match two different `IActorRef`s with the same nam
 We think of `ActorSelection` as both a process and an object: the process of looking actor(s) up by `ActorPath`, and the object returned from that lookup, which allows us to send messages to the actor(s) matched by the expression we looked up.
 
 ### Why should I care about `ActorSelection`?
-In general, you should always try to use `IActorRef`s instead. But there are a couple of scenarios where `ActorSelection` are the right tool for the job and we cover those in more detail here: "[When Should I Use ActorSelection](https://petabridge.com/blog/when-should-I-use-actor-selection/)."
+In general, you should always try to use `IActorRef`, but there are a couple of scenarios where `ActorSelection` is the right tool for the job and we cover those in more detail here: "[When Should I Use ActorSelection](https://petabridge.com/blog/when-should-I-use-actor-selection/)."
 
 
 #### Dynamic behavior
 Dynamic behavior is an advanced concept that we dive into in the beginning of Unit 2, but for now just be aware that the behavior of a given actor can be very flexible. This lets actors easily represent things like Finite State Machines so a small code footprint can easily handle complex situations.
 
-Where does `ActorSelection` come into play on this? Well, if you want to have a very dynamic and adaptable system, there are probably going to be lots of actors coming and going from the hierarchy and trying to store / pass around handles to all of them would be a real pain. `ActorSelection` lets you easily just send messages to well known addresses of the key actor(s) you need to communicate with, and not worry about getting/passing/storing handles to the things you need.
+Where does `ActorSelection` come into play on this? Well, if you want to have a very dynamic and adaptable system, there are probably going to be lots of actors coming and going from the hierarchy and trying to store / pass around handles to all of them would be a real pain. `ActorSelection` lets you easily send messages to well known addresses of the key actor(s) you need to communicate with, and not worry about getting/passing/storing handles to the things you need.
 
 You also can build extremely dynamic actors where not even the `ActorPath` needed to do an `ActorSelection` is hardcoded, but can instead be represented by a message that is passed into your actor.
 
 #### Flexible communication patterns == adaptable system
-Let's run w/ this idea of adaptability, because it's important for your happiness as a developer, the resilience of your system, and the speed at which your organization can move.
+Let's run with this idea of adaptability, because it's important for your happiness as a developer, the resilience of your system, and the speed at which your organization can move.
 
 Since you don't have to couple everything together to make it work, this will speed up your development cycles. You can introduce new actors and entirely new sections into the actor hierarchy without having to go back and change everything you've already written. Your system has a much more flexible communication structure that can expand and accommodate new actors (and requirements) easily.
 
@@ -72,7 +72,7 @@ IActorRef myFooActor = MyActorSystem.ActorOf(props);
 ```
 
 ### Do I send a message differently to an `ActorSelection` vs an `IActorRef`?
-Nope. You `Tell()` an `ActorSelection` a message just the same as an `IActorRef`:
+Nope. You `Tell()` a message to an `ActorSelection` the same way you `Tell()` it to an `IActorRef`:
 
 ```csharp
 var selection = Context.ActorSelection("/path/to/actorName");
@@ -118,6 +118,7 @@ Context.ActorSelection("akka://MyActorSystem/user/validationActor").Tell(message
 ```
 
 Finally, let's update `consoleReaderProps` accordingly in `Program.cs` since its constructor no longer takes any arguments:
+
 ```csharp
 // Program.Main
 Props consoleReaderProps = Props.Create<ConsoleReaderActor>();
@@ -183,7 +184,7 @@ In this case, we aren't using the handle for `consoleWriterActor` to talk direct
 
 This is actually a good design pattern in the actor model, because it makes the message being passed entirely self-contained and keeps the system as a whole flexible, even if this one actor (`FileValidatorActor`) needs an `IActorRef` passed in and is a little coupled.
 
-Think about what is happening in the `TailCoordinatorActor` which is receiving this message: the job of the `TailCoordinatorActor` is to manage `TailActor`s which will actually observe and report file changes to... somewhere. We get to specify that somewhere up front.
+Think about what is happening in the `TailCoordinatorActor` which is receiving this message: the job of the `TailCoordinatorActor` is to manage `TailActor`s which will actually observe and report file changes to... somewhere. We get to specify that "somewhere" up front.
 
 `TailActor` should not have the reporting output location written directly into it. The reporting output location is a task-level detail that should be encapsulated as an instruction within the incoming message. In this case, that task is our custom `StartTail` message, which indeed contains the `IActorRef` for the previously mentioned `consoleWriterActor` as the `reporterActor`.
 
