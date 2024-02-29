@@ -4,7 +4,7 @@ Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in
 
 [![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](images/grok.png)](https://petabridge.com/bootcamp/signup)
 
-![Discord](https://img.shields.io/discord/974500337396375553?style=flat&logo=discord&label=Join%20Akka.NET%20Discord)
+[![Discord](https://img.shields.io/discord/974500337396375553?style=flat&logo=discord&label=Join%20Akka.NET%20Discord)](https://discord.com/invite/GSCfPwhbWP)
 
 Over the three units of this bootcamp you will learn how to create fully-functional, real-world programs using Akka.NET actors and many other parts of the core Akka.NET framework!
 
