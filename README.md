@@ -36,6 +36,7 @@ If you need help, please join the [Akka.NET Discord's `#akka-bootcamp` channel](
 
 [![Discord](https://img.shields.io/discord/974500337396375553?style=flat&logo=discord&label=Join%20Akka.NET%20Discord)](https://discord.com/invite/GSCfPwhbWP)
 
+Second, you can always check out the [official Akka.NET documentation](https://getakka.net/) or [source code](https://github.com/akkadotnet/akka.net).
 
 ## About Petabridge
 ![Petabridge logo](images/petabridge_logo.png)
