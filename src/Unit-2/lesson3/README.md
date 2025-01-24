@@ -537,14 +537,14 @@ It has the following jobs:
 * Lazily create all `PerformanceCounterActor` instances that are requested by the end-user;
 * Provide the `PerformanceCounterActor` with a factory method (`Func<PerformanceCounter>`) for creating its counters;
 * Manage all counter subscriptions for the `ChartingActor`; and
-* Tell the `ChartingActor` how to render each of the individual counter metrics (which colors and plot types to use for each `Series` that corresponds with a `PerformanceCounter`.)
+* Tell the `ChartingActor` how to render each of the individual counter metrics (which colors and plot types to use for each `Series` that corresponds with a `PerformanceCounter`).
 
 Sounds complicated, right? Well, you'll be surprised when you see how small the code footprint is!
 
 Create a new file in the `/Actors` folder called `PerformanceCounterCoordinatorActor.cs` and type the following:
 
 ```csharp
-// Actors/PerformanceCoordinatorActor.cs
+// Actors/PerformanceCounterCoordinatorActor.cs
 
 using System;
 using System.Collections.Generic;
