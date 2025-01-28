@@ -16,7 +16,7 @@ IActorRef myActor = myActorSystem.ActorOf(myProps, "MyActor");
 myActor.Tell("Hello, World!");
 
 // use Ask<T> to do request-response messaging
-var whatsUp = await myActor.Ask<string>("What's up?");
+string whatsUp = await myActor.Ask<string>("What's up?");
 Console.WriteLine(whatsUp);
 
 await myActorSystem.Terminate();
