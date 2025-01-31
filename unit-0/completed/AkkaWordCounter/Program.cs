@@ -35,4 +35,11 @@ parserActor.Tell(new DocumentCommands.ProcessDocument(
         """
     ));
 
+IDictionary<string, int> counts = await completionPromise;
+foreach(var kvp in counts)
+{
+    // going to use string interpolation here because we don't care about perf
+    myActorSystem.Log.Info($"{kvp.Key}: {kvp.Value} instances");
+}
+
 await myActorSystem.Terminate();
