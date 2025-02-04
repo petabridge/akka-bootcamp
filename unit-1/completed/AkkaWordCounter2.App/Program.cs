@@ -1,5 +1,5 @@
 ﻿using Akka.Hosting;
-using AkkaWordCounter2;
+using AkkaWordCounter2.App;
 using Microsoft.Extensions.Hosting;
 
 var hostBuilder = new HostBuilder();

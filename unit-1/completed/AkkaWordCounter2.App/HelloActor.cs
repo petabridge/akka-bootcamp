@@ -1,4 +1,4 @@
-﻿namespace AkkaWordCounter2;
+﻿namespace AkkaWordCounter2.App;
 
 public class HelloActor : ReceiveActor
 {

@@ -1,6 +1,6 @@
 using Akka.Hosting;
 
-namespace AkkaWordCounter2;
+namespace AkkaWordCounter2.App;
 
 public class TimerActor : ReceiveActor, IWithTimers
 {
