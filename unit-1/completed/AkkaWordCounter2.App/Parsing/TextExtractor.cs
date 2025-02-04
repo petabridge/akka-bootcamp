@@ -1,8 +1,8 @@
 using HtmlAgilityPack;
 
-namespace AkkaWordCounter2.App;
+namespace AkkaWordCounter2.App.Parsing;
 
-public static class ParsingUtilities
+public static class TextExtractor
 {
     /// <summary>
     /// Extracts raw text from a HtmlDocument
