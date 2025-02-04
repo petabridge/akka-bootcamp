@@ -27,11 +27,17 @@ public interface IWithDocumentId
 public static class DocumentCommands
 {
     public sealed record ScanDocument(AbsoluteUri DocumentId) : IWithDocumentId;
+
+    public sealed record ScanDocuments(IReadOnlyList<AbsoluteUri> DocumentIds);
 }
 
 public static class DocumentEvents
 {
+    public sealed record DocumentScanFailed(AbsoluteUri DocumentId, string Reason) : IWithDocumentId;
+    
     public sealed record WordsFound(AbsoluteUri DocumentId, IReadOnlyList<string> Tokens) : IWithDocumentId;
+    
+    public sealed record EndOfDocumentReached(AbsoluteUri DocumentId) : IWithDocumentId;
 
     public sealed record CountsTabulatedForDocument(AbsoluteUri DocumentId, ImmutableDictionary<string, int> WordFrequencies)
         : IWithDocumentId;
