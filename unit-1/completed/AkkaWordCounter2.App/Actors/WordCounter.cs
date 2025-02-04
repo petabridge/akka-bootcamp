@@ -14,8 +14,14 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IRequiredActor<WordCounterManager> _wordCounterManager;
     private readonly IRequiredActor<ParserActor> _parserActor;
+    
+    public IStash Stash { get; set; } = null!;
+    public ITimerScheduler Timers { get; set; } = null!;
+    
     private readonly HashSet<IActorRef> _subscribers = new();
-
+    private readonly Dictionary<AbsoluteUri, ProcessingStatus> _documentsToProcess = new();
+    private readonly Dictionary<AbsoluteUri, ImmutableDictionary<string, int>> _wordCounts = new();
+    
     public enum ProcessingStatus
     {
         Processing,
@@ -26,16 +32,10 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
 
     public sealed class JobTimeout
     {
-        public static JobTimeout Instance = new();
-
-        private JobTimeout()
-        {
-        }
+        public static readonly JobTimeout Instance = new();
+        private JobTimeout(){ }
     }
-
-    private Dictionary<AbsoluteUri, ProcessingStatus> _documentsToProcess = new();
-    private Dictionary<AbsoluteUri, ImmutableDictionary<string, int>> _wordCounts = new();
-
+    
     public WordCountJobActor(
         IRequiredActor<WordCounterManager> wordCounterManager,
         IRequiredActor<ParserActor> parserActor)
@@ -91,6 +91,16 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
                 break;
             case JobTimeout _:
                 _log.Error("Job timed out");
+                
+                // Set all documents that haven't been processed yet to timed out
+                foreach (var (document, status) in _documentsToProcess)
+                {
+                    if (status == ProcessingStatus.Processing)
+                    {
+                        _documentsToProcess[document] = ProcessingStatus.FailedTimeout;
+                    }
+                }
+                
                 HandleJobCompletedMaybe(true);
                 break;
             case SubscribeToAllCounts:
@@ -132,8 +142,7 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
     {
         return _documentsToProcess.Values.All(x => x > ProcessingStatus.Processing);
     }
-
-
+    
     private ImmutableDictionary<string, int> MergeWordCounts()
     {
         var mergedCounts = _wordCounts.Values.Aggregate(ImmutableDictionary<string, int>.Empty,
@@ -148,7 +157,5 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
             });
         return mergedCounts;
     }
-
-    public IStash Stash { get; set; } = null!;
-    public ITimerScheduler Timers { get; set; } = null!;
+    
 }
