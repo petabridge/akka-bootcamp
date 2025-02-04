@@ -13,14 +13,14 @@ public static class TextExtractor
     public static IEnumerable<string> ExtractText(HtmlDocument htmlDocument)
     {
         var root = htmlDocument.DocumentNode;
-        foreach (var node in root.DescendantsAndSelf())
+        foreach (var node in root.Descendants()
+                     .Where(n => n.NodeType == HtmlNodeType.Text &&
+                            n.ParentNode.Name != "script" &&
+                            n.ParentNode.Name != "style"))
         {
-            if (!node.HasChildNodes)
-            {
-                string text = node.InnerText;
-                if (!string.IsNullOrEmpty(text))
-                    yield return text.Trim();
-            }
+            string text = node.InnerText.Trim();
+            if (!string.IsNullOrEmpty(text))
+                yield return text;
         }
     }
     
