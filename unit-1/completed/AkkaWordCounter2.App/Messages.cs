@@ -44,7 +44,7 @@ public static class DocumentEvents
 
     public sealed record CountsTabulatedForDocuments(
         IReadOnlyList<AbsoluteUri> Documents,
-        ImmutableDictionary<string, int> WordFrequencies);
+        IImmutableDictionary<string, int> WordFrequencies);
 }
 
 public static class DocumentQueries

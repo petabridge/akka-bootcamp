@@ -4,7 +4,7 @@ namespace AkkaWordCounter2.App;
 
 public static class CollectionUtilities
 {
-    public static ImmutableDictionary<string, int> MergeWordCounts(IEnumerable<IDictionary<string, int>> counts)
+    public static IImmutableDictionary<string, int> MergeWordCounts(IEnumerable<IDictionary<string, int>> counts)
     {
         var mergedCounts = counts.Aggregate(ImmutableDictionary<string, int>.Empty,
             (acc, next) =>

@@ -6,7 +6,7 @@ namespace AkkaWordCounter2.App.Config;
 
 public class WordCounterSettings
 {
-    public string[] DocumentUris { get; set; }
+    public string[] DocumentUris { get; set; } = [];
 }
 
 public sealed class WordCounterSettingsValidator : IValidateOptions<WordCounterSettings>
