@@ -1,5 +1,4 @@
-﻿using AkkaWordCounter2.App.Parsing;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 
 namespace AkkaWordCounter2.App.Tests;
 

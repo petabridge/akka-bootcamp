@@ -1,6 +1,6 @@
 using HtmlAgilityPack;
 
-namespace AkkaWordCounter2.App.Parsing;
+namespace AkkaWordCounter2.App;
 
 public static class TextExtractor
 {
