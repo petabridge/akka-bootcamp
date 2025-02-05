@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
 using Akka.Hosting;
-using Akka.Util.Internal;
 using static AkkaWordCounter2.App.DocumentCommands;
 using static AkkaWordCounter2.App.DocumentQueries;
+using static AkkaWordCounter2.App.CollectionUtilities;
 
 namespace AkkaWordCounter2.App.Actors;
 
@@ -24,10 +24,10 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
     
     public enum ProcessingStatus
     {
-        Processing,
-        Completed,
-        FailedError,
-        FailedTimeout
+        Processing = 0,
+        Completed = 1,
+        FailedError = 2,
+        FailedTimeout = 3
     }
 
     public sealed class JobTimeout
@@ -114,48 +114,31 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
 
     private void HandleJobCompletedMaybe(bool force = false)
     {
-        if (IsJobCompleted() || force)
+        if (!IsJobCompleted() && !force) return;
+        
+        // log statuses of each page
+        foreach (var (document, status) in _documentsToProcess)
         {
-            // log statuses of each page
-            foreach (var (document, status) in _documentsToProcess)
-            {
-                _log.Info("Document {0} status: {1}, total words: {2}", document, status,
-                    _wordCounts[document].Values.Sum());
-            }
-            
-            // need to merge all the word counts
-            var mergedCounts = MergeWordCounts();
-            var finalOutput =
-                new DocumentEvents.
-                    CountsTabulatedForDocuments(_documentsToProcess.Keys.ToList(), mergedCounts);
-            
-            foreach (var subscriber in _subscribers)
-            {
-                subscriber.Tell(finalOutput);
-            }
-
-            Context.Stop(Self);
+            _log.Info("Document {0} status: {1}, total words: {2}", document, status,
+                _wordCounts[document].Values.Sum());
         }
+            
+        // need to merge all the word counts
+        var mergedCounts = MergeWordCounts(_wordCounts.Values);
+        var finalOutput =
+            new DocumentEvents.
+                CountsTabulatedForDocuments(_documentsToProcess.Keys.ToList(), mergedCounts);
+            
+        foreach (var subscriber in _subscribers)
+        {
+            subscriber.Tell(finalOutput);
+        }
+
+        Context.Stop(Self);
     }
 
     private bool IsJobCompleted()
     {
         return _documentsToProcess.Values.All(x => x > ProcessingStatus.Processing);
     }
-    
-    private ImmutableDictionary<string, int> MergeWordCounts()
-    {
-        var mergedCounts = _wordCounts.Values.Aggregate(ImmutableDictionary<string, int>.Empty,
-            (acc, next) =>
-            {
-                foreach (var (word, count) in next)
-                {
-                    acc = acc.SetItem(word, acc.GetValueOrDefault(word, 0) + count);
-                }
-
-                return acc;
-            });
-        return mergedCounts;
-    }
-    
 }
