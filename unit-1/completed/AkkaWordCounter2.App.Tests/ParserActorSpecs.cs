@@ -1,6 +1,8 @@
 ﻿using Akka.Hosting;
 using AkkaWordCounter2.App.Actors;
 using AkkaWordCounter2.App.Config;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit.Abstractions;
 
 namespace AkkaWordCounter2.App.Tests;
@@ -10,7 +12,12 @@ public class ParserActorSpecs : Akka.Hosting.TestKit.TestKit
     public ParserActorSpecs(ITestOutputHelper output) : base(output: output)
     {
     }
-    
+
+    protected override void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+    {
+        services.AddHttpClient();
+    }
+
     protected override void ConfigureAkka(AkkaConfigurationBuilder builder, IServiceProvider provider)
     {
         builder
@@ -34,10 +41,7 @@ public class ParserActorSpecs : Akka.Hosting.TestKit.TestKit
         parserActor.Tell(new DocumentCommands.ScanDocument(ParserActorUri), expectResultsProbe);
         
         // assert
-        ExpectMsg<WordCountsMessage>(msg =>
-        {
-            Assert.Equal(2, msg.WordCounts["hello"]);
-            Assert.Equal(1, msg.WordCounts["world"]);
-        });
+        await expectResultsProbe.ExpectMsgAsync<DocumentEvents.WordsFound>(); // should get at least 1 WordsFound
+        await expectResultsProbe.FishUntilMessageAsync<DocumentEvents.EndOfDocumentReached>(); // should get EndOfDocumentReached
     }
 }
