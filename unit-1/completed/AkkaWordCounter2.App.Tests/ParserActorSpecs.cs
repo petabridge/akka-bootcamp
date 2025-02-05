@@ -42,6 +42,6 @@ public class ParserActorSpecs : Akka.Hosting.TestKit.TestKit
         
         // assert
         await expectResultsProbe.ExpectMsgAsync<DocumentEvents.WordsFound>(); // should get at least 1 WordsFound
-        await expectResultsProbe.FishUntilMessageAsync<DocumentEvents.EndOfDocumentReached>(); // should get EndOfDocumentReached
+        await expectResultsProbe.FishForMessageAsync(m => m is DocumentEvents.EndOfDocumentReached); // should get EndOfDocumentReached
     }
 }
