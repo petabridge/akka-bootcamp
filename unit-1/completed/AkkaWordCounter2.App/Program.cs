@@ -1,6 +1,7 @@
 ﻿using Akka.Hosting;
 using AkkaWordCounter2.App.Config;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var hostBuilder = new HostBuilder();
@@ -18,7 +19,16 @@ hostBuilder
     .ConfigureServices((context, services) =>
     {
         services.AddWordCounterSettings();
-        services.AddAkka("MyActorSystem", (builder, sp) => { });
+        services.AddHttpClient(); // needed for IHttpClientFactory
+        services.AddAkka("MyActorSystem", (builder, sp) =>
+        {
+            builder
+                .ConfigureLoggers(logConfig =>
+                {
+                    logConfig.AddLoggerFactory();
+                })
+                .AddApplicationActors();
+        });
     });
 
 var host = hostBuilder.Build();
