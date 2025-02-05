@@ -78,6 +78,12 @@ public sealed class WordCountJobActor : UntypedActor, IWithStash, IWithTimers
     {
         switch (message)
         {
+            case DocumentEvents.WordsFound found:
+                _wordCounterManager.ActorRef.Forward(found);
+                break;
+            case DocumentEvents.EndOfDocumentReached eof:
+                _wordCounterManager.ActorRef.Forward(eof);
+                break;
             case DocumentEvents.CountsTabulatedForDocument counts:
                 _log.Info("Received word counts for {0}", counts.DocumentId);
                 _wordCounts[counts.DocumentId] = counts.WordFrequencies;

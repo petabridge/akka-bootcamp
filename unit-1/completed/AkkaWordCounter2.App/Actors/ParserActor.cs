@@ -12,13 +12,10 @@ public sealed class ParserActor : UntypedActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly CancellationTokenSource _shutdownCts = new();
-    private readonly IRequiredActor<WordCounterManager> _wordCounterManager;
 
-    public ParserActor(IHttpClientFactory httpClientFactory,
-        IRequiredActor<WordCounterManager> wordCounterManager)
+    public ParserActor(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _wordCounterManager = wordCounterManager;
     }
 
     protected override void OnReceive(object message)
@@ -34,9 +31,9 @@ public sealed class ParserActor : UntypedActor
                         var textFeatures = await HandleDocument(document.DocumentId);
                         foreach(var f in textFeatures)
                         {
-                            _wordCounterManager.ActorRef.Tell(new WordsFound(document.DocumentId, f));
+                            Sender.Tell(new WordsFound(document.DocumentId, f));
                         }
-                        _wordCounterManager.ActorRef.Tell(new EndOfDocumentReached(document.DocumentId));
+                        Sender.Tell(new EndOfDocumentReached(document.DocumentId));
                     }
                     catch(Exception ex)
                     {
