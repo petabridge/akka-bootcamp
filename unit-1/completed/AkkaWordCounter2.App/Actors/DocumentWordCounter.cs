@@ -48,6 +48,10 @@ public sealed class DocumentWordCounter : UntypedActor
             case IWithDocumentId withDocumentId when withDocumentId.DocumentId != _documentId:
                 _log.Warning("Received message for document {0} but I am responsible for document {1}", withDocumentId.DocumentId, _documentId);
                 break;
+            case ReceiveTimeout:
+                _log.Warning("Document {0} timed out", _documentId);
+                Context.Stop(Self);
+                break;
             default:
                 Unhandled(message);
                 break;
@@ -67,9 +71,18 @@ public sealed class DocumentWordCounter : UntypedActor
             case IWithDocumentId withDocumentId when withDocumentId.DocumentId != _documentId:
                 _log.Warning("Received message for document {0} but I am responsible for document {1}", withDocumentId.DocumentId, _documentId);
                 break;
+            case ReceiveTimeout:
+                // no need for warning here
+                Context.Stop(Self);
+                break;
             default:
                 Unhandled(message);
                 break;
         }
+    }
+
+    protected override void PreStart()
+    {
+        SetReceiveTimeout(TimeSpan.FromMinutes(2));
     }
 }

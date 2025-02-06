@@ -9,8 +9,8 @@ public sealed class WordCounterManager : ReceiveActor
     {
         Receive<IWithDocumentId>(s =>
         {
-            var childName = $"word-counter-{HttpUtility.UrlEncode(s.DocumentId.ToString())}";
-            var child = Context.Child(childName);
+            string childName = $"word-counter-{HttpUtility.UrlEncode(s.DocumentId.ToString())}";
+            IActorRef child = Context.Child(childName);
             if (child.IsNobody())
             {
                 // start the child if it doesn't exist
