@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.TestKit.Xunit2;
+using AkkaWordCounter2.App.Actors;
 using Xunit.Abstractions;
 
 namespace AkkaWordCounter2.App.Tests;

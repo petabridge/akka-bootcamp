@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using static AkkaWordCounter2.App.DocumentEvents;
 using static AkkaWordCounter2.App.DocumentQueries;
-namespace AkkaWordCounter2.App;
+namespace AkkaWordCounter2.App.Actors;
 
 public sealed class DocumentWordCounter : UntypedActor
 {
