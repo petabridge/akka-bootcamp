@@ -1,5 +1,4 @@
-﻿using Akka.Hosting;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using static AkkaWordCounter2.App.DocumentCommands;
 using static AkkaWordCounter2.App.DocumentEvents;
 
