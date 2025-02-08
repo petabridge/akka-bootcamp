@@ -1,6 +1,8 @@
 # Akka.NET Bootcamp
 
 > NOTICE 1-23-2025: this is _long_ overdue, but Akka.NET Bootcamp is in the process of being rewritten. Subscribe to notifications on this repository / [subscribe to our mailing list](https://m.petabridge.com/) / [follow us on Twitter](https://x.com/Petabridge) for updates. We expect to have the first two units of Bootcamp 2.0 live by February 7th, 2025 - at which point the current bootcamp will be archived.
+>
+> NOTICE 2-7-2025: Bootcamp 2.0 is ready to go, but we still need to write emails and do some cleanup before we transition this repository over to the `v2` branch. We please join our mailing list for updates at the link below.
 
 Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in C# and F#") Bootcamp! This is a free, self-directed learning course brought to you by the folks at [Petabridge](http://petabridge.com/ "Petabridge - Akka.NET Training, Consulting, and Support").
 
