@@ -28,6 +28,8 @@ Akka.NET Bootcamp is all written in .NET 9 and leverages [Akka.Templates](https:
 
 [![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](images/grok.png)](https://petabridge.com/bootcamp/)
 
+And if you **super-duper do not want to receive Akka.NET Bootcamp via email, you can read the lessons online here: https://petabridge.com/bootcamp/lessons**
+
 Otherwise, please fork or `git clone` this repository - each Unit should contain a starter (if necessary) and a completed version of the lesson for you to run.
 
 ### Getting Help
