@@ -21,6 +21,13 @@ Akka.NET Bootcamp is all written in .NET 9 and leverages [Akka.Templates](https:
 1. [.NET 9 installed](https://dotnet.microsoft.com/en-us/download/dotnet/9.0); and
 2. The ability to `git clone` this repository.
 
+## Course Units
+
+The bootcamp is divided into progressive units, each building upon the previous:
+
+* [Unit 0: Hello World](/unit-0) - Your first Akka.NET application
+* [Unit 1: AkkaWordCounterv2](/unit-1) - Akka.Hosting, Akka.TestKit, async/await, dependency injection, actor hierachies, routers, and handling complex message patterns
+
 ## Doing Bootcamp
 
 > [!IMPORTANT]
