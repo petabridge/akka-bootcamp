@@ -5,7 +5,7 @@ This unit is intended to help developers craft their very first Akka.NET applica
 > [!IMPORTANT]
 >To get the content and written + video lessons for Akka.NET Bootcamp, you will need to [sign-up at the link below](https://petabridge.com/bootcamp/). __This repository only contains the source code__.
 
-[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](images/grok.png)](https://petabridge.com/bootcamp/)
+[![Get Akka.NET training material & updates at https://petabridge.com/bootcamp/signup](../images/grok.png)](https://petabridge.com/bootcamp/)
 
 ## Completed Source Code
 
