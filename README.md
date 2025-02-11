@@ -46,4 +46,5 @@ Second, you can always check out the [official Akka.NET documentation](https://g
 **[Petabridge also offers Akka.NET consulting and training](http://petabridge.com/ "Petabridge Akka.NET consulting and training")** - so please [sign up for our mailing list](https://m.petabridge.com/)!
 
 ---
-Copyright 2015-2025 Petabridge, LLC
+
+Copyright 2015-2025 [Petabridge, LLC](https://petabridge.com/)
