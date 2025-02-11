@@ -1,0 +1,35 @@
+name: Build and Test Solutions
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        unit: ['unit-0', 'unit-1']
+        dotnet-version: ['9.0.x']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+    
+    - name: Restore dependencies
+      working-directory: ${{ matrix.unit }}/completed
+      run: dotnet restore
+
+    - name: Build
+      working-directory: ${{ matrix.unit }}/completed
+      run: dotnet build -c Release --no-restore
+
+    - name: Test
+      working-directory: ${{ matrix.unit }}/completed
+      run: dotnet test -c Release --no-build 
