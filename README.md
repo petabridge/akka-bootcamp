@@ -1,6 +1,6 @@
 # Akka.NET Bootcamp v2.0
 
-![Akka.NET Bootcamp v2.0](/images/bootcamp-v2-logo.png)
+[![Akka.NET Bootcamp v2.0](/images/bootcamp-v2-logo.png)](https://petabridge.com/bootcamp/)
 
 Welcome to [Akka.NET](http://getakka.net/ "Akka.NET - Distributed actor model in C# and F#") Bootcamp! This is a free, self-directed learning course brought to you by [Petabridge](http://petabridge.com/ "Petabridge - Akka.NET Training, Consulting, and Support"), the company behind Akka.NET.
 
