@@ -22,14 +22,23 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
     
+    - name: Set Project Path
+      id: set-path
+      run: |
+        if [ "${{ matrix.unit }}" == "unit-0" ]; then
+          echo "project_path=${{ matrix.unit }}/completed/AkkaWordCounter" >> $GITHUB_OUTPUT
+        else
+          echo "project_path=${{ matrix.unit }}/completed" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Restore dependencies
-      working-directory: ${{ matrix.unit }}/completed
+      working-directory: ${{ steps.set-path.outputs.project_path }}
       run: dotnet restore
 
     - name: Build
-      working-directory: ${{ matrix.unit }}/completed
+      working-directory: ${{ steps.set-path.outputs.project_path }}
       run: dotnet build -c Release --no-restore
 
     - name: Test
-      working-directory: ${{ matrix.unit }}/completed
+      working-directory: ${{ steps.set-path.outputs.project_path }}
       run: dotnet test -c Release --no-build 
