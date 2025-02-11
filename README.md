@@ -40,6 +40,10 @@ If you need help, please join the [Akka.NET Discord's `#akka-bootcamp` channel](
 
 Second, you can always check out the [official Akka.NET documentation](https://getakka.net/) or [source code](https://github.com/akkadotnet/akka.net).
 
+## Looking for Akka.NET Bootcamp v1.0?
+
+You can find all of the old Akka.NET Bootcamp v1.0 lessons here: https://github.com/petabridge/akka-bootcamp/tree/legacy-v1
+
 ## About Petabridge
 ![Petabridge logo](images/petabridge_logo.png)
 
