@@ -44,10 +44,12 @@ public sealed class CounterActor : UntypedActor{
                 _subscribers.Clear();
                 break;
             }
-            case FetchCounts when _doneCounting:
+            case FetchCounts fetchCounts when _doneCounting:
+            {
                 // instantly reply with the results
-                Sender.Tell(_tokenCounts.ToImmutableDictionary());
+                fetchCounts.Subscriber.Tell(_tokenCounts.ToImmutableDictionary());
                 break;
+            }
             case FetchCounts fetch:
             {
                 _subscribers.Add(fetch.Subscriber);
