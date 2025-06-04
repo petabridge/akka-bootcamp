@@ -9,13 +9,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Akka.Hosting.TestKit" Version="1.5.40" />
-        <PackageReference Include="Akka.TestKit.Xunit2" Version="1.5.41" />
+        <PackageReference Include="Akka.Hosting.TestKit" Version="1.5.42" />
+        <PackageReference Include="Akka.TestKit.Xunit2" Version="1.5.42" />
         <PackageReference Include="coverlet.collector" Version="6.0.4">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageReference Include="xunit" Version="2.9.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0">
           <PrivateAssets>all</PrivateAssets>
