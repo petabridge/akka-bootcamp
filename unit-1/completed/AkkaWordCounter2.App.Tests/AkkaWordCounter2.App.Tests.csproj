@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Akka.Hosting.TestKit" Version="1.5.58" />
-        <PackageReference Include="Akka.TestKit.Xunit2" Version="1.5.58" />
+        <PackageReference Include="Akka.TestKit.Xunit2" Version="1.5.59" />
         <PackageReference Include="coverlet.collector" Version="6.0.4">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
